@@ -2,32 +2,17 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Ficha de RPG - Alta Fantasia</title>
+    <title>Ficha RPG - Alta Fantasia</title>
     <style>
-        body { background: #1a1a1a; color: #eee; font-family: sans-serif; display: flex; justify-content: center; padding: 20px; }
-        .container { display: grid; grid-template-columns: 1fr 1.5fr 0.8fr; gap: 20px; max-width: 1200px; width: 100%; }
-        .col { display: flex; flex-direction: column; gap: 15px; }
-        .card { background: #2a2a2a; border: 1px solid #444; padding: 15px; border-radius: 8px; }
-        h3 { border-bottom: 2px solid #a00; padding-bottom: 5px; margin-top: 0; color: #ff4444; }
-        
-        input[type="text"], input[type="number"], textarea { 
-            background: #333; border: 1px solid #555; color: white; padding: 5px; width: 100%; box-sizing: border-box; 
-        }
-
-        /* Status de Vida e Mana */
-        .status-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
-        .bar { height: 20px; flex-grow: 1; border: 1px solid #000; position: relative; }
-        .hp { background: darkred; } .mp { background: darkblue; }
-        
-        /* Caveiras de Morte */
-        .death-saves { display: flex; gap: 10px; font-size: 24px; cursor: pointer; }
-        .skull { filter: grayscale(1); opacity: 0.3; transition: 0.3s; }
-        .skull.active { filter: grayscale(0); opacity: 1; }
-
-        /* Habilidades Dinâmicas */
-        .habilidade-item { background: #383838; padding: 10px; margin-bottom: 10px; border-radius: 4px; border-left: 4px solid #a00; }
-        button { background: #a00; color: white; border: none; padding: 8px; cursor: pointer; border-radius: 4px; }
-        button:hover { background: #cc0000; }
+        :root { --bg: #121212; --card-bg: #41141a; --header-bg: #800000; --text: #ffffff; }
+        body { background: #1a1a1a; color: var(--text); font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; padding: 20px; }
+        .container { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; max-width: 1300px; }
+        .card { background: var(--card-bg); border-radius: 12px; padding: 15px; border: 1px solid #5a1a1f; }
+        .header-label { background: var(--header-bg); text-align: center; border-radius: 20px; padding: 5px; margin-bottom: 15px; font-weight: bold; }
+        input, textarea { background: #2a0a0d; border: 1px solid #555; color: white; padding: 5px; border-radius: 5px; width: 100%; box-sizing: border-box; }
+        .attr-box { background: #2a0a0d; border: 1px solid #7a2a2f; border-radius: 15px; padding: 10px; text-align: center; }
+        .pericia-row { display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.2); margin-bottom: 4px; padding: 5px; border-radius: 8px; }
+        .pericia-row input { width: 50px; text-align: center; }
     </style>
 </head>
 <body>
@@ -35,100 +20,79 @@
 <div class="container">
     <div class="col">
         <div class="card">
-            <h3>Básico</h3>
-            <label>Nome:</label><input type="text" id="nome">
-            <label>Região:</label><input type="text">
-        </div>
-        <div class="card">
-            <h3>Status</h3>
-            <div class="status-row">PV: <input type="number" value="10">/<span>10</span></div>
-            <div class="status-row">PM: <input type="number" value="10">/<span>10</span></div>
-            <div class="status-row">PA: <input type="number" value="3">/<span>3</span></div>
-            <p>Marcador de Morte:</p>
-            <div class="death-saves">
-                <span class="skull" onclick="this.classList.toggle('active')">💀</span>
-                <span class="skull" onclick="this.classList.toggle('active')">💀</span>
-                <span class="skull" onclick="this.classList.toggle('active')">💀</span>
+            <div class="header-label">Geral</div>
+            <label>Idade:</label><input type="text" id="idade">
+            <label>Florins:</label><input type="text" id="florins">
+            <label>Arquétipo:</label><input type="text" id="arquetipo">
+            
+            <div class="header-label" style="margin-top:20px;">Atributos</div>
+            <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:5px;">
+                <div class="attr-box"><input type="number" id="poder" value="0"><div>PODER</div></div>
+                <div class="attr-box"><input type="number" id="habilidade" value="0"><div>HABILIDADE</div></div>
+                <div class="attr-box"><input type="number" id="resistencia" value="0"><div>RESISTÊNCIA</div></div>
             </div>
-        </div>
-        <div class="card">
-            <h3>Atributos & Perícias</h3>
-            <textarea rows="10" placeholder="Poder, Habilidade, Resistência..."></textarea>
         </div>
     </div>
 
     <div class="col">
         <div class="card">
-            <h3>Vantagens & Técnicas</h3>
-            <div id="lista-habilidades"></div>
-            <button onclick="addHabilidade()">+ Adicionar Habilidade</button>
-        </div>
+            <div class="header-label">Perícias</div>
+            <div class="pericia-row"><span>ANIMAIS</span><input type="number" id="p_animais" value="0"></div>
+            <div class="pericia-row"><span>ARTE</span><input type="number" id="p_arte" value="0"></div>
+            <div class="pericia-row"><span>LUTA</span><input type="number" id="p_luta" value="0"></div>
+            <div class="pericia-row"><span>MÍSTICA</span><input type="number" id="p_mistica" value="0"></div>
+            </div>
     </div>
 
     <div class="col">
         <div class="card">
-            <h3>Ações & Deslocamento</h3>
-            <div style="font-size: 30px; text-align: center;">
-                ▲ ▲ ▲ <br>
-                ● ● ● ● ●
-            </div>
+            <div class="header-label">Vantagens / Técnicas</div>
+            <textarea id="vantagens" style="height: 150px;" placeholder="Descreva aqui..."></textarea>
         </div>
     </div>
 </div>
 
-<script>
-    function addHabilidade() {
-        const div = document.createElement('div');
-        div.className = 'habilidade-item';
-        div.innerHTML = `
-            <input type="text" placeholder="Nome da Habilidade" style="font-weight:bold; margin-bottom:5px">
-            <input type="text" placeholder="Dados (ex: 1d20+5)" style="margin-bottom:5px">
-            <textarea placeholder="Descrição..."></textarea>
-        `;
-        document.getElementById('lista-habilidades').appendChild(div);
-    }
-</script>
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-  import { getDatabase, ref, update, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getDatabase, ref, update, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-  // Suas configurações extraídas do seu print
-  const firebaseConfig = {
-    apiKey: "AIzaSyCvxxwfsonP5a45nbcz34cxYhXaWBZVhwQ",
-    authDomain: "ed-rpg---sistema-de-fichas.firebaseapp.com",
-    databaseURL: "https://ed-rpg---sistema-de-fichas-default-rtdb.firebaseio.com",
-    projectId: "ed-rpg---sistema-de-fichas",
-    storageBucket: "ed-rpg---sistema-de-fichas.firebasestorage.app",
-    messagingSenderId: "350999444010",
-    appId: "1:350999444010:web:d89f31d13e449b8fbfa153"
-  };
+    const firebaseConfig = {
+        apiKey: "AIzaSyCvxxwfsonP5a45nbcz34cxYhXaWBZVhwQ",
+        authDomain: "ed-rpg---sistema-de-fichas.firebaseapp.com",
+        databaseURL: "https://ed-rpg---sistema-de-fichas-default-rtdb.firebaseio.com",
+        projectId: "ed-rpg---sistema-de-fichas",
+        storageBucket: "ed-rpg---sistema-de-fichas.firebasestorage.app",
+        messagingSenderId: "350999444010",
+        appId: "1:350999444010:web:d89f31d13e449b8fbfa153"
+    };
 
-  const app = initializeApp(firebaseConfig);
-  const db = getDatabase(app);
-  const fichaID = "personagem_1"; // Identificador único da ficha
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const fichaID = "personagem_1";
 
-  // SALVAR: Escuta qualquer mudança nos campos e envia ao Firebase
-  document.addEventListener('change', (e) => {
-    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
-        const campo = e.target.id || e.target.placeholder || "campo_sem_nome";
-        update(ref(db, 'fichas/' + fichaID), {
-            [campo]: e.target.value
-        });
-    }
-  });
+    // 1. SALVAR (Quando o usuário termina de digitar)
+    document.addEventListener('change', (e) => {
+        if (e.target.id) {
+            update(ref(db, 'fichas/' + fichaID), {
+                [e.target.id]: e.target.value
+            });
+        }
+    });
 
-  // CARREGAR: Atualiza a ficha automaticamente se os dados mudarem no banco
-  onValue(ref(db, 'fichas/' + fichaID), (snapshot) => {
-    const dados = snapshot.val();
-    if (dados) {
-        Object.keys(dados).forEach(key => {
-            const el = document.getElementById(key) || document.querySelector(`[placeholder="${key}"]`);
-            if (el && document.activeElement !== el) el.value = dados[key];
-        });
-    }
-  });
+    // 2. CARREGAR (Busca os dados assim que abre o site)
+    onValue(ref(db, 'fichas/' + fichaID), (snapshot) => {
+        const dados = snapshot.val();
+        if (dados) {
+            Object.keys(dados).forEach(idDoCampo => {
+                const elemento = document.getElementById(idDoCampo);
+                // Só atualiza se o usuário não estiver digitando naquele campo agora
+                if (elemento && document.activeElement !== elemento) {
+                    elemento.value = dados[idDoCampo];
+                }
+            });
+        }
+    });
 </script>
 
 </body>
-
 </html>
