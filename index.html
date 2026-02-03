@@ -4,15 +4,43 @@
     <meta charset="UTF-8">
     <title>Ficha RPG - Alta Fantasia</title>
     <style>
-        :root { --bg: #121212; --card-bg: #41141a; --header-bg: #800000; --text: #ffffff; }
-        body { background: #1a1a1a; color: var(--text); font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; padding: 20px; }
-        .container { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; max-width: 1300px; }
-        .card { background: var(--card-bg); border-radius: 12px; padding: 15px; border: 1px solid #5a1a1f; }
-        .header-label { background: var(--header-bg); text-align: center; border-radius: 20px; padding: 5px; margin-bottom: 15px; font-weight: bold; }
-        input, textarea { background: #2a0a0d; border: 1px solid #555; color: white; padding: 5px; border-radius: 5px; width: 100%; box-sizing: border-box; }
-        .attr-box { background: #2a0a0d; border: 1px solid #7a2a2f; border-radius: 15px; padding: 10px; text-align: center; }
-        .pericia-row { display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.2); margin-bottom: 4px; padding: 5px; border-radius: 8px; }
-        .pericia-row input { width: 50px; text-align: center; }
+        :root { --bg: #1a1a1a; --card-bg: #41141a; --header-bg: #800000; --text: #ffffff; --input-bg: #2a0a0d; }
+        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; padding: 20px; margin: 0; }
+        .container { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; max-width: 1300px; width: 100%; }
+        .col { display: flex; flex-direction: column; gap: 15px; }
+        .card { background: var(--card-bg); border-radius: 12px; padding: 15px; border: 1px solid #5a1a1f; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+        .header-label { background: var(--header-bg); text-align: center; border-radius: 20px; padding: 5px; margin-bottom: 15px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
+        
+        input, textarea { background: var(--input-bg); border: 1px solid #555; color: white; padding: 6px; border-radius: 5px; width: 100%; box-sizing: border-box; }
+        label { font-size: 12px; color: #ccc; margin-top: 5px; display: block; }
+
+        /* Atributos */
+        .attr-container { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+        .attr-box { background: var(--input-bg); border: 1px solid #7a2a2f; border-radius: 15px; padding: 10px; text-align: center; }
+        .attr-box input { font-size: 20px; font-weight: bold; text-align: center; border: none; background: transparent; }
+        .attr-label { font-size: 10px; font-weight: bold; color: #ffaaaa; }
+
+        /* Perícias */
+        .pericia-list { max-height: 400px; overflow-y: auto; padding-right: 5px; }
+        .pericia-row { display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.2); margin-bottom: 4px; padding: 5px 10px; border-radius: 8px; border: 1px solid #5a1a1f; }
+        .pericia-row input { width: 45px; text-align: center; background: #1a0507; }
+
+        /* Barras de Status */
+        .bar-row { margin-bottom: 10px; }
+        .bar-fill { height: 25px; border-radius: 5px; display: flex; align-items: center; padding: 0 10px; font-weight: bold; border: 1px solid #000; }
+        .hp { background: #b30000; } .mp { background: #0044cc; } .pa { background: #6600cc; }
+        .bar-fill input { background: transparent; border: none; text-align: center; width: 100%; color: white; font-weight: bold; }
+
+        /* Caveiras */
+        .death-saves { text-align: center; font-size: 30px; letter-spacing: 10px; cursor: pointer; user-select: none; }
+        .skull { opacity: 0.2; filter: grayscale(1); transition: 0.3s; }
+        .skull.active { opacity: 1; filter: grayscale(0); }
+
+        /* Dados */
+        .dice-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .dice-btn { background: #800000; border: 1px solid #ffaaaa; color: white; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        .dice-btn:hover { background: #b30000; }
+        #result-box { background: #000; color: #00ff00; padding: 15px; border-radius: 8px; text-align: center; font-size: 20px; margin-top: 10px; border: 1px dashed #00ff00; }
     </style>
 </head>
 <body>
@@ -21,15 +49,29 @@
     <div class="col">
         <div class="card">
             <div class="header-label">Geral</div>
-            <label>Idade:</label><input type="text" id="idade">
-            <label>Florins:</label><input type="text" id="florins">
-            <label>Arquétipo:</label><input type="text" id="arquetipo">
+            <label>NOME</label><input type="text" id="nome">
+            <label>FLORINS</label><input type="text" id="florins">
+            <label>ARQUÉTIPO</label><input type="text" id="arquetipo">
             
-            <div class="header-label" style="margin-top:20px;">Atributos</div>
-            <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:5px;">
-                <div class="attr-box"><input type="number" id="poder" value="0"><div>PODER</div></div>
-                <div class="attr-box"><input type="number" id="habilidade" value="0"><div>HABILIDADE</div></div>
-                <div class="attr-box"><input type="number" id="resistencia" value="0"><div>RESISTÊNCIA</div></div>
+            <div style="margin-top:15px;">
+                <div class="bar-row"><div class="bar-fill hp"><input type="text" id="status_hp" placeholder="PV 10/10"></div></div>
+                <div class="bar-row"><div class="bar-fill mp"><input type="text" id="status_mp" placeholder="PM 10/10"></div></div>
+                <div class="bar-row"><div class="bar-fill pa"><input type="text" id="status_pa" placeholder="PA 3/3"></div></div>
+            </div>
+
+            <div class="death-saves">
+                <span class="skull" id="skull1" onclick="toggleSkull('skull1')">💀</span>
+                <span class="skull" id="skull2" onclick="toggleSkull('skull2')">💀</span>
+                <span class="skull" id="skull3" onclick="toggleSkull('skull3')">💀</span>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="header-label">Atributos</div>
+            <div class="attr-container">
+                <div class="attr-box"><input type="number" id="poder" value="0"><div class="attr-label">PODER</div></div>
+                <div class="attr-box"><input type="number" id="habilidade" value="0"><div class="attr-label">HABILIDADE</div></div>
+                <div class="attr-box"><input type="number" id="resistencia" value="0"><div class="attr-label">RESISTÊNCIA</div></div>
             </div>
         </div>
     </div>
@@ -37,17 +79,37 @@
     <div class="col">
         <div class="card">
             <div class="header-label">Perícias</div>
-            <div class="pericia-row"><span>ANIMAIS</span><input type="number" id="p_animais" value="0"></div>
-            <div class="pericia-row"><span>ARTE</span><input type="number" id="p_arte" value="0"></div>
-            <div class="pericia-row"><span>LUTA</span><input type="number" id="p_luta" value="0"></div>
-            <div class="pericia-row"><span>MÍSTICA</span><input type="number" id="p_mistica" value="0"></div>
+            <div class="pericia-list">
+                <div class="pericia-row"><span>ANIMAIS</span><input type="number" id="p_animais" value="0"></div>
+                <div class="pericia-row"><span>ARTE</span><input type="number" id="p_arte" value="0"></div>
+                <div class="pericia-row"><span>INVESTIGAÇÃO</span><input type="number" id="p_invest" value="0"></div>
+                <div class="pericia-row"><span>LUTA</span><input type="number" id="p_luta" value="0"></div>
+                <div class="pericia-row"><span>MEDICINA</span><input type="number" id="p_med" value="0"></div>
+                <div class="pericia-row"><span>MÍSTICA</span><input type="number" id="p_mistica" value="0"></div>
+                <div class="pericia-row"><span>PERCEPÇÃO</span><input type="number" id="p_percep" value="0"></div>
+                <div class="pericia-row"><span>FURTIVIDADE</span><input type="number" id="p_furtiv" value="0"></div>
+                <div class="pericia-row"><span>SOBREVIVÊNCIA</span><input type="number" id="p_sobrev" value="0"></div>
             </div>
+        </div>
     </div>
 
     <div class="col">
         <div class="card">
-            <div class="header-label">Vantagens / Técnicas</div>
-            <textarea id="vantagens" style="height: 150px;" placeholder="Descreva aqui..."></textarea>
+            <div class="header-label">Habilidades & Técnicas</div>
+            <textarea id="habilidades" style="height: 200px;" placeholder="Vantagens, Desvantagens e Técnicas..."></textarea>
+        </div>
+
+        <div class="card">
+            <div class="header-label">Dados</div>
+            <div class="dice-grid">
+                <button class="dice-btn" onclick="rollDice(4)">D4</button>
+                <button class="dice-btn" onclick="rollDice(6)">D6</button>
+                <button class="dice-btn" onclick="rollDice(8)">D8</button>
+                <button class="dice-btn" onclick="rollDice(10)">D10</button>
+                <button class="dice-btn" onclick="rollDice(12)">D12</button>
+                <button class="dice-btn" onclick="rollDice(20)">D20</button>
+            </div>
+            <div id="result-box">Resultado: -</div>
         </div>
     </div>
 </div>
@@ -71,30 +133,43 @@
     const urlParams = new URLSearchParams(window.location.search);
     const fichaID = urlParams.get('p') || "personagem_padrao";
 
-    // 1. SALVAR (Quando o usuário termina de digitar)
+    // SALVAR
     document.addEventListener('change', (e) => {
         if (e.target.id) {
-            update(ref(db, 'fichas/' + fichaID), {
-                [e.target.id]: e.target.value
-            });
+            update(ref(db, 'fichas/' + fichaID), { [e.target.id]: e.target.value });
         }
     });
 
-    // 2. CARREGAR (Busca os dados assim que abre o site)
+    // CARREGAR
     onValue(ref(db, 'fichas/' + fichaID), (snapshot) => {
         const dados = snapshot.val();
         if (dados) {
-            Object.keys(dados).forEach(idDoCampo => {
-                const elemento = document.getElementById(idDoCampo);
-                // Só atualiza se o usuário não estiver digitando naquele campo agora
-                if (elemento && document.activeElement !== elemento) {
-                    elemento.value = dados[idDoCampo];
+            Object.keys(dados).forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    if (id.startsWith('skull')) {
+                        dados[id] === "active" ? el.classList.add('active') : el.classList.remove('active');
+                    } else if (document.activeElement !== el) {
+                        el.value = dados[id];
+                    }
                 }
             });
         }
     });
+
+    // FUNÇÕES DE INTERAÇÃO
+    window.toggleSkull = (id) => {
+        const el = document.getElementById(id);
+        el.classList.toggle('active');
+        const status = el.classList.contains('active') ? "active" : "inactive";
+        update(ref(db, 'fichas/' + fichaID), { [id]: status });
+    };
+
+    window.rollDice = (faces) => {
+        const result = Math.floor(Math.random() * faces) + 1;
+        document.getElementById('result-box').innerText = `Resultado (D${faces}): ${result}`;
+    };
 </script>
 
 </body>
 </html>
-
