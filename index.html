@@ -14,36 +14,37 @@
         input, textarea { background: var(--input-bg); border: 1px solid #555; color: white; padding: 8px; border-radius: 20px; width: 100%; box-sizing: border-box; margin-bottom: 5px; }
         
         /* Sistema de Avatar */
-        .avatar-container { display: flex; flex-direction: column; align-items: center; margin-bottom: 20px; position: relative; }
-        .avatar-circle { width: 150px; height: 150px; border-radius: 50%; border: 4px solid var(--header-bg); background: #222; overflow: hidden; display: flex; align-items: center; justify-content: center; cursor: pointer; position: relative; background-image: url('https://via.placeholder.com/150?text=Upload'); background-size: cover; background-position: center; }
+        .avatar-container { display: flex; flex-direction: column; align-items: center; margin-bottom: 20px; }
+        .avatar-circle { width: 150px; height: 150px; border-radius: 50%; border: 4px solid var(--header-bg); background: #222; overflow: hidden; display: flex; align-items: center; justify-content: center; cursor: pointer; background-image: url('https://via.placeholder.com/150?text=Upload'); background-size: cover; background-position: center; }
         .avatar-circle input { display: none; }
-        .char-name-input { background: transparent; border: none; font-size: 20px; font-weight: bold; text-align: center; margin-top: 10px; color: white; border-bottom: 1px solid transparent; border-radius: 0; }
-        .char-name-input:hover { border-bottom: 1px solid var(--header-bg); }
+        .char-name-input { background: transparent; border: none; font-size: 20px; font-weight: bold; text-align: center; margin-top: 10px; color: white; }
 
         /* Barras de Status */
         .bar-container { margin-bottom: 12px; }
         .bar-label { font-size: 11px; font-weight: bold; margin-bottom: 3px; display: block; color: #ffaaaa; text-transform: uppercase; }
         .bar-controls { display: flex; align-items: center; gap: 8px; background: rgba(0,0,0,0.5); border-radius: 25px; padding: 4px 10px; }
-        .btn-math { background: transparent; border: none; color: white; cursor: pointer; font-size: 18px; font-weight: bold; width: 25px; }
-        .bar-bg { flex-grow: 1; height: 22px; background: #222; border-radius: 15px; position: relative; overflow: hidden; border: 1px solid #444; display: flex; align-items: center; }
+        .btn-math { background: transparent; border: none; color: white; cursor: pointer; font-size: 18px; font-weight: bold; width: 25px; z-index: 3; }
+        .bar-bg { flex-grow: 1; height: 26px; background: #222; border-radius: 15px; position: relative; overflow: hidden; border: 1px solid #444; display: flex; align-items: center; }
         .bar-fill { position: absolute; left: 0; top: 0; height: 100%; transition: width 0.3s ease; z-index: 1; }
         .hp-fill { background: #d32f2f; } .mp-fill { background: #1976d2; } .pa-fill { background: #7b1fa2; }
         .bar-values { position: relative; z-index: 2; width: 100%; display: flex; justify-content: center; align-items: center; gap: 2px; pointer-events: none; }
         .bar-values input { pointer-events: auto; width: 35px; background: transparent; border: none; text-align: center; font-size: 13px; font-weight: bold; color: white; margin: 0; padding: 0; }
         
-        /* Atributos */
-        .attr-container { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 10px; }
-        .attr-box { background: rgba(255,255,255,0.05); border: 1px solid #7a2a2f; border-radius: 15px; padding: 10px 5px; text-align: center; }
-        .attr-box input { font-size: 32px; font-weight: bold; text-align: center; border: none; background: transparent; width: 100%; padding: 0; margin-bottom: 2px; }
+        /* Atributos Estilo Print */
+        .attr-container { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+        .attr-box { background: rgba(255,255,255,0.05); border: 1px solid #7a2a2f; border-radius: 15px; padding: 15px 5px; text-align: center; }
+        .attr-box input { font-size: 32px; font-weight: bold; text-align: center; border: none; background: transparent; width: 100%; padding: 0; margin-bottom: 2px; color: white; }
         .attr-box div { font-size: 10px; font-weight: bold; color: #ccc; text-transform: uppercase; }
 
-        /* Perícias */
-        .pericia-row { display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.2); margin-bottom: 4px; padding: 5px 15px; border-radius: 20px; border: 1px solid #5a1a1f; }
-        .pericia-row input { width: 40px; text-align: center; border: none; background: transparent; font-weight: bold; margin: 0; }
+        /* Perícias Estilo Print */
+        .pericia-row { display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.2); margin-bottom: 6px; padding: 8px 15px; border-radius: 20px; border: 1px solid #5a1a1f; }
+        .pericia-row span { font-size: 12px; font-weight: bold; text-transform: uppercase; }
+        .pericia-row input { width: 40px; text-align: center; border: none; background: transparent; font-weight: bold; margin: 0; padding: 0; font-size: 14px; }
         
         .death-saves { text-align: center; font-size: 30px; cursor: pointer; margin-top: 10px; }
         .skull { opacity: 0.2; transition: 0.3s; }
         .skull.active { opacity: 1; filter: drop-shadow(0 0 5px red); }
+        input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
     </style>
 </head>
 <body>
@@ -52,20 +53,44 @@
     <div class="col">
         <div class="card">
             <div class="header-label">Geral</div>
-            
             <div class="avatar-container">
                 <label for="img_upload" class="avatar-circle" id="avatar_display">
                     <input type="file" id="img_upload" accept="image/*">
                 </label>
                 <input type="text" id="char_name" class="char-name-input" placeholder="Nome do Personagem">
             </div>
+            <label>IDADE</label><input type="text" id="idade">
+            <label>FLORINS</label><input type="text" id="florins">
+            <label>ARQUÉTIPO</label><input type="text" id="arquetipo">
+        </div>
 
-            <label>Idade:</label><input type="text" id="idade" placeholder="Ex: 25 anos">
-            <label>Florins:</label><input type="text" id="florins" placeholder="Ex: 150">
-            <label>Arquétipo:</label><input type="text" id="arquetipo" placeholder="Ex: Guerreiro">
+        <div class="card">
+            <div class="header-label">Atributos</div>
+            <div class="attr-container">
+                <div class="attr-box"><input type="number" id="poder" value="0"><div>PODER</div></div>
+                <div class="attr-box"><input type="number" id="habilidade" value="0"><div>HABILIDADE</div></div>
+                <div class="attr-box"><input type="number" id="resistencia" value="0"><div>RESISTÊNCIA</div></div>
+            </div>
 
-            <div class="header-label" style="margin-top:20px;">Fracionáveis</div>
-            
+            <div class="header-label">Perícias</div>
+            <div class="pericia-row"><span>ANIMAIS</span><input type="number" id="p_animais" value="0"></div>
+            <div class="pericia-row"><span>ARTE</span><input type="number" id="p_arte" value="0"></div>
+            <div class="pericia-row"><span>ESPORTE</span><input type="number" id="p_esporte" value="0"></div>
+            <div class="pericia-row"><span>INFLUÊNCIA</span><input type="number" id="p_influencia" value="0"></div>
+            <div class="pericia-row"><span>LUTA</span><input type="number" id="p_luta" value="0"></div>
+            <div class="pericia-row"><span>MANHA</span><input type="number" id="p_manha" value="0"></div>
+            <div class="pericia-row"><span>MÁQUINAS</span><input type="number" id="p_maquinas" value="0"></div>
+            <div class="pericia-row"><span>MEDICINA</span><input type="number" id="p_medicina" value="0"></div>
+            <div class="pericia-row"><span>MÍSTICA</span><input type="number" id="p_mistica" value="0"></div>
+            <div class="pericia-row"><span>PERCEPÇÃO</span><input type="number" id="p_percepcao" value="0"></div>
+            <div class="pericia-row"><span>SABER</span><input type="number" id="p_saber" value="0"></div>
+            <div class="pericia-row"><span>SOBREVIVÊNCIA</span><input type="number" id="p_sobrevivencia" value="0"></div>
+        </div>
+    </div>
+
+    <div class="col">
+        <div class="card">
+            <div class="header-label">Fracionáveis</div>
             <div class="bar-container">
                 <span class="bar-label">Vida</span>
                 <div class="bar-controls"><button class="btn-math" onclick="changeVal('hp', -1)">-</button><div class="bar-bg"><div id="bar_hp" class="bar-fill hp-fill"></div><div class="bar-values"><input type="number" id="hp_at" value="10"> / <input type="number" id="hp_max" value="10"></div></div><button class="btn-math" onclick="changeVal('hp', 1)">+</button></div>
@@ -78,39 +103,22 @@
                 <span class="bar-label">Ações</span>
                 <div class="bar-controls"><button class="btn-math" onclick="changeVal('pa', -1)">-</button><div class="bar-bg"><div id="bar_pa" class="bar-fill pa-fill"></div><div class="bar-values"><input type="number" id="pa_at" value="3"> / <input type="number" id="pa_max" value="3"></div></div><button class="btn-math" onclick="changeVal('pa', 1)">+</button></div>
             </div>
-
             <div class="death-saves">
                 <span class="skull" id="skull1" onclick="toggleSkull('skull1')">💀</span>
                 <span class="skull" id="skull2" onclick="toggleSkull('skull2')">💀</span>
                 <span class="skull" id="skull3" onclick="toggleSkull('skull3')">💀</span>
             </div>
         </div>
-
-        <div class="card">
-            <div class="header-label">Atributos</div>
-            <div class="attr-container">
-                <div class="attr-box"><input type="number" id="poder" value="0"><div>PODER</div></div>
-                <div class="attr-box"><input type="number" id="habilidade" value="0"><div>HABILIDADE</div></div>
-                <div class="attr-box"><input type="number" id="resistencia" value="0"><div>RESISTÊNCIA</div></div>
-            </div>
-        </div>
-    </div>
-
-    <div class="col">
-        <div class="card">
-            <div class="header-label">Perícias</div>
-            <div class="pericia-row"><span>ANIMAIS</span><input type="number" id="p_animais" value="0"></div>
-            <div class="pericia-row"><span>ARTE</span><input type="number" id="p_arte" value="0"></div>
-            <div class="pericia-row"><span>LUTA</span><input type="number" id="p_luta" value="0"></div>
-            <div class="pericia-row"><span>MÍSTICA</span><input type="number" id="p_mistica" value="0"></div>
-            <div class="pericia-row"><span>PERCEPÇÃO</span><input type="number" id="p_percepcao" value="0"></div>
-        </div>
-    </div>
-
-    <div class="col">
         <div class="card">
             <div class="header-label">Habilidades</div>
-            <textarea id="habilidades" style="height: 400px; border-radius: 10px;" placeholder="Vantagens, Desvantagens e Técnicas..."></textarea>
+            <textarea id="habilidades" style="height: 450px; border-radius: 15px;" placeholder="Técnicas e Vantagens..."></textarea>
+        </div>
+    </div>
+
+    <div class="col">
+        <div class="card">
+            <div class="header-label">Dados & Ações</div>
+            <p style="text-align:center; color:#ccc;">Pronto para adicionar o sistema de rolagens!</p>
         </div>
     </div>
 </div>
@@ -142,7 +150,6 @@
         if(el) el.style.width = percent + '%';
     }
 
-    // SISTEMA DE UPLOAD DE IMAGEM
     const imgInput = document.getElementById('img_upload');
     imgInput.addEventListener('change', (e) => {
         const file = e.target.files[0];
