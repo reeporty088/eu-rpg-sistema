@@ -2,43 +2,34 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Painel do Mestre - RPG</title>
+    <title>Monitor do Mestre - RPG</title>
     <style>
         :root { --bg: #121212; --card-bg: #41141a; --header-bg: #800000; --text: #ffffff; }
         body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; padding: 20px; }
-        h1 { text-align: center; color: var(--header-bg); text-transform: uppercase; letter-spacing: 2px; }
+        h1 { text-align: center; color: var(--header-bg); text-transform: uppercase; letter-spacing: 2px; display: flex; justify-content: center; align-items: center; gap: 10px; }
         
-        /* Grid de Jogadores */
-        #painel-jogadores { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; margin-top: 30px; }
+        #painel-jogadores { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; margin-top: 20px; }
         
-        /* Card do Jogador */
-        .player-card { background: var(--card-bg); border: 2px solid #5a1a1f; border-radius: 15px; padding: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.6); transition: 0.3s; }
-        .player-card:hover { border-color: #ffaaaa; }
-        
-        .player-header { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; }
-        .player-img { width: 60px; height: 60px; border-radius: 50%; border: 2px solid var(--header-bg); background-size: cover; background-position: center; background-color: #222; }
-        .player-info h2 { margin: 0; font-size: 18px; text-transform: uppercase; }
-        .player-info p { margin: 0; font-size: 12px; color: #ccc; }
+        .player-card { background: var(--card-bg); border: 2px solid #5a1a1f; border-radius: 15px; padding: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.6); }
+        .player-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+        .player-img { width: 55px; height: 55px; border-radius: 50%; border: 2px solid var(--header-bg); background-size: cover; background-position: center; background-color: #222; flex-shrink: 0; }
+        .player-info h2 { margin: 0; font-size: 16px; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .player-info p { margin: 0; font-size: 11px; color: #ccc; }
 
-        /* Barras de Status Simplificadas */
-        .status-bar { height: 12px; background: #222; border-radius: 6px; margin-bottom: 8px; overflow: hidden; border: 1px solid #444; position: relative; }
-        .bar-fill { height: 100%; transition: width 0.5s ease; }
-        .hp { background: #d32f2f; }
-        .mp { background: #1976d2; }
-        .pa { background: #7b1fa2; }
-        .bar-text { position: absolute; width: 100%; text-align: center; font-size: 9px; font-weight: bold; line-height: 12px; text-shadow: 1px 1px 1px #000; }
+        .status-bar { height: 18px; background: #222; border-radius: 10px; margin-bottom: 6px; overflow: hidden; border: 1px solid #444; position: relative; }
+        .bar-fill { height: 100%; transition: width 0.4s ease; }
+        .hp { background: #d32f2f; } .mp { background: #1976d2; } .pa { background: #7b1fa2; }
+        .bar-text { position: absolute; width: 100%; text-align: center; font-size: 10px; font-weight: bold; line-height: 18px; text-shadow: 1px 1px 2px #000; z-index: 2; }
 
-        .skull-display { text-align: right; font-size: 18px; }
-        .skull-icon { opacity: 0.2; grayscale: 1; }
-        .skull-icon.active { opacity: 1; grayscale: 0; filter: drop-shadow(0 0 3px red); }
+        .skull-display { text-align: center; font-size: 20px; margin-top: 5px; opacity: 0.8; }
+        .skull-icon { opacity: 0.15; filter: grayscale(1); margin: 0 2px; }
+        .skull-icon.active { opacity: 1; filter: grayscale(0) drop-shadow(0 0 5px red); color: white; }
     </style>
 </head>
 <body>
 
-    <h1>🏰 Monitor do Mestre</h1>
-    
-    <div id="painel-jogadores">
-        </div>
+    <h1>🏰 MONITOR DO MESTRE</h1>
+    <div id="painel-jogadores"></div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
@@ -57,43 +48,41 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    // Referência para a pasta de todas as fichas
-    const fichasRef = ref(db, 'fichas');
-
-    onValue(fichasRef, (snapshot) => {
+    onValue(ref(db, 'fichas'), (snapshot) => {
         const painel = document.getElementById('painel-jogadores');
-        painel.innerHTML = ""; // Limpa para atualizar
-        
+        painel.innerHTML = "";
         const fichas = snapshot.val();
-        if (!fichas) {
-            painel.innerHTML = "<p style='text-align:center; width:100%;'>Nenhuma ficha ativa encontrada...</p>";
-            return;
-        }
+        
+        if (!fichas) return;
 
         Object.keys(fichas).forEach(id => {
             const f = fichas[id];
             
-            // Cálculos das barras
-            const hpPerc = Math.min((parseInt(f.hp_at) / parseInt(f.hp_max)) * 100, 100) || 0;
-            const mpPerc = Math.min((parseInt(f.mp_at) / parseInt(f.mp_max)) * 100, 100) || 0;
-            const paPerc = Math.min((parseInt(f.pa_at) / parseInt(f.pa_max)) * 100, 100) || 0;
+            // Lógica robusta para evitar undefined
+            const getVal = (v) => parseInt(v) || 0;
+            const getMax = (v, def) => parseInt(v) || def;
+
+            const hpAt = getVal(f.hp_at); const hpMax = getMax(f.hp_max, 1);
+            const mpAt = getVal(f.mp_at); const mpMax = getMax(f.mp_max, 1);
+            const paAt = getVal(f.pa_at); const paMax = getMax(f.pa_max, 1);
+
+            const hpP = Math.min((hpAt / hpMax) * 100, 100);
+            const mpP = Math.min((mpAt / mpMax) * 100, 100);
+            const paP = Math.min((paAt / paMax) * 100, 100);
 
             const card = document.createElement('div');
             card.className = 'player-card';
-            
             card.innerHTML = `
                 <div class="player-header">
                     <div class="player-img" style="background-image: url('${f.char_img || ''}')"></div>
                     <div class="player-info">
                         <h2>${f.char_name || id}</h2>
-                        <p>${f.arquetipo || 'Sem Classe'} | ${f.florins || 0} Florins</p>
+                        <p>${f.arquetipo || 'Sem Arquétipo'} | ${f.florins || 0} Florins</p>
                     </div>
                 </div>
-
-                <div class="status-bar"><div class="bar-text">PV ${f.hp_at}/${f.hp_max}</div><div class="bar-fill hp" style="width: ${hpPerc}%"></div></div>
-                <div class="status-bar"><div class="bar-text">PM ${f.mp_at}/${f.mp_max}</div><div class="bar-fill mp" style="width: ${mpPerc}%"></div></div>
-                <div class="status-bar"><div class="bar-text">PA ${f.pa_at}/${f.pa_max}</div><div class="bar-fill pa" style="width: ${paPerc}%"></div></div>
-
+                <div class="status-bar"><div class="bar-text">PV ${hpAt}/${hpMax}</div><div class="bar-fill hp" style="width:${hpP}%"></div></div>
+                <div class="status-bar"><div class="bar-text">PM ${mpAt}/${mpMax}</div><div class="bar-fill mp" style="width:${mpP}%"></div></div>
+                <div class="status-bar"><div class="bar-text">PA ${paAt}/${paMax}</div><div class="bar-fill pa" style="width:${paP}%"></div></div>
                 <div class="skull-display">
                     <span class="skull-icon ${f.skull1 === 'active' ? 'active' : ''}">💀</span>
                     <span class="skull-icon ${f.skull2 === 'active' ? 'active' : ''}">💀</span>
