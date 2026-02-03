@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Painel do Mestre - RPG</title>
+    <style>
+        :root { --bg: #121212; --card-bg: #41141a; --header-bg: #800000; --text: #ffffff; }
+        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; padding: 20px; }
+        h1 { text-align: center; color: var(--header-bg); text-transform: uppercase; letter-spacing: 2px; }
+        
+        /* Grid de Jogadores */
+        #painel-jogadores { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; margin-top: 30px; }
+        
+        /* Card do Jogador */
+        .player-card { background: var(--card-bg); border: 2px solid #5a1a1f; border-radius: 15px; padding: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.6); transition: 0.3s; }
+        .player-card:hover { border-color: #ffaaaa; }
+        
+        .player-header { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; }
+        .player-img { width: 60px; height: 60px; border-radius: 50%; border: 2px solid var(--header-bg); background-size: cover; background-position: center; background-color: #222; }
+        .player-info h2 { margin: 0; font-size: 18px; text-transform: uppercase; }
+        .player-info p { margin: 0; font-size: 12px; color: #ccc; }
+
+        /* Barras de Status Simplificadas */
+        .status-bar { height: 12px; background: #222; border-radius: 6px; margin-bottom: 8px; overflow: hidden; border: 1px solid #444; position: relative; }
+        .bar-fill { height: 100%; transition: width 0.5s ease; }
+        .hp { background: #d32f2f; }
+        .mp { background: #1976d2; }
+        .pa { background: #7b1fa2; }
+        .bar-text { position: absolute; width: 100%; text-align: center; font-size: 9px; font-weight: bold; line-height: 12px; text-shadow: 1px 1px 1px #000; }
+
+        .skull-display { text-align: right; font-size: 18px; }
+        .skull-icon { opacity: 0.2; grayscale: 1; }
+        .skull-icon.active { opacity: 1; grayscale: 0; filter: drop-shadow(0 0 3px red); }
+    </style>
+</head>
+<body>
+
+    <h1>🏰 Monitor do Mestre</h1>
+    
+    <div id="painel-jogadores">
+        </div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyCvxxwfsonP5a45nbcz34cxYhXaWBZVhwQ",
+        authDomain: "ed-rpg---sistema-de-fichas.firebaseapp.com",
+        databaseURL: "https://ed-rpg---sistema-de-fichas-default-rtdb.firebaseio.com",
+        projectId: "ed-rpg---sistema-de-fichas",
+        storageBucket: "ed-rpg---sistema-de-fichas.firebasestorage.app",
+        messagingSenderId: "350999444010",
+        appId: "1:350999444010:web:d89f31d13e449b8fbfa153"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    // Referência para a pasta de todas as fichas
+    const fichasRef = ref(db, 'fichas');
+
+    onValue(fichasRef, (snapshot) => {
+        const painel = document.getElementById('painel-jogadores');
+        painel.innerHTML = ""; // Limpa para atualizar
+        
+        const fichas = snapshot.val();
+        if (!fichas) {
+            painel.innerHTML = "<p style='text-align:center; width:100%;'>Nenhuma ficha ativa encontrada...</p>";
+            return;
+        }
+
+        Object.keys(fichas).forEach(id => {
+            const f = fichas[id];
+            
+            // Cálculos das barras
+            const hpPerc = Math.min((parseInt(f.hp_at) / parseInt(f.hp_max)) * 100, 100) || 0;
+            const mpPerc = Math.min((parseInt(f.mp_at) / parseInt(f.mp_max)) * 100, 100) || 0;
+            const paPerc = Math.min((parseInt(f.pa_at) / parseInt(f.pa_max)) * 100, 100) || 0;
+
+            const card = document.createElement('div');
+            card.className = 'player-card';
+            
+            card.innerHTML = `
+                <div class="player-header">
+                    <div class="player-img" style="background-image: url('${f.char_img || ''}')"></div>
+                    <div class="player-info">
+                        <h2>${f.char_name || id}</h2>
+                        <p>${f.arquetipo || 'Sem Classe'} | ${f.florins || 0} Florins</p>
+                    </div>
+                </div>
+
+                <div class="status-bar"><div class="bar-text">PV ${f.hp_at}/${f.hp_max}</div><div class="bar-fill hp" style="width: ${hpPerc}%"></div></div>
+                <div class="status-bar"><div class="bar-text">PM ${f.mp_at}/${f.mp_max}</div><div class="bar-fill mp" style="width: ${mpPerc}%"></div></div>
+                <div class="status-bar"><div class="bar-text">PA ${f.pa_at}/${f.pa_max}</div><div class="bar-fill pa" style="width: ${paPerc}%"></div></div>
+
+                <div class="skull-display">
+                    <span class="skull-icon ${f.skull1 === 'active' ? 'active' : ''}">💀</span>
+                    <span class="skull-icon ${f.skull2 === 'active' ? 'active' : ''}">💀</span>
+                    <span class="skull-icon ${f.skull3 === 'active' ? 'active' : ''}">💀</span>
+                </div>
+            `;
+            painel.appendChild(card);
+        });
+    });
+</script>
+</body>
+</html>
