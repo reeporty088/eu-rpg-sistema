@@ -130,13 +130,15 @@
 
     <div class="col">
         <div class="card">
+           <div class="col">
+        <div class="card">
             <div class="header-label">Ações e Deslocamento</div>
             
             <div class="marker-section">
-                <label>AÇÕES</label>
+                <label style="text-align:center; display:block; color:cyan;">AÇÕES (Triângulos)</label>
                 <div class="marker-controls">
                     <button class="btn-count" onclick="updateMarkerCount('ações', -1)">-</button>
-                    <span id="count_ações">3</span>
+                    <span id="count_ações" style="font-weight:bold; color:cyan;">3</span>
                     <button class="btn-count" onclick="updateMarkerCount('ações', 1)">+</button>
                 </div>
                 <div id="display_ações" class="marker-display"></div>
@@ -145,14 +147,16 @@
             <hr style="border:0; border-top:1px solid #5a1a1f; margin: 20px 0;">
 
             <div class="marker-section">
-                <label>DESLOCAMENTO</label>
+                <label style="text-align:center; display:block; color:springgreen;">DESLOCAMENTO (Círculos)</label>
                 <div class="marker-controls">
                     <button class="btn-count" onclick="updateMarkerCount('desloc', -1)">-</button>
-                    <span id="count_desloc">9</span>
+                    <span id="count_desloc" style="font-weight:bold; color:springgreen;">9</span>
                     <button class="btn-count" onclick="updateMarkerCount('desloc', 1)">+</button>
                 </div>
                 <div id="display_desloc" class="marker-display"></div>
             </div>
+        </div>
+    </div>
         </div>
     </div>
 </div>
@@ -293,3 +297,4 @@
 
 </body>
 </html>
+
