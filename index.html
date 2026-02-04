@@ -337,18 +337,59 @@
         el.classList.toggle('active');
         update(ref(db, 'fichas/' + fichaID), { [id]: el.classList.contains('active') ? "active" : "inactive" });
     };
-
+// --- UPLOAD E COMPRESSÃO DE IMAGEM ---
     document.getElementById('img_upload').addEventListener('change', (e) => {
         const file = e.target.files[0];
+        if (!file) return;
+
         const reader = new FileReader();
-        reader.onloadend = () => {
-            const b64 = reader.result;
-            document.getElementById('avatar_display').style.backgroundImage = `url(${b64})`;
-            update(ref(db, 'fichas/' + fichaID), { char_img: b64 });
+        reader.onload = (readerEvent) => {
+            const image = new Image();
+            image.onload = () => {
+                // Cria um canvas para redimensionar a imagem
+                const canvas = document.createElement('canvas');
+                const maxSize = 300; // Tamanho máximo (300px é ótimo para avatar)
+                let width = image.width;
+                let height = image.height;
+
+                // Calcula a nova proporção mantendo o aspecto
+                if (width > height) {
+                    if (width > maxSize) {
+                        height *= maxSize / width;
+                        width = maxSize;
+                    }
+                } else {
+                    if (height > maxSize) {
+                        width *= maxSize / height;
+                        height = maxSize;
+                    }
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+                
+                // Desenha a imagem redimensionada no canvas
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(image, 0, 0, width, height);
+
+                // Converte para texto (Base64) com qualidade reduzida (JPEG 0.7)
+                // Isso garante que o arquivo fique leve para o banco de dados
+                const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+
+                // Atualiza na tela imediatamente
+                document.getElementById('avatar_display').style.backgroundImage = `url(${dataUrl})`;
+
+                // Envia para o Firebase
+                update(ref(db, 'fichas/' + fichaID), { char_img: dataUrl })
+                    .then(() => console.log("Imagem salva com sucesso!"))
+                    .catch((error) => console.error("Erro ao salvar imagem:", error));
+            };
+            image.src = readerEvent.target.result;
         };
-        if (file) reader.readAsDataURL(file);
+        reader.readAsDataURL(file);
     });
 </script>
 
 </body>
 </html>
+
