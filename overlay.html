@@ -2,77 +2,104 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Overlay OBS</title>
+    <title>Overlay OBS Text</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
+    
     <style>
-        /* Fundo transparente para o OBS */
-        body { background: transparent; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; overflow: hidden; }
+        /* --- CONFIGURAÇÃO DA FONTE CUSTOMIZADA --- */
+        /* SE VOCÊ TIVER O ARQUIVO 'MitraLT.ttf', coloque na mesma pasta deste arquivo
+           e descomente (tire o /* e o * /) as linhas abaixo: */
+        /*
+        @font-face {
+            font-family: 'Mitra LT';
+            src: url('MitraLT.ttf'); format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+        */
+
+        body { 
+            background: transparent; /* Fundo transparente para o OBS */
+            margin: 0; 
+            padding: 20px; 
+            overflow: hidden; 
+            /* Tenta usar Mitra LT, se não tiver, usa Cinzel */
+            font-family: 'Mitra LT', 'Cinzel', serif; 
+        }
         
-        /* Container principal */
+        /* Container principal sem fundo, só texto com sombra forte */
         #widget {
-            width: 400px;
-            padding: 15px;
-            /* Fundo semi-transparente estiloso */
-            background: linear-gradient(90deg, rgba(0,0,0,0.9) 0%, rgba(65,20,26,0.8) 100%);
-            border-left: 5px solid #800000;
-            border-radius: 0 10px 10px 0;
+            width: 100%;
+            max-width: 500px;
             color: white;
-            transition: all 0.5s ease;
-            position: relative;
+            text-align: center;
+            /* Sombra forte para ler em cima de qualquer jogo */
+            text-shadow: 3px 3px 0px #000, -1px -1px 0px #000, 1px -1px 0px #000, -1px 1px 0px #000, 0px 3px 5px rgba(0,0,0,0.8);
         }
 
-        /* --- MODO NOME --- */
+        /* --- MODO 1: SÓ O NOME --- */
         .mode-name {
-            font-size: 32px;
-            font-weight: 800;
+            font-size: 48px;
+            font-weight: 700;
             text-transform: uppercase;
-            text-shadow: 2px 2px 4px #000;
-            letter-spacing: 1px;
-            text-align: left;
-            padding-left: 10px;
+            letter-spacing: 2px;
         }
 
-        /* --- MODO STATUS --- */
-        .mode-status {
+        /* --- MODO 2: STATUS (TEXTO) --- */
+        .status-container {
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 10px;
         }
 
-        .bar-box {
-            position: relative;
-            height: 20px;
-            background: #222;
-            border-radius: 4px;
-            overflow: hidden;
-            border: 1px solid #444;
+        /* Linha principal (PV e PM) */
+        .main-stats-row {
+            display: flex;
+            justify-content: center;
+            gap: 30px; /* Espaço entre Vida e Mana */
+            align-items: baseline;
         }
-        .bar-fill { height: 100%; transition: width 0.3s ease; }
-        .hp { background: #d32f2f; }
-        .mp { background: #1976d2; }
-        .pa { background: #7b1fa2; }
-        
-        .bar-text {
-            position: absolute;
-            width: 100%;
-            text-align: center;
-            font-size: 12px;
-            font-weight: bold;
-            line-height: 20px;
-            text-shadow: 1px 1px 2px black;
-            z-index: 2;
+
+        .stat-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
-        
-        .char-mini-name {
-            font-size: 12px;
-            color: #ccc;
-            margin-bottom: 2px;
+
+        /* Valores numéricos grandes */
+        .stat-value {
+            font-size: 42px;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        /* Rótulos pequenos (PV, PM) */
+        .stat-label {
+            font-size: 14px;
             text-transform: uppercase;
-            font-weight: bold;
+            opacity: 0.9;
+            font-weight: 400;
+            margin-top: -5px; /* Aproxima o texto do número */
         }
 
-        /* Animação de entrada */
-        .fade-in { animation: fadeIn 0.5s; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
+        /* Linha secundária (PA) */
+        .secondary-stats-row {
+            margin-top: 5px;
+        }
+        .pa-value { font-size: 28px; font-weight: 700; }
+        .pa-label { font-size: 12px; text-transform: uppercase; opacity: 0.8; }
+
+        /* Cores dos textos */
+        .txt-hp { color: #ff4444; } /* Vermelho Sangue */
+        .txt-mp { color: #4488ff; } /* Azul Mana */
+        .txt-pa { color: #aa66cc; } /* Roxo Ação */
+
+        /* Animação de entrada suave */
+        .fade-in { animation: fadeIn 0.8s cubic-bezier(0.22, 1, 0.36, 1); }
+        @keyframes fadeIn { 
+            from { opacity: 0; transform: translateY(20px); } 
+            to { opacity: 1; transform: translateY(0); } 
+        }
     </style>
 </head>
 <body>
@@ -97,7 +124,6 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
     
-    // Pega o ID da URL (ex: overlay.html?p=personagem_padrao)
     const urlParams = new URLSearchParams(window.location.search);
     const fichaID = urlParams.get('p') || "personagem_padrao";
 
@@ -107,45 +133,39 @@
         const data = snapshot.val();
         if (!data) return;
 
-        // Pega o primeiro nome
         const nomeCompleto = data.char_name || "Desconhecido";
-        const primeiroNome = nomeCompleto.split(' ')[0];
+        // Pega apenas o primeiro nome, ou o nome todo se for curto
+        const nomeExibicao = nomeCompleto.length > 15 ? nomeCompleto.split(' ')[0] : nomeCompleto;
 
-        // Verifica o modo (padrão é 'nome' se não existir)
         const modo = data.overlay_mode || 'nome';
 
-        // Lógica de Renderização
         let html = '';
 
         if (modo === 'nome') {
-            // MODO 1: SÓ O NOME
-            html = `<div class="mode-name fade-in">${primeiroNome}</div>`;
+            // MODO 1: SÓ O NOME GIGANTE
+            html = `<div class="mode-name fade-in">${nomeExibicao}</div>`;
         } else {
-            // MODO 2: BARRAS DE STATUS
-            const hpAt = parseInt(data.hp_at) || 0; const hpMax = parseInt(data.hp_max) || 1;
-            const mpAt = parseInt(data.mp_at) || 0; const mpMax = parseInt(data.mp_max) || 1;
-            const paAt = parseInt(data.pa_at) || 0; const paMax = parseInt(data.pa_max) || 1;
-
-            const hpP = Math.min((hpAt / hpMax) * 100, 100);
-            const mpP = Math.min((mpAt / mpMax) * 100, 100);
-            const paP = Math.min((paAt / paMax) * 100, 100);
+            // MODO 2: STATUS TEXTO
+            const hpAt = data.hp_at || 0; const hpMax = data.hp_max || 1;
+            const mpAt = data.mp_at || 0; const mpMax = data.mp_max || 1;
+            const paAt = data.pa_at || 0; const paMax = data.pa_max || 1;
 
             html = `
-                <div class="mode-status fade-in">
-                    <div class="char-mini-name">${primeiroNome}</div>
-                    
-                    <div class="bar-box">
-                        <div class="bar-text">PV ${hpAt}/${hpMax}</div>
-                        <div class="bar-fill hp" style="width: ${hpP}%"></div>
+                <div class="status-container fade-in">
+                    <div class="main-stats-row">
+                        <div class="stat-group txt-hp">
+                            <span class="stat-value">${hpAt}/${hpMax}</span>
+                            <span class="stat-label">Pontos de Vida</span>
+                        </div>
+                        <div class="stat-group txt-mp">
+                            <span class="stat-value">${mpAt}/${mpMax}</span>
+                            <span class="stat-label">Pontos de Mana</span>
+                        </div>
                     </div>
                     
-                    <div class="bar-box">
-                        <div class="bar-text">PM ${mpAt}/${mpMax}</div>
-                        <div class="bar-fill mp" style="width: ${mpP}%"></div>
-                    </div>
-
-                    <div class="bar-box" style="height: 15px;"> <div class="bar-text" style="line-height:15px; font-size:10px;">PA ${paAt}/${paMax}</div>
-                        <div class="bar-fill pa" style="width: ${paP}%"></div>
+                    <div class="secondary-stats-row txt-pa">
+                         <span class="pa-value">${paAt} / ${paMax}</span>
+                        <span class="pa-label">Pontos de Ação</span>
                     </div>
                 </div>
             `;
