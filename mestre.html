@@ -4,80 +4,48 @@
     <meta charset="UTF-8">
     <title>Monitor do Mestre - RPG</title>
     <style>
+        /* ... (Mantenha seu CSS atual do mestre aqui, sem alterações no visual geral) ... */
         :root { --bg: #121212; --card-bg: #41141a; --header-bg: #800000; --text: #ffffff; }
         body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; padding: 20px; }
         h1 { text-align: center; color: var(--header-bg); text-transform: uppercase; letter-spacing: 2px; display: flex; justify-content: center; align-items: center; gap: 10px; }
-        
         #painel-jogadores { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; margin-top: 20px; }
-        
         .player-card { background: var(--card-bg); border: 2px solid #5a1a1f; border-radius: 15px; padding: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.6); position: relative; }
         .player-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
         .player-img { width: 55px; height: 55px; border-radius: 50%; border: 2px solid var(--header-bg); background-size: cover; background-position: center; background-color: #222; flex-shrink: 0; }
-        
         .player-info { flex-grow: 1; min-width: 0; }
         .player-info h2 { margin: 0; font-size: 16px; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .player-info p { margin: 0; font-size: 11px; color: #ccc; }
-
-        .btn-open {
-            background: #222;
-            color: #4fc3f7;
-            border: 1px solid #4fc3f7;
-            border-radius: 6px;
-            padding: 4px 8px;
-            font-size: 10px;
-            text-decoration: none;
-            font-weight: bold;
-            text-transform: uppercase;
-            transition: 0.2s;
-            white-space: nowrap;
-        }
-        .btn-open:hover { background: #4fc3f7; color: #000; box-shadow: 0 0 8px #4fc3f7; }
-
+        
         .status-bar { height: 18px; background: #222; border-radius: 10px; margin-bottom: 6px; overflow: hidden; border: 1px solid #444; position: relative; }
         .bar-fill { height: 100%; transition: width 0.4s ease; }
         .hp { background: #d32f2f; } .mp { background: #1976d2; } .pa { background: #7b1fa2; }
         .bar-text { position: absolute; width: 100%; text-align: center; font-size: 10px; font-weight: bold; line-height: 18px; text-shadow: 1px 1px 2px #000; z-index: 2; }
-
+        
         .skull-display { text-align: center; font-size: 20px; margin-top: 5px; opacity: 0.8; }
         .skull-icon { opacity: 0.15; filter: grayscale(1); margin: 0 2px; }
         .skull-icon.active { opacity: 1; filter: grayscale(0) drop-shadow(0 0 5px red); color: white; }
 
-        /* --- CONTROLE DE XP DO MESTRE --- */
-        .xp-control {
-            margin-top: 10px;
-            padding-top: 10px;
-            border-top: 1px solid #5a1a1f;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-        .xp-input {
-            background: #222;
-            border: 1px solid #444;
-            color: white;
-            padding: 5px;
-            border-radius: 5px;
-            width: 100%;
-            text-align: center;
-            font-size: 12px;
-        }
-        .btn-send {
-            background: #2e7d32;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            width: 30px;
-            height: 28px;
-            font-weight: bold;
-            cursor: pointer;
-        }
+        .xp-control { margin-top: 10px; padding-top: 10px; border-top: 1px solid #5a1a1f; display: flex; align-items: center; gap: 5px; }
+        .xp-input { background: #222; border: 1px solid #444; color: white; padding: 5px; border-radius: 5px; width: 100%; text-align: center; font-size: 12px; }
+        .btn-send { background: #2e7d32; color: white; border: none; border-radius: 5px; width: 30px; height: 28px; font-weight: bold; cursor: pointer; }
         .btn-send:hover { background: #4caf50; }
-        .xp-display-mini {
+        .xp-display-mini { font-size: 10px; color: #ccc; margin-left: auto; white-space: nowrap; }
+
+        /* BOTOES DE CONTROLE */
+        .controls-row { display: flex; gap: 5px; margin-top: 5px; }
+        .btn-small {
+            flex-grow: 1;
+            background: #222;
+            border: 1px solid #555;
+            color: white;
+            border-radius: 4px;
             font-size: 10px;
-            color: #ccc;
-            margin-left: auto;
-            white-space: nowrap;
+            cursor: pointer;
+            text-transform: uppercase;
+            padding: 4px;
         }
+        .btn-small:hover { background: #444; }
+        .btn-obs.active { background: #800000; border-color: #ffaaaa; color: white; } /* Estilo quando está mostrando Status */
     </style>
 </head>
 <body>
@@ -87,7 +55,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getDatabase, ref, onValue, runTransaction } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+    import { getDatabase, ref, onValue, update, runTransaction } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyCvxxwfsonP5a45nbcz34cxYhXaWBZVhwQ",
@@ -115,20 +83,17 @@
             
             const getVal = (v) => parseInt(v) || 0;
             const getMax = (v, def) => parseInt(v) || def;
-
             const hpAt = getVal(f.hp_at); const hpMax = getMax(f.hp_max, 1);
             const mpAt = getVal(f.mp_at); const mpMax = getMax(f.mp_max, 1);
             const paAt = getVal(f.pa_at); const paMax = getMax(f.pa_max, 1);
-
             const hpP = Math.min((hpAt / hpMax) * 100, 100);
             const mpP = Math.min((mpAt / mpMax) * 100, 100);
             const paP = Math.min((paAt / paMax) * 100, 100);
-
-            // Dados de XP
-            const xpTotal = f.xp_total || 0;
-            const ptTotal = f.xp_pontos || 0;
-
+            const xpTotal = f.xp_total || 0; const ptTotal = f.xp_pontos || 0;
             const linkFicha = `${baseURL}?p=${id}`;
+
+            // Verifica o estado atual do overlay para pintar o botão
+            const isStatusMode = f.overlay_mode === 'status';
 
             const card = document.createElement('div');
             card.className = 'player-card';
@@ -137,13 +102,18 @@
                     <div class="player-img" style="background-image: url('${f.char_img || ''}')"></div>
                     <div class="player-info">
                         <h2>${f.char_name || id}</h2>
-                        <p>${f.arquetipo || 'Sem Arquétipo'} | ${f.florins || 0} Florins</p>
+                        <div class="controls-row">
+                            <button class="btn-small" onclick="window.open('${linkFicha}', '_blank')">Abrir ↗</button>
+                            <button class="btn-small btn-obs ${isStatusMode ? 'active' : ''}" onclick="toggleOverlay('${id}', '${f.overlay_mode}')">
+                                ${isStatusMode ? '📊 Status' : '🏷️ Nome'}
+                            </button>
+                        </div>
                     </div>
-                    <a href="${linkFicha}" target="_blank" class="btn-open">Abrir ↗</a>
                 </div>
                 <div class="status-bar"><div class="bar-text">PV ${hpAt}/${hpMax}</div><div class="bar-fill hp" style="width:${hpP}%"></div></div>
                 <div class="status-bar"><div class="bar-text">PM ${mpAt}/${mpMax}</div><div class="bar-fill mp" style="width:${mpP}%"></div></div>
                 <div class="status-bar"><div class="bar-text">PA ${paAt}/${paMax}</div><div class="bar-fill pa" style="width:${paP}%"></div></div>
+                
                 <div class="skull-display">
                     <span class="skull-icon ${f.skull1 === 'active' ? 'active' : ''}">💀</span>
                     <span class="skull-icon ${f.skull2 === 'active' ? 'active' : ''}">💀</span>
@@ -162,20 +132,19 @@
         });
     });
 
-    // Função global para enviar XP
+    // Função para alterar o que aparece no OBS
+    window.toggleOverlay = (id, currentMode) => {
+        const newMode = currentMode === 'status' ? 'nome' : 'status';
+        update(ref(db, `fichas/${id}`), { overlay_mode: newMode });
+    };
+
     window.sendXP = (id) => {
         const input = document.getElementById(`input_xp_${id}`);
         const qtd = parseInt(input.value);
-
         if (qtd && qtd > 0) {
             const xpRef = ref(db, `fichas/${id}/xp_total`);
-            // Usa transação para garantir que somamos ao valor atual sem erro
-            runTransaction(xpRef, (currentXP) => {
-                return (currentXP || 0) + qtd;
-            }).then(() => {
-                alert(`Enviado ${qtd} XP para ${id}!`);
-                input.value = "";
-            });
+            runTransaction(xpRef, (current) => (current || 0) + qtd)
+                .then(() => { input.value = ""; });
         }
     };
 </script>
