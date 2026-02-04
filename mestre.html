@@ -10,11 +10,29 @@
         
         #painel-jogadores { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; margin-top: 20px; }
         
-        .player-card { background: var(--card-bg); border: 2px solid #5a1a1f; border-radius: 15px; padding: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.6); }
+        .player-card { background: var(--card-bg); border: 2px solid #5a1a1f; border-radius: 15px; padding: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.6); position: relative; }
         .player-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
         .player-img { width: 55px; height: 55px; border-radius: 50%; border: 2px solid var(--header-bg); background-size: cover; background-position: center; background-color: #222; flex-shrink: 0; }
+        
+        .player-info { flex-grow: 1; min-width: 0; } /* Garante que o texto não estoure */
         .player-info h2 { margin: 0; font-size: 16px; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .player-info p { margin: 0; font-size: 11px; color: #ccc; }
+
+        /* Botão de Abrir Ficha */
+        .btn-open {
+            background: #222;
+            color: #4fc3f7; /* Azul claro para destaque */
+            border: 1px solid #4fc3f7;
+            border-radius: 6px;
+            padding: 4px 8px;
+            font-size: 10px;
+            text-decoration: none;
+            font-weight: bold;
+            text-transform: uppercase;
+            transition: 0.2s;
+            white-space: nowrap;
+        }
+        .btn-open:hover { background: #4fc3f7; color: #000; box-shadow: 0 0 8px #4fc3f7; }
 
         .status-bar { height: 18px; background: #222; border-radius: 10px; margin-bottom: 6px; overflow: hidden; border: 1px solid #444; position: relative; }
         .bar-fill { height: 100%; transition: width 0.4s ease; }
@@ -48,6 +66,9 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
+    // URL BASE DO SEU SITE (Para o botão funcionar)
+    const baseURL = "https://reeporty088.github.io/ed-rpg-fichas/";
+
     onValue(ref(db, 'fichas'), (snapshot) => {
         const painel = document.getElementById('painel-jogadores');
         painel.innerHTML = "";
@@ -70,6 +91,9 @@
             const mpP = Math.min((mpAt / mpMax) * 100, 100);
             const paP = Math.min((paAt / paMax) * 100, 100);
 
+            // Cria o link dinâmico usando o ID do Firebase (que é o parâmetro ?p=...)
+            const linkFicha = `${baseURL}?p=${id}`;
+
             const card = document.createElement('div');
             card.className = 'player-card';
             card.innerHTML = `
@@ -79,6 +103,7 @@
                         <h2>${f.char_name || id}</h2>
                         <p>${f.arquetipo || 'Sem Arquétipo'} | ${f.florins || 0} Florins</p>
                     </div>
+                    <a href="${linkFicha}" target="_blank" class="btn-open">Abrir ↗</a>
                 </div>
                 <div class="status-bar"><div class="bar-text">PV ${hpAt}/${hpMax}</div><div class="bar-fill hp" style="width:${hpP}%"></div></div>
                 <div class="status-bar"><div class="bar-text">PM ${mpAt}/${mpMax}</div><div class="bar-fill mp" style="width:${mpP}%"></div></div>
