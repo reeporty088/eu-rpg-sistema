@@ -65,6 +65,10 @@
         }
         button:hover { background: var(--highlight); border-color: var(--accent); }
         button.primary { background: var(--highlight); border: 1px solid var(--accent); }
+        
+        /* Botões de Edição Especiais */
+        .btn-edit { border: 1px solid #00ffff; color: #00ffff; }
+        .btn-edit:hover { background: rgba(0, 255, 255, 0.2); }
 
         .calendar-grid {
             display: grid;
@@ -151,7 +155,11 @@
             <span style="font-size:12px; color:#666; align-self:center;">ADMIN:</span>
             <button onclick="window.adminChangeDay(-1)">Voltar Dia</button>
             <button onclick="window.adminChangeDay(1)">Avançar Dia</button>
-            <button onclick="window.setCustomDate()" style="border:1px solid #00ffff; color:#00ffff;">✏️ Definir Data</button>
+            
+            <div style="width:10px;"></div>
+            
+            <button class="btn-edit" onclick="window.setCustomDate()">✏️ Data</button>
+            <button class="btn-edit" onclick="window.setCustomTime()">✏️ Hora</button>
         </div>
     </div>
 
@@ -220,7 +228,6 @@
     });
 
     function renderInterface(data) {
-        // Texto atualizado para ANNO
         document.getElementById('full_date').innerText = `Anno ${data.year} - Período de ${SEASONS[data.season]}`;
         document.getElementById('period_text').innerText = PERIODS[data.period];
         document.getElementById('period_icon').innerText = PERIOD_ICONS[data.period];
@@ -235,11 +242,9 @@
         for (let i = 1; i <= DAYS_IN_SEASON; i++) {
             const globalDays = (data.year * 360) + (data.season * 90) + i;
             const moon = getMoon(globalDays);
-            
             const wMorning = getWeather(data.season, i, 0);
             const wAfter = getWeather(data.season, i, 1);
             const wNight = getWeather(data.season, i, 2);
-
             const isActive = (i === data.day);
             const moonHtml = moon.isBlood ? '<span class="moon-icon blood-moon">🔴</span>' : `<span class="moon-icon">${moon.icon}</span>`;
 
@@ -264,8 +269,7 @@
         }
     }
 
-    // --- CORREÇÃO: FUNÇÕES EXPOSTAS NO WINDOW ---
-    // Isso faz os botões onclick="..." funcionarem
+    // --- FUNÇÕES DE CONTROLE ---
 
     window.changeClock = (minutes) => {
         runTransaction(worldRef, (current) => {
@@ -286,15 +290,22 @@
         runTransaction(worldRef, (current) => {
             if (!current) return;
             current.period++;
-            if (current.period === 1) current.hour = 12;
-            if (current.period === 2) current.hour = 19;
+            
+            // Avança hora junto
+            if (current.period === 1) current.hour = 12; // Tarde
+            if (current.period === 2) current.hour = 19; // Noite
+
+            // Virada do Dia
             if (current.period > 2) {
                 current.period = 0;
                 current.hour = 8;
                 current.day++;
+                
+                // --- LÓGICA DE VIRADA DE ESTAÇÃO CORRIGIDA ---
                 if (current.day > DAYS_IN_SEASON) {
                     current.day = 1;
                     current.season++;
+                    
                     if (current.season > 3) {
                         current.season = 0;
                         current.year++;
@@ -309,30 +320,73 @@
         runTransaction(worldRef, (current) => {
             if (!current) return;
             current.day += amount;
-            if (current.day < 1) current.day = 1;
-            if (current.day > DAYS_IN_SEASON) current.day = DAYS_IN_SEASON;
+            
+            // --- LÓGICA DE VIRADA DE ESTAÇÃO MANUAL ---
+            
+            // Se passar de 90, vai para o dia 1 da próxima estação
+            if (current.day > DAYS_IN_SEASON) {
+                current.day = 1;
+                current.season++;
+                if (current.season > 3) {
+                    current.season = 0;
+                    current.year++;
+                }
+            } 
+            // Se voltar antes do dia 1, vai para o dia 90 da estação anterior
+            else if (current.day < 1) {
+                current.day = DAYS_IN_SEASON;
+                current.season--;
+                if (current.season < 0) {
+                    current.season = 3;
+                    current.year--;
+                }
+            }
+
             return current;
         });
     };
 
-    // NOVA FUNÇÃO: Definir Data Manualmente
     window.setCustomDate = () => {
         runTransaction(worldRef, (current) => {
             if (!current) return;
             
             const newYear = prompt("Digite o Anno:", current.year);
-            if (newYear === null) return; // Cancelou
+            if (newYear === null) return;
             
             const newDay = prompt(`Digite o Dia (1-${DAYS_IN_SEASON}):`, current.day);
-            if (newDay === null) return; // Cancelou
+            if (newDay === null) return;
+
+            // Valida Estação também (opcional, mas bom pra controle)
+            const newSeason = prompt(`Digite Estação (0=Pri, 1=Ver, 2=Out, 3=Inv):`, current.season);
+            if (newSeason !== null) current.season = Math.min(Math.max(parseInt(newSeason)||0, 0), 3);
 
             current.year = parseInt(newYear) || current.year;
             let d = parseInt(newDay) || current.day;
             
-            // Validação simples
             if(d < 1) d = 1;
             if(d > DAYS_IN_SEASON) d = DAYS_IN_SEASON;
             current.day = d;
+
+            return current;
+        });
+    };
+
+    // NOVA FUNÇÃO: Definir Hora Manualmente
+    window.setCustomTime = () => {
+        runTransaction(worldRef, (current) => {
+            if (!current) return;
+            
+            const newH = prompt("Digite a Hora (0-23):", current.hour);
+            if (newH === null) return;
+            
+            const newM = prompt("Digite os Minutos (0-59):", current.minute);
+            if (newM === null) return;
+
+            let h = parseInt(newH);
+            let m = parseInt(newM);
+
+            if (!isNaN(h)) current.hour = Math.min(Math.max(h, 0), 23);
+            if (!isNaN(m)) current.minute = Math.min(Math.max(m, 0), 59);
 
             return current;
         });
