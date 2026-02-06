@@ -5,11 +5,10 @@
     <title>Painel do Mestre - RPG</title>
     <style>
         :root { --bg: #121212; --card-bg: #41141a; --header-bg: #800000; --text: #ffffff; --npc-bg: #222; --accent: #ffaaaa; --divider-bg: #1e1e1e; }
-        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; padding: 20px; }
+        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; padding: 20px; padding-right: 60px; /* Espaço para o botão flutuante */ }
         
-        /* Título Atualizado */
+        /* Título */
         h1 { text-align: center; color: var(--header-bg); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 20px; }
-        
         h2.section-title { border-bottom: 2px solid var(--header-bg); padding-bottom: 5px; margin-top: 40px; color: #ccc; font-size: 18px; display: flex; justify-content: space-between; align-items: center; }
 
         /* --- CARD DE MUNDO --- */
@@ -37,23 +36,12 @@
         .btn-world-obs:hover { background: rgba(0, 255, 255, 0.1); box-shadow: 0 0 10px rgba(0, 255, 255, 0.3); }
 
         /* --- DIVISÓRIAS (CATEGORIAS) --- */
-        .category-container {
-            background: var(--divider-bg);
-            border: 1px solid #333;
-            border-radius: 10px;
-            padding: 15px;
-            margin-bottom: 20px;
-            transition: 0.3s;
-        }
-        .category-container.drag-over { border-color: var(--accent); background: #2a1a1a; } /* Efeito visual ao arrastar */
-        
+        .category-container { background: var(--divider-bg); border: 1px solid #333; border-radius: 10px; padding: 15px; margin-bottom: 20px; transition: 0.3s; }
+        .category-container.drag-over { border-color: var(--accent); background: #2a1a1a; }
         .category-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid #444; padding-bottom: 5px; }
         .category-title { font-size: 16px; font-weight: bold; color: #ddd; cursor: pointer; display: flex; align-items: center; gap: 10px; }
-        .category-title:hover { color: white; }
         .category-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; min-height: 50px; }
-        
         .btn-add-cat { background: #333; color: white; border: 1px solid #555; border-radius: 5px; cursor: pointer; padding: 5px 10px; font-size: 12px; }
-        .btn-add-cat:hover { background: #444; }
         .btn-del-cat { color: #f44336; background: transparent; border: none; cursor: pointer; font-size: 16px; margin-left: 10px; }
 
         /* CARDS GERAIS */
@@ -102,6 +90,102 @@
         .npc-hab-desc { display: none; color: #ccc; margin-top: 3px; font-size: 11px; white-space: pre-wrap; }
         .npc-hab-desc.open { display: block; }
 
+        /* --- SIDEBAR DE COMBATE --- */
+        #combat-sidebar {
+            position: fixed;
+            top: 0;
+            right: -320px;
+            width: 300px;
+            height: 100%;
+            background: #111;
+            border-left: 3px solid var(--header-bg);
+            box-shadow: -5px 0 15px rgba(0,0,0,0.8);
+            transition: right 0.3s ease;
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+        #combat-sidebar.open { right: 0; }
+
+        .combat-toggle-btn {
+            position: fixed;
+            top: 50%;
+            right: 0;
+            transform: translateY(-50%);
+            background: var(--header-bg);
+            color: white;
+            border: 2px solid white;
+            border-right: none;
+            width: 40px;
+            height: 60px;
+            border-radius: 10px 0 0 10px;
+            font-size: 24px;
+            cursor: pointer;
+            z-index: 2001;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: -2px 2px 5px rgba(0,0,0,0.5);
+            transition: right 0.3s ease;
+        }
+        #combat-sidebar.open + .combat-toggle-btn { right: 300px; }
+
+        .combat-header { text-align: center; border-bottom: 1px solid #444; padding-bottom: 10px; margin-bottom: 10px; font-weight: bold; font-size: 18px; color: var(--accent); }
+        
+        .combat-drop-zone {
+            flex-grow: 1;
+            border: 2px dashed #444;
+            border-radius: 10px;
+            background: rgba(0,0,0,0.3);
+            overflow-y: auto;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .combat-drop-zone.drag-over { border-color: var(--accent); background: rgba(128,0,0,0.2); }
+
+        .combat-item {
+            display: flex;
+            align-items: center;
+            background: #222;
+            padding: 8px;
+            border-radius: 8px;
+            border: 1px solid #444;
+            gap: 10px;
+            transition: 0.3s;
+        }
+        .combat-item.active {
+            border: 2px solid #ffd700;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+            background: #332b00;
+        }
+
+        .combat-avatar { width: 40px; height: 40px; border-radius: 50%; background-size: cover; background-position: center; flex-shrink: 0; border: 1px solid #666; }
+        .combat-name { font-size: 12px; font-weight: bold; flex-grow: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .combat-init-bubble {
+            width: 30px; height: 30px;
+            border-radius: 50%;
+            background: #111;
+            border: 2px solid #666;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14px;
+            color: white;
+        }
+        .combat-btn-remove { color: #f44336; font-size: 18px; cursor: pointer; background: none; border: none; padding: 0 5px; }
+
+        .combat-controls { margin-top: 10px; display: flex; flex-direction: column; gap: 5px; }
+        .btn-combat { width: 100%; padding: 8px; font-weight: bold; cursor: pointer; border-radius: 5px; border: none; text-transform: uppercase; font-size: 12px; }
+        .btn-roll { background: var(--header-bg); color: white; border: 1px solid var(--accent); }
+        .btn-next { background: #ffd700; color: black; }
+        .btn-prev { background: #444; color: white; }
+        .btn-end { background: #c62828; color: white; margin-top: 5px; }
+
         /* Form */
         #form-npc-container { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 1000; overflow-y: auto; padding: 20px; box-sizing: border-box; }
         #form-npc-container.open { display: flex; justify-content: center; align-items: flex-start; }
@@ -147,16 +231,34 @@
         JOGADORES 
         <button class="btn-add-cat" onclick="addCategory('players')">+ Divisória</button>
     </h2>
-    <div id="wrapper-players">
-        </div>
+    <div id="wrapper-players"></div>
 
     <h2 class="section-title">
         NPCs & MONSTROS
         <button class="btn-add-cat" onclick="addCategory('npcs')">+ Divisória</button>
     </h2>
     <button class="btn-add-npc" onclick="openNpcForm()">+ CRIAR NOVO NPC</button>
-    <div id="wrapper-npcs">
+    <div id="wrapper-npcs"></div>
+
+    <div id="combat-sidebar">
+        <div class="combat-header">⚔️ INICIATIVA</div>
+        <div class="combat-drop-zone" id="combat_list" 
+             ondragover="allowDrop(event)" 
+             ondrop="dropInCombat(event)" 
+             ondragenter="this.classList.add('drag-over')" 
+             ondragleave="this.classList.remove('drag-over')">
+             </div>
+        <div class="combat-controls">
+            <button class="btn-combat btn-roll" onclick="calculateInitiative()">🎲 Calcular Iniciativa</button>
+            <div style="display:flex; gap:5px;">
+                <button class="btn-combat btn-prev" onclick="changeTurn(-1)">◀ Ant</button>
+                <button class="btn-combat btn-next" onclick="changeTurn(1)">Próximo ▶</button>
+            </div>
+            <button class="btn-combat btn-end" onclick="endCombat()">Encerrar Combate</button>
         </div>
+    </div>
+    <button class="combat-toggle-btn" onclick="toggleCombatSidebar()">⚔️</button>
+
 
     <div id="form-npc-container">
         <div class="npc-form">
@@ -225,56 +327,37 @@
     });
 
     // ==========================================
-    // SISTEMA DE DIVISÓRIAS E DRAG & DROP
+    // SISTEMA DE DIVISÓRIAS E DRAG & DROP GERAL
     // ==========================================
 
     let globalPlayers = {};
     let globalNpcs = {};
     let globalDivisions = { players: {}, npcs: {} };
 
-    // Função auxiliar para criar HTML da divisória
     function createDividerHTML(divId, divName, type) {
         const isDefault = divId === 'default';
         const nameHtml = isDefault ? `<span>${divName}</span>` : `<span onclick="renameCategory('${type}', '${divId}', '${divName}')">✎ ${divName}</span> <button class="btn-del-cat" onclick="deleteCategory('${type}', '${divId}')">✖</button>`;
-        
         return `
             <div class="category-container" id="cat_${divId}" 
                  ondragover="allowDrop(event)" 
                  ondrop="drop(event, '${divId}', '${type}')" 
                  ondragenter="this.classList.add('drag-over')" 
                  ondragleave="this.classList.remove('drag-over')">
-                <div class="category-header">
-                    <div class="category-title">${nameHtml}</div>
-                </div>
+                <div class="category-header"><div class="category-title">${nameHtml}</div></div>
                 <div class="category-grid" id="grid_${type}_${divId}"></div>
-            </div>
-        `;
+            </div>`;
     }
 
-    // Renderiza tudo
     function renderAll() {
         const wrapperP = document.getElementById('wrapper-players');
         const wrapperN = document.getElementById('wrapper-npcs');
-        
-        // 1. Renderiza Estrutura (Divisórias)
         let htmlP = createDividerHTML('default', 'Geral', 'players');
-        if (globalDivisions.players) {
-            Object.keys(globalDivisions.players).forEach(key => {
-                htmlP += createDividerHTML(key, globalDivisions.players[key].name, 'players');
-            });
-        }
+        if (globalDivisions.players) Object.keys(globalDivisions.players).forEach(key => { htmlP += createDividerHTML(key, globalDivisions.players[key].name, 'players'); });
         wrapperP.innerHTML = htmlP;
-
         let htmlN = createDividerHTML('default', 'Geral', 'npcs');
-        if (globalDivisions.npcs) {
-            Object.keys(globalDivisions.npcs).forEach(key => {
-                htmlN += createDividerHTML(key, globalDivisions.npcs[key].name, 'npcs');
-            });
-        }
+        if (globalDivisions.npcs) Object.keys(globalDivisions.npcs).forEach(key => { htmlN += createDividerHTML(key, globalDivisions.npcs[key].name, 'npcs'); });
         wrapperN.innerHTML = htmlN;
 
-        // 2. Renderiza Itens dentro das divisórias
-        // Jogadores
         Object.keys(globalPlayers).forEach(id => {
             const f = globalPlayers[id];
             const cat = (f.category && (f.category === 'default' || globalDivisions.players?.[f.category])) ? f.category : 'default';
@@ -282,7 +365,6 @@
             if(container) container.appendChild(createPlayerCard(id, f));
         });
 
-        // NPCs
         Object.keys(globalNpcs).forEach(id => {
             const n = globalNpcs[id];
             const cat = (n.category && (n.category === 'default' || globalDivisions.npcs?.[n.category])) ? n.category : 'default';
@@ -291,156 +373,212 @@
         });
     }
 
-    // Fetch Data
-    onValue(ref(db, 'divisoes'), (snap) => {
-        globalDivisions = snap.val() || { players: {}, npcs: {} };
-        renderAll(); // Re-renderiza estrutura se mudar
-    });
+    onValue(ref(db, 'divisoes'), (snap) => { globalDivisions = snap.val() || { players: {}, npcs: {} }; renderAll(); });
+    onValue(ref(db, 'fichas'), (snap) => { globalPlayers = snap.val() || {}; renderAll(); });
+    onValue(ref(db, 'npcs'), (snap) => { globalNpcs = snap.val() || {}; renderAll(); });
 
-    onValue(ref(db, 'fichas'), (snap) => {
-        globalPlayers = snap.val() || {};
-        renderAll();
-    });
-
-    onValue(ref(db, 'npcs'), (snap) => {
-        globalNpcs = snap.val() || {};
-        renderAll();
-    });
-
-    // Card Generators
     function createPlayerCard(id, f) {
-        const el = document.createElement('div');
-        el.className = 'player-card';
-        el.draggable = true;
-        el.ondragstart = (e) => drag(e, id, 'players'); // Evento de arrastar
-
-        // Lógica de visualização
+        const el = document.createElement('div'); el.className = 'player-card'; el.draggable = true;
+        el.ondragstart = (e) => drag(e, id, 'players');
+        // Visual
         const hpAt = parseInt(f.hp_at)||0; const hpMax = parseInt(f.hp_max)||1;
         const mpAt = parseInt(f.mp_at)||0; const mpMax = parseInt(f.mp_max)||1;
         const paAt = parseInt(f.pa_at)||0; const paMax = parseInt(f.pa_max)||1;
         const hpP = Math.min((hpAt/hpMax)*100,100); const mpP = Math.min((mpAt/mpMax)*100,100); const paP = Math.min((paAt/paMax)*100,100);
-        const linkFicha = `${baseURL}?p=${id}`; const linkOverlay = `${baseURL}overlay.html?p=${id}`;
-        const isStatusMode = f.overlay_mode === 'status';
-
+        const linkFicha = `${baseURL}?p=${id}`; const linkOverlay = `${baseURL}overlay.html?p=${id}`; const isStatusMode = f.overlay_mode === 'status';
         el.innerHTML = `
             <div class="player-header">
                 <div class="player-img" style="background-image: url('${f.char_img || ''}')"></div>
-                <div class="player-info">
-                    <h2>${f.char_name || id}</h2>
-                    <div class="controls-row">
-                        <button class="btn-small" onclick="window.open('${linkFicha}', '_blank')">📄</button>
-                        <button class="btn-small" onclick="window.open('${linkOverlay}', '_blank')">🎥</button>
-                        <button class="btn-small btn-obs ${isStatusMode ? 'active' : ''}" onclick="toggleOverlay('${id}', '${f.overlay_mode}')">${isStatusMode ? '📊' : '🏷️'}</button>
-                    </div>
-                </div>
-            </div>
+                <div class="player-info"><h2>${f.char_name || id}</h2>
+                    <div class="controls-row"><button class="btn-small" onclick="window.open('${linkFicha}', '_blank')">📄</button><button class="btn-small" onclick="window.open('${linkOverlay}', '_blank')">🎥</button><button class="btn-small btn-obs ${isStatusMode ? 'active' : ''}" onclick="toggleOverlay('${id}', '${f.overlay_mode}')">${isStatusMode ? '📊' : '🏷️'}</button></div></div></div>
             <div class="status-bar"><div class="bar-text">PV ${hpAt}/${hpMax}</div><div class="bar-fill hp" style="width:${hpP}%"></div></div>
             <div class="status-bar"><div class="bar-text">PM ${mpAt}/${mpMax}</div><div class="bar-fill mp" style="width:${mpP}%"></div></div>
             <div class="status-bar"><div class="bar-text">PA ${paAt}/${paMax}</div><div class="bar-fill pa" style="width:${paP}%"></div></div>
             <div class="skull-display"><span class="skull-icon ${f.skull1 === 'active' ? 'active' : ''}">💀</span><span class="skull-icon ${f.skull2 === 'active' ? 'active' : ''}">💀</span><span class="skull-icon ${f.skull3 === 'active' ? 'active' : ''}">💀</span></div>
             <div class="xp-control"><div class="xp-display-mini">Pts: ${f.xp_pontos||0} | XP: ${f.xp_total||0}</div></div>
-            <div class="xp-control"><input type="number" id="input_xp_${id}" placeholder="XP" class="xp-input"><button class="btn-send" onclick="sendXP('${id}')">+</button></div>
-        `;
+            <div class="xp-control"><input type="number" id="input_xp_${id}" placeholder="XP" class="xp-input"><button class="btn-send" onclick="sendXP('${id}')">+</button></div>`;
         return el;
     }
 
     function createNpcCard(id, n) {
-        const el = document.createElement('div');
-        el.className = 'player-card npc-card';
-        el.draggable = true;
+        const el = document.createElement('div'); el.className = 'player-card npc-card'; el.draggable = true;
         el.ondragstart = (e) => drag(e, id, 'npcs');
-
-        // Lógica de skills e habs...
+        // NPC Visual
         const periciasIds = ['animais', 'arte', 'esporte', 'influencia', 'luta', 'manha', 'maquinas', 'medicina', 'mistica', 'percepcao', 'saber', 'sobrevivencia'];
-        let skillHtml = '';
-        periciasIds.forEach(pid => {
-            const val = n.skills ? (parseInt(n.skills[pid]) || 0) : 0;
-            if (val !== 0) {
-                const css = val > 0 ? 'pos' : 'neg'; const txt = val > 0 ? `+${val}` : val;
-                skillHtml += `<span class="skill-tag ${css}">${pid.toUpperCase().substr(0,3)} ${txt}</span>`;
-            }
-        });
-        let habHtml = '';
-        if (n.habs) {
-            n.habs.forEach((h, idx) => {
-                habHtml += `<div class="npc-hab-item"><div class="npc-hab-title" onclick="toggleNpcDesc('${id}_hab_${idx}')"><span>${h.titulo}</span> <span>[${h.teste}]</span></div><div class="npc-hab-desc" id="desc_${id}_hab_${idx}">${h.desc}</div></div>`;
-            });
-        }
-
+        let skillHtml = ''; periciasIds.forEach(pid => { const val = n.skills ? (parseInt(n.skills[pid]) || 0) : 0; if (val !== 0) { const css = val > 0 ? 'pos' : 'neg'; const txt = val > 0 ? `+${val}` : val; skillHtml += `<span class="skill-tag ${css}">${pid.toUpperCase().substr(0,3)} ${txt}</span>`; } });
+        let habHtml = ''; if (n.habs) { n.habs.forEach((h, idx) => { habHtml += `<div class="npc-hab-item"><div class="npc-hab-title" onclick="toggleNpcDesc('${id}_hab_${idx}')"><span>${h.titulo}</span> <span>[${h.teste}]</span></div><div class="npc-hab-desc" id="desc_${id}_hab_${idx}">${h.desc}</div></div>`; }); }
         el.innerHTML = `
-            <div class="player-header">
-                <div class="player-img" style="background-image: url('${n.img || ''}')"></div>
-                <div class="player-info">
-                    <h2>${n.name || 'NPC'}</h2>
-                    <div class="controls-row">
-                        <button class="btn-small" onclick='editNpc(${JSON.stringify(id)})'>✏️ Editar</button>
-                        <button class="btn-small" style="background:#c62828" onclick="deleteNpc('${id}')">🗑️</button>
-                    </div>
-                </div>
-            </div>
+            <div class="player-header"><div class="player-img" style="background-image: url('${n.img || ''}')"></div><div class="player-info"><h2>${n.name || 'NPC'}</h2><div class="controls-row"><button class="btn-small" onclick='editNpc(${JSON.stringify(id)})'>✏️ Editar</button><button class="btn-small" style="background:#c62828" onclick="deleteNpc('${id}')">🗑️</button></div></div></div>
             <div class="status-bar"><div class="bar-text">PV ${n.hp}/${n.hp}</div><div class="bar-fill hp" style="width:100%"></div></div>
             <div class="status-bar"><div class="bar-text">PM ${n.mp}/${n.mp}</div><div class="bar-fill mp" style="width:100%"></div></div>
             <button class="npc-expand-btn" onclick="toggleNpcDetails('${id}')">▼ DETALHES ▼</button>
-            <div id="details_${id}" class="npc-details">
-                <div class="npc-attr-row"><div class="npc-attr">POD<span>${n.pod}</span></div><div class="npc-attr">HAB<span>${n.hab}</span></div><div class="npc-attr">RES<span>${n.res}</span></div><div class="npc-attr" style="color:#aa66cc">PA<span>${n.pa}</span></div></div>
-                <div class="tag-container">${skillHtml || '<span style="color:#666; font-size:10px">Sem perícias</span>'}</div>
-                <div class="npc-hab-list">${habHtml}</div>
-            </div>
-        `;
+            <div id="details_${id}" class="npc-details"><div class="npc-attr-row"><div class="npc-attr">POD<span>${n.pod}</span></div><div class="npc-attr">HAB<span>${n.hab}</span></div><div class="npc-attr">RES<span>${n.res}</span></div><div class="npc-attr" style="color:#aa66cc">PA<span>${n.pa}</span></div></div><div class="tag-container">${skillHtml || '<span style="color:#666; font-size:10px">Sem perícias</span>'}</div><div class="npc-hab-list">${habHtml}</div></div>`;
         return el;
     }
 
-    // ========================
-    // DRAG AND DROP FUNCTIONS
-    // ========================
-    window.allowDrop = (ev) => {
-        ev.preventDefault();
-        // Visual feedback handled by css :hover mostly, but drag-over class added in HTML
-    };
-
-    window.drag = (ev, id, type) => {
-        // Envia ID e TIPO (players ou npcs)
-        ev.dataTransfer.setData("text/plain", JSON.stringify({id: id, type: type}));
-    };
-
+    window.allowDrop = (ev) => ev.preventDefault();
+    window.drag = (ev, id, type) => ev.dataTransfer.setData("text/plain", JSON.stringify({id: id, type: type}));
     window.drop = (ev, catId, targetType) => {
         ev.preventDefault();
-        const data = JSON.parse(ev.dataTransfer.getData("text/plain"));
-        const draggedId = data.id;
-        const originType = data.type;
-
-        // Impede arrastar Player para área de NPC e vice-versa
-        if (originType !== targetType) return;
-        
-        // Remove classe visual
         document.querySelectorAll('.category-container').forEach(el => el.classList.remove('drag-over'));
-
-        // Salva nova categoria no Firebase
-        const path = originType === 'players' ? `fichas/${draggedId}` : `npcs/${draggedId}`;
+        const data = JSON.parse(ev.dataTransfer.getData("text/plain"));
+        if (data.type !== targetType) return; // Impede player em npc
+        const path = data.type === 'players' ? `fichas/${data.id}` : `npcs/${data.id}`;
         update(ref(db, path), { category: catId });
     };
 
-    // ========================
-    // GERENCIAR CATEGORIAS
-    // ========================
-    window.addCategory = (type) => {
-        const newRef = push(ref(db, `divisoes/${type}`));
-        set(newRef, { name: "Nova Divisória" });
-    };
+    window.addCategory = (type) => { const newRef = push(ref(db, `divisoes/${type}`)); set(newRef, { name: "Nova Divisória" }); };
+    window.renameCategory = (type, catId, oldName) => { const newName = prompt("Nome da divisória:", oldName); if (newName && newName !== oldName) update(ref(db, `divisoes/${type}/${catId}`), { name: newName }); };
+    window.deleteCategory = (type, catId) => { if(confirm("Excluir divisória?")) remove(ref(db, `divisoes/${type}/${catId}`)); };
 
-    window.renameCategory = (type, catId, oldName) => {
-        const newName = prompt("Nome da divisória:", oldName);
-        if (newName && newName !== oldName) {
-            update(ref(db, `divisoes/${type}/${catId}`), { name: newName });
+
+    // ==========================================
+    // SISTEMA DE COMBATE (SIDEBAR)
+    // ==========================================
+
+    window.toggleCombatSidebar = () => {
+        document.getElementById('combat-sidebar').classList.toggle('open');
+        // Atualiza botão lateral position
+        const btn = document.querySelector('.combat-toggle-btn');
+        if(document.getElementById('combat-sidebar').classList.contains('open')) {
+            btn.style.right = "300px";
+            btn.innerHTML = "✖";
+        } else {
+            btn.style.right = "0";
+            btn.innerHTML = "⚔️";
         }
     };
 
-    window.deleteCategory = (type, catId) => {
-        if(confirm("Excluir divisória? Os itens voltarão para Geral.")) {
-            remove(ref(db, `divisoes/${type}/${catId}`));
+    // Drop no Combate
+    window.dropInCombat = (ev) => {
+        ev.preventDefault();
+        document.getElementById('combat_list').classList.remove('drag-over');
+        const data = JSON.parse(ev.dataTransfer.getData("text/plain"));
+        
+        let charData = null;
+        let hab = 0;
+        
+        if (data.type === 'players') {
+            const f = globalPlayers[data.id];
+            if(f) { charData = { name: f.char_name || "Player", img: f.char_img || "", hab: parseInt(f.habilidade)||0, id: data.id, type: 'player' }; }
+        } else {
+            const n = globalNpcs[data.id];
+            if(n) { charData = { name: n.name || "NPC", img: n.img || "", hab: parseInt(n.hab)||0, id: data.id, type: 'npc' }; }
+        }
+
+        if(charData) {
+            // Adiciona ao nó de combate no Firebase
+            // Usa push para permitir multiplos npcs iguais
+            push(ref(db, 'combate/participantes'), {
+                ...charData,
+                init_val: 0,
+                tie_breaker: 0,
+                active: false
+            });
         }
     };
 
+    // Listener do Combate
+    onValue(ref(db, 'combate'), (snap) => {
+        const data = snap.val();
+        const list = document.getElementById('combat_list');
+        list.innerHTML = "";
+        
+        if (!data || !data.participantes) return;
+
+        // Converte para array para ordenar
+        let parts = [];
+        Object.keys(data.participantes).forEach(key => {
+            parts.push({ ...data.participantes[key], key: key });
+        });
+
+        // Ordenação Visual (Já deve vir ordenado do calculo, mas garantimos aqui se tiver valor)
+        // Se init_val > 0, ordena. Se não, ordem de chegada.
+        parts.sort((a, b) => {
+            if (b.init_val !== a.init_val) return b.init_val - a.init_val; // Maior total
+            if (b.hab !== a.hab) return b.hab - a.hab; // Maior HAB
+            return b.tie_breaker - a.tie_breaker; // Desempate oculto
+        });
+
+        parts.forEach(p => {
+            const div = document.createElement('div');
+            div.className = `combat-item ${p.active ? 'active' : ''}`;
+            div.innerHTML = `
+                <div class="combat-avatar" style="background-image: url('${p.img}')"></div>
+                <div class="combat-name">${p.name}</div>
+                <div class="combat-init-bubble">${p.init_val > 0 ? p.init_val : '-'}</div>
+                <button class="combat-btn-remove" onclick="removeCombatant('${p.key}')">×</button>
+            `;
+            list.appendChild(div);
+        });
+    });
+
+    window.calculateInitiative = () => {
+        onValue(ref(db, 'combate/participantes'), (snap) => {
+            const parts = snap.val();
+            if(!parts) return;
+
+            const updates = {};
+            Object.keys(parts).forEach(key => {
+                const p = parts[key];
+                const d6 = Math.floor(Math.random() * 6) + 1;
+                const total = d6 + p.hab;
+                
+                updates[key + '/init_val'] = total;
+                // Desempate oculto (segundo d6)
+                updates[key + '/tie_breaker'] = Math.random(); 
+                updates[key + '/active'] = false; // Reseta turno
+            });
+            update(ref(db, 'combate/participantes'), updates);
+        }, { onlyOnce: true });
+    };
+
+    window.removeCombatant = (key) => {
+        remove(ref(db, `combate/participantes/${key}`));
+    };
+
+    window.endCombat = () => {
+        if(confirm("Encerrar o combate e limpar a lista?")) {
+            remove(ref(db, 'combate'));
+        }
+    };
+
+    window.changeTurn = (dir) => {
+        onValue(ref(db, 'combate/participantes'), (snap) => {
+            const partsMap = snap.val();
+            if(!partsMap) return;
+
+            // Transforma em array ordenado igual ao visual
+            let parts = [];
+            Object.keys(partsMap).forEach(key => parts.push({...partsMap[key], key: key}));
+            
+            parts.sort((a, b) => {
+                if (b.init_val !== a.init_val) return b.init_val - a.init_val;
+                if (b.hab !== a.hab) return b.hab - a.hab;
+                return b.tie_breaker - a.tie_breaker;
+            });
+
+            // Acha o índice atual
+            let activeIndex = parts.findIndex(p => p.active === true);
+            
+            // Calcula novo índice
+            let newIndex = activeIndex + dir;
+            if (newIndex >= parts.length) newIndex = 0; // Loop pro começo
+            if (newIndex < 0) newIndex = parts.length - 1; // Loop pro fim (se voltar do 0)
+
+            // Reseta todos e ativa o novo
+            const updates = {};
+            parts.forEach(p => updates[p.key + '/active'] = false);
+            
+            // Se ninguém tava ativo e apertou next, ativa o primeiro (index 0)
+            if (activeIndex === -1 && dir === 1) newIndex = 0;
+            
+            updates[parts[newIndex].key + '/active'] = true;
+            
+            update(ref(db, 'combate/participantes'), updates);
+
+        }, { onlyOnce: true });
+    };
 
     // --- FUNÇÕES GERAIS (Mantidas) ---
     window.openNpcForm = () => {
@@ -468,7 +606,6 @@
         const skills = {}; periciasIds.forEach(pid => { skills[pid] = parseInt(document.getElementById(`form_skill_${pid}`).value) || 0; });
         const habs = []; document.querySelectorAll('.hab-editor-row').forEach(row => { habs.push({ titulo: row.querySelector('.hab-row-title').value, teste: row.querySelector('.hab-row-test').value, desc: row.querySelector('.hab-row-desc').value }); });
         
-        // Salva categoria 'default' se for novo
         const npcData = { name, img, pod, hab, res, hp, mp, pa, skills, habs };
         if(!id) npcData.category = 'default';
 
