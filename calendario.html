@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendário Épico</title>
+    <style>
+        :root { 
+            --bg: #121212; 
+            --panel: #1e1e1e;
+            --highlight: #800000; 
+            --text: #e0e0e0;
+            --accent: #ffaaaa;
+        }
+        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', serif; padding: 20px; text-align: center; }
+        
+        /* --- CABEÇALHO E CONTROLES --- */
+        .header-panel {
+            background: var(--panel);
+            padding: 20px;
+            border-radius: 15px;
+            border: 2px solid #333;
+            max-width: 800px;
+            margin: 0 auto 30px auto;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
+
+        .date-display {
+            font-size: 32px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            color: var(--accent);
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px rgba(128, 0, 0, 0.5);
+        }
+
+        .time-display {
+            font-size: 24px;
+            color: #fff;
+            font-weight: bold;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .controls {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            background: #333;
+            color: white;
+            border: 1px solid #555;
+            padding: 8px 15px;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 14px;
+            transition: 0.3s;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+        button:hover { background: var(--highlight); border-color: var(--accent); }
+        button.primary { background: var(--highlight); border: 1px solid var(--accent); }
+
+        /* --- GRID DO CALENDÁRIO --- */
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 10px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .day-card {
+            background: #222;
+            border: 1px solid #444;
+            border-radius: 8px;
+            padding: 10px 5px;
+            position: relative;
+            opacity: 0.6;
+            transition: 0.3s;
+        }
+
+        /* Dia Atual */
+        .day-card.active {
+            opacity: 1;
+            transform: scale(1.1);
+            border: 2px solid var(--accent);
+            background: #2a0a0d;
+            box-shadow: 0 0 15px var(--highlight);
+            z-index: 10;
+        }
+
+        .day-number { font-size: 18px; font-weight: bold; margin-bottom: 5px; display: block; }
+        
+        /* Clima e Lua */
+        .moon-icon { font-size: 20px; display: block; margin: 5px 0; }
+        .blood-moon { color: #ff0000; text-shadow: 0 0 8px red; }
+        
+        .weather-row {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+            font-size: 12px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 4px;
+            padding: 2px;
+            margin-top: 5px;
+        }
+        .weather-icon { opacity: 0.8; }
+
+        /* Indicador de Período Atual */
+        .period-indicator {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            background: var(--accent);
+            color: #000;
+            font-weight: bold;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            display: none;
+        }
+        .day-card.active .period-indicator { display: flex; }
+
+    </style>
+</head>
+<body>
+
+    <div class="header-panel">
+        <div class="date-display" id="full_date">CARREGANDO...</div>
+        
+        <div class="time-display">
+            <span id="period_icon">☀</span> 
+            <span id="period_text">Manhã</span>
+            <span style="font-size:16px; opacity:0.5;">|</span>
+            <span id="clock_time">08:00</span>
+        </div>
+
+        <div class="controls">
+            <button onclick="changeClock(-30)">-30 min</button>
+            <button onclick="changeClock(30)">+30 min</button>
+            <div style="width:20px;"></div> <button class="primary" onclick="advancePeriod()">Avançar Período ⏩</button>
+        </div>
+        
+        <div class="controls" style="margin-top:10px; border-top:1px solid #444; padding-top:10px;">
+            <span style="font-size:12px; color:#666; align-self:center;">ADMIN:</span>
+            <button onclick="adminChangeDay(-1)">Voltar Dia</button>
+            <button onclick="adminChangeDay(1)">Avançar Dia</button>
+        </div>
+    </div>
+
+    <div class="calendar-grid" id="calendar_grid">
+        </div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getDatabase, ref, onValue, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyCvxxwfsonP5a45nbcz34cxYhXaWBZVhwQ",
+        authDomain: "ed-rpg---sistema-de-fichas.firebaseapp.com",
+        databaseURL: "https://ed-rpg---sistema-de-fichas-default-rtdb.firebaseio.com",
+        projectId: "ed-rpg---sistema-de-fichas",
+        storageBucket: "ed-rpg---sistema-de-fichas.firebasestorage.app",
+        messagingSenderId: "350999444010",
+        appId: "1:350999444010:web:d89f31d13e449b8fbfa153"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    // --- CONFIGURAÇÕES DO MUNDO ---
+    const SEASONS = ["Primavera", "Verão", "Outono", "Inverno"];
+    const DAYS_IN_SEASON = 90;
+    const PERIODS = ["Manhã", "Tarde", "Noite"];
+    const PERIOD_ICONS = ["🌅", "☀", "🌙"];
+    
+    // Fases da Lua (Ciclo de 8 fases simples)
+    const MOON_PHASES = ["🌑", "🌒", "🌓", "🌔", "🌕", "🌖", "🌗", "🌘"];
+    
+    // Tabelas de Clima (Determinístico)
+    const WEATHER_TYPES = {
+        "Primavera": ["☀", "⛅", "☁", "🌧", "⛈"], // Sol, Nublado, Chuva, Tempestade
+        "Verão":     ["☀", "☀", "⛅", "⛈", "🌪"], // Muito Sol, Calor, Tempestade
+        "Outono":    ["☁", "🌧", "🌫", "🌬", "🍂"], // Nublado, Chuva, Neblina, Vento
+        "Inverno":   ["☁", "❄", "🌨", "🌬", "☃"]  // Nublado, Neve Fraca, Neve Forte, Vento
+    };
+
+    // Função Pseudo-Aleatória Determinística
+    // Garante que o Dia X sempre tenha o mesmo clima, sem precisar salvar no banco
+    function pseudoRandom(seed) {
+        let x = Math.sin(seed) * 10000;
+        return x - Math.floor(x);
+    }
+
+    function getWeather(seasonIndex, day, periodIndex) {
+        const seasonName = SEASONS[seasonIndex];
+        const options = WEATHER_TYPES[seasonName];
+        
+        // Seed única para cada momento
+        const seed = (seasonIndex * 1000) + (day * 10) + periodIndex; 
+        const rand = Math.floor(pseudoRandom(seed) * options.length);
+        
+        return options[rand];
+    }
+
+    function getMoon(globalDayCount) {
+        // Lua de Sangue a cada 28 dias
+        if (globalDayCount > 0 && globalDayCount % 28 === 0) {
+            return { icon: "asd", isBlood: true }; // Ícone especial no render
+        }
+        // Ciclo normal
+        const phaseIndex = globalDayCount % 8;
+        return { icon: MOON_PHASES[phaseIndex], isBlood: false };
+    }
+
+    // --- LÓGICA DO FIREBASE ---
+    // Estrutura no banco: world_time = { year, season, day, period, hour, minute }
+    
+    const worldRef = ref(db, 'world_time');
+
+    onValue(worldRef, (snapshot) => {
+        let data = snapshot.val();
+        
+        // Se não existir, cria o inicio dos tempos
+        if (!data) {
+            data = { year: 1200, season: 0, day: 1, period: 0, hour: 8, minute: 0 };
+            update(worldRef, data);
+        }
+
+        renderInterface(data);
+    });
+
+    function renderInterface(data) {
+        // 1. Atualiza Cabeçalho
+        document.getElementById('full_date').innerText = `Ano ${data.year} - Período de ${SEASONS[data.season]}`;
+        document.getElementById('period_text').innerText = PERIODS[data.period];
+        document.getElementById('period_icon').innerText = PERIOD_ICONS[data.period];
+        
+        const h = data.hour.toString().padStart(2, '0');
+        const m = data.minute.toString().padStart(2, '0');
+        document.getElementById('clock_time').innerText = `${h}:${m}`;
+
+        // 2. Renderiza Grid de Dias (Mostra +- 15 dias antes e depois do atual ou o mês todo)
+        // Vamos mostrar os 90 dias da estação atual
+        const grid = document.getElementById('calendar_grid');
+        grid.innerHTML = "";
+
+        for (let i = 1; i <= DAYS_IN_SEASON; i++) {
+            // Calcula Lua e Clima para este dia
+            // Precisamos de um contador global de dias para a lua não resetar na estação
+            const globalDays = (data.year * 360) + (data.season * 90) + i;
+            const moon = getMoon(globalDays);
+            
+            const wMorning = getWeather(data.season, i, 0);
+            const wAfter = getWeather(data.season, i, 1);
+            const wNight = getWeather(data.season, i, 2);
+
+            const isActive = (i === data.day);
+            const moonHtml = moon.isBlood ? '<span class="moon-icon blood-moon">🔴</span>' : `<span class="moon-icon">${moon.icon}</span>`;
+
+            const card = document.createElement('div');
+            card.className = `day-card ${isActive ? 'active' : ''}`;
+            card.innerHTML = `
+                <span class="day-number">${i}</span>
+                ${moonHtml}
+                <div class="weather-row">
+                    <span title="Manhã">${wMorning}</span>
+                    <span title="Tarde">${wAfter}</span>
+                    <span title="Noite">${wNight}</span>
+                </div>
+                <div class="period-indicator">${PERIOD_ICONS[data.period]}</div>
+            `;
+            
+            // Rola para o dia atual
+            if (isActive) {
+                setTimeout(() => card.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' }), 100);
+            }
+
+            grid.appendChild(card);
+        }
+    }
+
+    // --- CONTROLES ---
+    
+    window.changeClock = (minutes) => {
+        // Lê estado atual (precisamos ler para somar, idealmente usar transaction, mas aqui simplificamos com leitura local rápida ou melhor, transaction)
+        runTransaction(worldRef, (current) => {
+            if (!current) return;
+            
+            let newMin = current.minute + minutes;
+            let newHour = current.hour;
+
+            while (newMin >= 60) { newMin -= 60; newHour++; }
+            while (newMin < 0) { newMin += 60; newHour--; }
+
+            if (newHour >= 24) newHour = 0;
+            if (newHour < 0) newHour = 23;
+
+            current.minute = newMin;
+            current.hour = newHour;
+            return current;
+        });
+    };
+
+    window.advancePeriod = () => {
+        runTransaction(worldRef, (current) => {
+            if (!current) return;
+            
+            current.period++;
+            
+            // Avança hora junto para fazer sentido
+            if (current.period === 1) current.hour = 12; // Tarde
+            if (current.period === 2) current.hour = 19; // Noite
+
+            // Virada do Dia
+            if (current.period > 2) {
+                current.period = 0;
+                current.hour = 8; // Manhã do outro dia
+                current.day++;
+                
+                // Virada da Estação
+                if (current.day > DAYS_IN_SEASON) {
+                    current.day = 1;
+                    current.season++;
+                    
+                    // Virada de Ano
+                    if (current.season > 3) {
+                        current.season = 0;
+                        current.year++;
+                    }
+                }
+            }
+            return current;
+        });
+    };
+
+    window.adminChangeDay = (amount) => {
+        runTransaction(worldRef, (current) => {
+            if (!current) return;
+            current.day += amount;
+            // Limites básicos para não quebrar (pode melhorar a lógica pra voltar estação se quiser)
+            if (current.day < 1) current.day = 1;
+            if (current.day > DAYS_IN_SEASON) current.day = DAYS_IN_SEASON;
+            return current;
+        });
+    };
+
+</script>
+</body>
+</html>
