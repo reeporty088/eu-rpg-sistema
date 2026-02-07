@@ -15,11 +15,14 @@
         .world-date { font-size: 20px; font-weight: bold; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; }
         .world-time { font-size: 32px; font-weight: bold; color: white; display: flex; align-items: center; gap: 10px; }
         .weather-badge { background: rgba(0,0,0,0.4); padding: 5px 12px; border-radius: 20px; font-size: 14px; border: 1px solid #555; display: flex; align-items: center; gap: 8px; }
-        .world-buttons { display: flex; gap: 10px; }
+        .world-buttons { display: flex; gap: 10px; flex-wrap: wrap; }
         .btn-calendar { background: var(--header-bg); color: white; border: 1px solid var(--accent); padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 14px; text-transform: uppercase; transition: 0.3s; }
         .btn-calendar:hover { background: #a00000; box-shadow: 0 0 10px var(--header-bg); }
         .btn-world-obs { background: transparent; color: #00ffff; border: 1px solid #00ffff; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 14px; text-transform: uppercase; transition: 0.3s; }
         .btn-world-obs:hover { background: rgba(0, 255, 255, 0.1); box-shadow: 0 0 10px rgba(0, 255, 255, 0.3); }
+        /* Botão Global de Toggle */
+        .btn-global-toggle { background: transparent; color: #ffd700; border: 1px solid #ffd700; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 14px; text-transform: uppercase; transition: 0.3s; }
+        .btn-global-toggle:hover { background: rgba(255, 215, 0, 0.1); box-shadow: 0 0 10px rgba(255, 215, 0, 0.3); }
 
         .category-container { background: var(--divider-bg); border: 1px solid #333; border-radius: 10px; padding: 15px; margin-bottom: 20px; transition: 0.3s; }
         .category-container.drag-over { border-color: var(--accent); background: #2a1a1a; }
@@ -53,12 +56,13 @@
         .xp-display-mini { font-size: 10px; color: #ccc; margin-left: auto; white-space: nowrap; }
 
         .controls-row { display: flex; gap: 5px; margin-top: 5px; }
-        .btn-small { flex-grow: 1; background: #222; border: 1px solid #555; color: white; border-radius: 4px; font-size: 10px; cursor: pointer; text-transform: uppercase; padding: 4px; transition: 0.2s; }
+        .btn-small { flex-grow: 1; background: #222; border: 1px solid #555; color: white; border-radius: 4px; font-size: 10px; cursor: pointer; text-transform: uppercase; padding: 4px; transition: 0.2s; white-space: nowrap; }
         .btn-small:hover { background: #444; border-color: #aaa; }
-        .btn-obs.active { background: #800000; border-color: #ffaaaa; color: white; }
-        /* Botão de Configuração de Player */
-        .btn-cfg { background: #444; border: 1px solid #888; color: white; }
-        .btn-cfg:hover { background: #666; }
+        
+        /* Botões Específicos */
+        .btn-obs { border-color: #00ffff; color: #00ffff; }
+        .btn-obs:hover { background: rgba(0,255,255,0.1); }
+        .btn-cfg { border-color: #aaa; color: #ddd; }
 
         .npc-card { background: #2a2a2a; border: 1px solid #444; border-radius: 10px; padding: 10px; position: relative; }
         .npc-expand-btn { width: 100%; background: #333; border: none; color: white; padding: 5px; margin-top: 10px; cursor: pointer; font-size: 12px; }
@@ -135,7 +139,8 @@
         </div>
         <div class="world-buttons">
             <button class="btn-calendar" onclick="window.open('calendario.html', '_blank')">📅 Calendário</button>
-            <button class="btn-world-obs" onclick="window.open('overlay_world.html', '_blank')">🎥 OBS</button>
+            <button class="btn-world-obs" onclick="window.open('overlay_world.html', '_blank')">🎥 OBS Mundo</button>
+            <button class="btn-global-toggle" onclick="toggleAllOverlays()">👁️ Alternar Todos Overlays</button>
         </div>
     </div>
 
@@ -263,10 +268,9 @@
     onValue(ref(db, 'fichas'), (snap) => { globalPlayers = snap.val() || {}; renderAll(); });
     onValue(ref(db, 'npcs'), (snap) => { globalNpcs = snap.val() || {}; renderAll(); });
 
-    // CONFIG DE JOGADOR (Novo)
+    // CONFIG DE JOGADOR
     window.openPlayerConfig = (id) => {
-        const f = globalPlayers[id];
-        if(!f) return;
+        const f = globalPlayers[id]; if(!f) return;
         document.getElementById('cfg_player_id').value = id;
         document.getElementById('check_mask').checked = (f.unlocked_abilities && f.unlocked_abilities.mask === true);
         document.getElementById('config-player-container').classList.add('open');
@@ -279,14 +283,38 @@
         document.getElementById('config-player-container').classList.remove('open');
     };
 
+    // --- NOVA FUNÇÃO GLOBAL ---
+    window.toggleAllOverlays = () => {
+        // Logica: Pega o modo do primeiro jogador e inverte para todos
+        let targetMode = 'status'; 
+        const keys = Object.keys(globalPlayers);
+        if (keys.length > 0) {
+            // Se o primeiro já for status, vamos para nome (inverter)
+            if (globalPlayers[keys[0]].overlay_mode === 'status') {
+                targetMode = 'nome';
+            }
+        }
+        
+        const updates = {};
+        keys.forEach(id => {
+            updates[`fichas/${id}/overlay_mode`] = targetMode;
+        });
+        update(ref(db), updates);
+    };
+
     function createPlayerCard(id, f) {
         const el = document.createElement('div'); el.className = 'player-card'; el.draggable = true; el.ondragstart = (e) => drag(e, id, 'players');
         const hpAt = parseInt(f.hp_at)||0; const hpMax = parseInt(f.hp_max)||1; const mpAt = parseInt(f.mp_at)||0; const mpMax = parseInt(f.mp_max)||1; const paAt = parseInt(f.pa_at)||0; const paMax = parseInt(f.pa_max)||1;
         const hpP = Math.min((hpAt/hpMax)*100,100); const mpP = Math.min((mpAt/mpMax)*100,100); const paP = Math.min((paAt/paMax)*100,100);
-        const linkFicha = `${baseURL}?p=${id}`; const linkOverlay = `${baseURL}overlay.html?p=${id}`; const isStatusMode = f.overlay_mode === 'status';
+        const linkFicha = `${baseURL}?p=${id}`; const linkOverlay = `${baseURL}overlay.html?p=${id}`;
         
-        // Adicionado botao de config
-        el.innerHTML = `<div class="player-header"><div class="player-img" style="background-image: url('${f.char_img || ''}')"></div><div class="player-info"><h2>${f.char_name || id}</h2><div class="controls-row"><button class="btn-small" onclick="window.open('${linkFicha}', '_blank')">📄</button><button class="btn-small btn-cfg" onclick="openPlayerConfig('${id}')">⚙️</button><button class="btn-small btn-obs ${isStatusMode ? 'active' : ''}" onclick="toggleOverlay('${id}', '${f.overlay_mode}')">${isStatusMode ? '📊' : '🏷️'}</button></div></div></div><div class="status-bar"><div class="bar-text">PV ${hpAt}/${hpMax}</div><div class="bar-fill hp" style="width:${hpP}%"></div></div><div class="status-bar"><div class="bar-text">PM ${mpAt}/${mpMax}</div><div class="bar-fill mp" style="width:${mpP}%"></div></div><div class="status-bar"><div class="bar-text">PA ${paAt}/${paMax}</div><div class="bar-fill pa" style="width:${paP}%"></div></div><div class="skull-display"><span class="skull-icon ${f.skull1 === 'active' ? 'active' : ''}">💀</span><span class="skull-icon ${f.skull2 === 'active' ? 'active' : ''}">💀</span><span class="skull-icon ${f.skull3 === 'active' ? 'active' : ''}">💀</span></div><div class="xp-control"><div class="xp-display-mini">Pts: ${f.xp_pontos||0} | XP: ${f.xp_total||0}</div></div><div class="xp-control"><input type="number" id="input_xp_${id}" placeholder="XP" class="xp-input"><button class="btn-send" onclick="sendXP('${id}')">+</button></div>`;
+        el.innerHTML = `<div class="player-header"><div class="player-img" style="background-image: url('${f.char_img || ''}')"></div><div class="player-info"><h2>${f.char_name || id}</h2>
+        <div class="controls-row">
+            <button class="btn-small" onclick="window.open('${linkFicha}', '_blank')" title="Abrir Ficha">📄 Ficha</button>
+            <button class="btn-small btn-cfg" onclick="openPlayerConfig('${id}')" title="Configurações">⚙️ Config</button>
+            <button class="btn-small btn-obs" onclick="window.open('${linkOverlay}', '_blank')" title="Abrir Overlay do Jogador">🎥 OBS</button>
+        </div></div></div>
+        <div class="status-bar"><div class="bar-text">PV ${hpAt}/${hpMax}</div><div class="bar-fill hp" style="width:${hpP}%"></div></div><div class="status-bar"><div class="bar-text">PM ${mpAt}/${mpMax}</div><div class="bar-fill mp" style="width:${mpP}%"></div></div><div class="status-bar"><div class="bar-text">PA ${paAt}/${paMax}</div><div class="bar-fill pa" style="width:${paP}%"></div></div><div class="skull-display"><span class="skull-icon ${f.skull1 === 'active' ? 'active' : ''}">💀</span><span class="skull-icon ${f.skull2 === 'active' ? 'active' : ''}">💀</span><span class="skull-icon ${f.skull3 === 'active' ? 'active' : ''}">💀</span></div><div class="xp-control"><div class="xp-display-mini">Pts: ${f.xp_pontos||0} | XP: ${f.xp_total||0}</div></div><div class="xp-control"><input type="number" id="input_xp_${id}" placeholder="XP" class="xp-input"><button class="btn-send" onclick="sendXP('${id}')">+</button></div>`;
         return el;
     }
 
@@ -349,7 +377,6 @@
             let newIndex = activeIndex + dir;
             if (newIndex >= parts.length) newIndex = 0; if (newIndex < 0) newIndex = parts.length - 1;
             
-            // Ativa próximo
             const updates = {}; parts.forEach(p => updates[p.key + '/active'] = false);
             if (activeIndex === -1 && dir === 1) newIndex = 0;
             const nextChar = parts[newIndex];
@@ -365,33 +392,19 @@
                     if (nextChar.type === 'player') { currentMp = parseInt(cData.mp_at) || 0; maxMp = parseInt(cData.mp_max) || 1; hab = parseInt(cData.habilidade) || 0; } 
                     else { maxMp = parseInt(cData.mp) || 1; currentMp = (cData.mp_at !== undefined) ? parseInt(cData.mp_at) : maxMp; hab = parseInt(cData.hab) || 0; }
                     
-                    // 1. Custo da Máscara (-4)
                     let maskCost = 0;
-                    if (cData.active_abilities && cData.active_abilities.mask) {
-                        maskCost = 4;
-                    }
+                    if (cData.active_abilities && cData.active_abilities.mask) { maskCost = 4; }
 
-                    // 2. Regen Automático (+1d6 + HAB)
                     let regen = 0;
-                    if (autoRegen) {
-                        const roll = Math.floor(Math.random() * 6) + 1;
-                        regen = roll + hab;
-                    }
+                    if (autoRegen) { const roll = Math.floor(Math.random() * 6) + 1; regen = roll + hab; }
 
-                    // Calcula final
                     let newMp = currentMp - maskCost + regen;
-                    
-                    // Limites
                     if (newMp > maxMp) newMp = maxMp;
                     
-                    // Se a máscara zerou a mana, desativa e avisa
                     if (maskCost > 0 && newMp < 0) {
-                        newMp = 0;
-                        update(ref(db, refPath), { 'active_abilities/mask': false });
+                        newMp = 0; update(ref(db, refPath), { 'active_abilities/mask': false });
                         alert(`Atenção: ${nextChar.name} ficou sem mana e a Máscara caiu!`);
-                    } else if (newMp < 0) {
-                        newMp = 0;
-                    }
+                    } else if (newMp < 0) { newMp = 0; }
 
                     if (newMp !== currentMp) { update(ref(db, refPath), { mp_at: newMp }); }
                 }
