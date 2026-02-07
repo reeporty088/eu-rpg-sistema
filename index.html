@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ficha RPG - Escória de Deus</title>
     <style>
-        /* --- SISTEMA DE CORES DINÂMICAS --- */
         :root { 
             --bg: #1a1a1a; 
             --text: #ffffff;
@@ -20,56 +19,58 @@
         .container { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; max-width: 1400px; width: 100%; }
         .col { display: flex; flex-direction: column; gap: 15px; }
         
-        /* EFEITO DA MÁSCARA LUNAR */
-        body.moon-mode {
-            --theme-main: #0088aa; /* Azulado */
-            --theme-light: #00ffff;
-        }
-        body.moon-mode .attr-box input, 
-        body.moon-mode .pericia-val,
-        body.moon-mode #char_name,
-        body.moon-mode #mask-btn {
-            color: #00ffff !important;
-            text-shadow: 0 0 8px #00ffff;
-        }
-        body.moon-mode .attr-box {
-            box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
-            border-color: #00ffff;
-        }
+        /* --- MODOS ESPECIAIS --- */
+        /* MÁSCARA LUNAR (AZUL) */
+        body.moon-mode { --theme-main: #0088aa; --theme-light: #00ffff; }
+        body.moon-mode .attr-box input, body.moon-mode .pericia-val, body.moon-mode #char_name, body.moon-mode #mask-btn { color: #00ffff !important; text-shadow: 0 0 8px #00ffff; }
+        body.moon-mode .attr-box { box-shadow: 0 0 10px rgba(0, 255, 255, 0.3); border-color: #00ffff; }
 
+        /* CHAMADO DO INFERNO (VERMELHO) */
+        body.hell-mode { --theme-main: #880000; --theme-light: #ff0000; }
+        /* Aplica brilho vermelho na Vida e PA (inputs dentro das barras) e atributos */
+        body.hell-mode .attr-box.hell-active input, 
+        body.hell-mode #bar_hp .bar-values input, 
+        body.hell-mode #bar_pa .bar-values input, 
+        body.hell-mode #char_name, 
+        body.hell-mode #hell-btn { 
+            color: #ff0000 !important; text-shadow: 0 0 8px #ff0000; 
+        }
+        body.hell-mode .attr-box.hell-active { box-shadow: 0 0 15px rgba(255, 0, 0, 0.5); border-color: #ff0000; }
+
+        /* MODO HÍBRIDO (ROXO) */
+        body.hybrid-mode { --theme-main: #4a0072; --theme-light: #d500f9; }
+        body.hybrid-mode #char_name, body.hybrid-mode #mask-btn, body.hybrid-mode #hell-btn { color: #d500f9 !important; text-shadow: 0 0 10px #d500f9; }
+        body.hybrid-mode .attr-box input { color: #00ffff !important; } 
+        body.hybrid-mode .attr-box.hell-active input { color: #ff0000 !important; text-shadow: 0 0 10px #ff0000; }
+        
         .card { background: var(--theme-card); border-radius: 12px; padding: 15px; border: 1px solid var(--theme-border); box-shadow: 0 4px 10px rgba(0,0,0,0.5); position: relative; }
         .header-label { background: var(--theme-main); text-align: center; border-radius: 20px; padding: 5px; margin-bottom: 15px; font-weight: bold; text-transform: uppercase; display: flex; justify-content: center; align-items: center; gap: 10px; }
         
         input, textarea { background: var(--theme-input); border: 1px solid #555; color: white; padding: 8px; border-radius: 20px; width: 100%; box-sizing: border-box; margin-bottom: 5px; }
         label { font-size: 10px; color: var(--theme-light); font-weight: bold; margin-left: 10px; text-transform: uppercase; display: block; }
-
         .hab-body textarea { min-height: 120px; resize: vertical; line-height: 1.4; font-size: 14px; }
         
         .avatar-container { display: flex; flex-direction: column; align-items: center; margin-bottom: 10px; position: relative; }
         .avatar-circle { width: 140px; height: 140px; border-radius: 50%; border: 4px solid var(--theme-main); background: #222; overflow: hidden; display: flex; align-items: center; justify-content: center; cursor: pointer; background-size: cover; background-position: center; position: relative; }
         .avatar-circle input[type="file"] { opacity: 0; position: absolute; width: 100%; height: 100%; cursor: pointer; }
-
         .theme-btn { position: absolute; top: 0; right: 20px; background: #222; border: 2px solid var(--theme-light); color: var(--theme-light); border-radius: 50%; width: 30px; height: 30px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; z-index: 20; transition: 0.3s; }
         .theme-btn:hover { background: var(--theme-light); color: #000; }
         
-        /* BOTÃO DA MÁSCARA */
-        .mask-btn { 
-            position: absolute; top: 40px; right: 20px; 
-            background: #111; border: 2px solid #555; color: #555; 
-            border-radius: 50%; width: 30px; height: 30px; 
-            cursor: pointer; display: none; /* Escondido por padrão */
-            align-items: center; justify-content: center; 
-            font-size: 18px; z-index: 20; transition: 0.3s; 
-        }
-        .mask-btn:hover { border-color: white; color: white; }
-        .mask-btn.active { border-color: #00ffff; color: #00ffff; box-shadow: 0 0 10px #00ffff; }
+        /* BOTÕES DE HABILIDADES ESPECIAIS */
+        .ability-btn { position: absolute; top: 40px; right: 20px; background: #111; border: 2px solid #555; color: #555; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; display: none; align-items: center; justify-content: center; font-size: 18px; z-index: 20; transition: 0.3s; }
+        .ability-btn:hover { border-color: white; color: white; }
+        #mask-btn { right: 20px; } 
+        #mask-btn.active { border-color: #00ffff; color: #00ffff; box-shadow: 0 0 10px #00ffff; }
+        #hell-btn { right: 60px; }
+        #hell-btn.active { border-color: #ff0000; color: #ff0000; box-shadow: 0 0 10px #ff0000; }
 
         .color-picker { display: none; position: absolute; top: 40px; right: 0; background: #222; border: 1px solid #555; padding: 10px; border-radius: 10px; grid-template-columns: repeat(4, 1fr); gap: 8px; z-index: 30; box-shadow: 0 5px 15px rgba(0,0,0,0.8); }
         .color-picker.open { display: grid; }
         .color-swatch { width: 25px; height: 25px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; transition: 0.2s; }
         .color-swatch:hover { transform: scale(1.2); border-color: white; }
 
-        .bar-container { margin-bottom: 10px; }
+        .bar-container { margin-bottom: 12px; }
+        .bar-label { margin-left: 5px; margin-bottom: 3px; color: var(--theme-light); font-size: 11px; font-weight: bold; text-transform: uppercase; display: block; }
         .bar-controls { display: flex; align-items: center; gap: 5px; background: rgba(0,0,0,0.5); border-radius: 25px; padding: 4px 8px; }
         .btn-math { background: transparent; border: none; color: white; cursor: pointer; font-size: 18px; font-weight: bold; width: 30px; z-index: 10; }
         .bar-bg { flex-grow: 1; height: 28px; background: #222; border-radius: 15px; position: relative; overflow: hidden; border: 1px solid #444; display: flex; align-items: center; }
@@ -97,19 +98,22 @@
         .btn-count { background: var(--theme-main); border: 1px solid var(--theme-light); color: white; border-radius: 50%; width: 22px; height: 22px; cursor: pointer; line-height: 1; font-weight: bold; }
 
         .attr-container { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin: 15px 0; }
-        .attr-box { background: rgba(255,255,255,0.05); border: 1px solid #7a2a2f; border-radius: 12px; padding: 10px 2px; text-align: center; transition: 0.5s; }
+        .attr-box { background: rgba(255,255,255,0.05); border: 1px solid #7a2a2f; border-radius: 12px; padding: 10px 2px; text-align: center; transition: 0.5s; position: relative; }
         .attr-box input { font-size: 28px; font-weight: bold; text-align: center; border: none; background: transparent; color: white; }
         
+        .attr-selector { position: absolute; top: 5px; right: 5px; width: 12px; height: 12px; border-radius: 50%; border: 1px solid #666; background: #222; cursor: pointer; display: none; }
+        .attr-selector.selected { background: #ff0000; border-color: white; box-shadow: 0 0 5px red; }
+        .show-hell-selector .attr-selector { display: block; }
+        .attr-box.hell-active .attr-selector { display: block; background: #ff0000; cursor: default; }
+
         .skull { opacity: 0.2; transition: 0.3s; cursor: pointer; font-size: 30px; margin: 0 5px; }
         .skull.active { opacity: 1; filter: drop-shadow(0 0 5px red); }
-
         .pericia-row { display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.2); margin-bottom: 6px; padding: 5px 15px; border-radius: 20px; border: 1px solid var(--theme-border); }
         .pericia-controls { display: flex; align-items: center; gap: 5px; background: rgba(0,0,0,0.4); padding: 2px 8px; border-radius: 15px; }
         .btn-p { background: transparent; border: none; color: var(--theme-light); font-weight: bold; font-size: 18px; cursor: pointer; width: 25px; display: flex; justify-content: center; }
         .btn-p:hover { color: white; text-shadow: 0 0 5px white; }
         .pericia-val { font-weight: bold; color: white; font-size: 16px; min-width: 25px; text-align: right; }
         .dice-icon { font-size: 20px; margin-left: 2px; }
-
         .xp-container { display: flex; align-items: center; justify-content: space-between; background: rgba(0,0,0,0.3); border-radius: 15px; padding: 10px; border: 1px solid var(--theme-border); margin-bottom: 10px; }
         .xp-display { text-align: center; }
         .xp-number { font-size: 32px; font-weight: bold; color: #ffd700; display: block; line-height: 1; }
@@ -117,24 +121,13 @@
         .btn-xp { background: var(--theme-main); border: 1px solid var(--theme-light); color: white; font-size: 10px; padding: 5px 10px; border-radius: 8px; cursor: pointer; text-transform: uppercase; font-weight: bold; transition: 0.2s; }
         .btn-xp:hover { background: var(--theme-light); color: black; }
         .xp-info-bar { text-align: center; background: #222; border: 1px solid #444; border-radius: 8px; padding: 5px; font-weight: bold; font-size: 14px; color: #4fc3f7; }
-
         .weight-display { text-align: center; background: rgba(0,0,0,0.5); border: 1px solid var(--theme-border); padding: 5px; border-radius: 10px; margin-bottom: 10px; font-weight: bold; }
         .weight-val { color: white; transition: 0.3s; }
         .weight-val.alert { color: #ffeb3b; }
         .weight-val.danger { color: #f44336; }
-
         input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-
         .mobile-nav { display: none; }
-        @media (max-width: 768px) {
-            .container { display: block; }
-            .col { display: none; width: 100%; animation: fadeEffect 0.5s; }
-            .col.active { display: flex; }
-            .mobile-nav { display: flex; position: fixed; bottom: 0; left: 0; width: 100%; background: var(--theme-main); padding: 15px 0; justify-content: center; gap: 50px; z-index: 1000; box-shadow: 0 -4px 15px rgba(0,0,0,0.7); border-top: 1px solid var(--theme-light); }
-            .nav-btn { background: rgba(0,0,0,0.3); border: 2px solid white; color: white; border-radius: 50%; width: 50px; height: 50px; font-size: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
-            .nav-btn:active { transform: scale(0.9); background: white; color: black; }
-            @keyframes fadeEffect { from {opacity: 0;} to {opacity: 1;} }
-        }
+        @media (max-width: 768px) { .container { display: block; } .col { display: none; width: 100%; animation: fadeEffect 0.5s; } .col.active { display: flex; } .mobile-nav { display: flex; position: fixed; bottom: 0; left: 0; width: 100%; background: var(--theme-main); padding: 15px 0; justify-content: center; gap: 50px; z-index: 1000; box-shadow: 0 -4px 15px rgba(0,0,0,0.7); border-top: 1px solid var(--theme-light); } .nav-btn { background: rgba(0,0,0,0.3); border: 2px solid white; color: white; border-radius: 50%; width: 50px; height: 50px; font-size: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; } .nav-btn:active { transform: scale(0.9); background: white; color: black; } @keyframes fadeEffect { from {opacity: 0;} to {opacity: 1;} } }
     </style>
 </head>
 <body>
@@ -144,11 +137,10 @@
         <div class="card">
             <div class="header-label">Personagem</div>
             <div class="avatar-container">
-                <div class="avatar-circle" id="avatar_display">
-                    <input type="file" id="img_upload" accept="image/*">
-                </div>
+                <div class="avatar-circle" id="avatar_display"><input type="file" id="img_upload" accept="image/*"></div>
                 <button class="theme-btn" onclick="toggleColorPicker()">🎨</button>
-                <button class="mask-btn" id="mask-btn" onclick="toggleMask()" title="Máscara Lunar">🎭</button>
+                <button class="ability-btn" id="mask-btn" onclick="toggleAbility('mask')" title="Máscara Lunar">🎭</button>
+                <button class="ability-btn" id="hell-btn" onclick="toggleAbility('hell')" title="Chamado do Inferno">😈</button>
                 <div id="colorPicker" class="color-picker"></div>
                 <input type="text" id="char_name" style="background:transparent; border:none; text-align:center; font-size:18px; font-weight:bold; margin-top:10px; color:white;" placeholder="NOME">
             </div>
@@ -158,31 +150,23 @@
             
             <div class="header-label" style="margin-top:15px;">Status</div>
             <div class="bar-container">
-                <div class="bar-controls">
-                    <button class="btn-math" onclick="changeVal('hp', -1)">-</button>
-                    <div class="bar-bg"><div id="bar_hp" class="bar-fill hp-fill"></div><div class="bar-values"><input type="number" id="hp_at" value="10"> / <input type="number" id="hp_max" value="10"></div></div>
-                    <button class="btn-math" onclick="changeVal('hp', 1)">+</button>
-                </div>
+                <label class="bar-label">PONTOS DE VIDA</label>
+                <div class="bar-controls"><button class="btn-math" onclick="changeVal('hp', -1)">-</button><div class="bar-bg"><div id="bar_hp" class="bar-fill hp-fill"></div><div class="bar-values"><input type="number" id="hp_at" value="10"> / <input type="number" id="hp_max" value="10"></div></div><button class="btn-math" onclick="changeVal('hp', 1)">+</button></div>
             </div>
             <div class="bar-container">
-                <div class="bar-controls">
-                    <button class="btn-math" onclick="changeVal('mp', -1)">-</button>
-                    <div class="bar-bg"><div id="bar_mp" class="bar-fill mp-fill"></div><div class="bar-values"><input type="number" id="mp_at" value="10"> / <input type="number" id="mp_max" value="10"></div></div>
-                    <button class="btn-math" onclick="changeVal('mp', 1)">+</button>
-                </div>
+                <label class="bar-label">PONTOS DE MANA</label>
+                <div class="bar-controls"><button class="btn-math" onclick="changeVal('mp', -1)">-</button><div class="bar-bg"><div id="bar_mp" class="bar-fill mp-fill"></div><div class="bar-values"><input type="number" id="mp_at" value="10"> / <input type="number" id="mp_max" value="10"></div></div><button class="btn-math" onclick="changeVal('mp', 1)">+</button></div>
             </div>
             <div class="bar-container">
-                <div class="bar-controls">
-                    <button class="btn-math" onclick="changeVal('pa', -1)">-</button>
-                    <div class="bar-bg"><div id="bar_pa" class="bar-fill pa-fill"></div><div class="bar-values"><input type="number" id="pa_at" value="3"> / <input type="number" id="pa_max" value="3"></div></div>
-                    <button class="btn-math" onclick="changeVal('pa', 1)">+</button>
-                </div>
+                <label class="bar-label">PONTOS DE AÇÃO</label>
+                <div class="bar-controls"><button class="btn-math" onclick="changeVal('pa', -1)">-</button><div class="bar-bg"><div id="bar_pa" class="bar-fill pa-fill"></div><div class="bar-values"><input type="number" id="pa_at" value="3"> / <input type="number" id="pa_max" value="3"></div></div><button class="btn-math" onclick="changeVal('pa', 1)">+</button></div>
             </div>
             <div style="text-align:center; margin: 10px 0;"><span class="skull" id="skull1" onclick="toggleSkull('skull1')">💀</span><span class="skull" id="skull2" onclick="toggleSkull('skull2')">💀</span><span class="skull" id="skull3" onclick="toggleSkull('skull3')">💀</span></div>
-            <div class="attr-container">
-                <div class="attr-box"><input type="number" id="poder" value="0"><div>PODER</div></div>
-                <div class="attr-box"><input type="number" id="habilidade" value="0"><div>HAB.</div></div>
-                <div class="attr-box"><input type="number" id="resistencia" value="0"><div>RES.</div></div>
+            
+            <div class="attr-container" id="attr_container">
+                <div class="attr-box" id="box_poder"><input type="number" id="poder" value="0"><div>PODER</div><div class="attr-selector" onclick="selectHellAttr('poder')"></div></div>
+                <div class="attr-box" id="box_habilidade"><input type="number" id="habilidade" value="0"><div>HAB.</div><div class="attr-selector" onclick="selectHellAttr('habilidade')"></div></div>
+                <div class="attr-box" id="box_resistencia"><input type="number" id="resistencia" value="0"><div>RES.</div><div class="attr-selector" onclick="selectHellAttr('resistencia')"></div></div>
             </div>
             
             <div class="header-label">Perícias</div>
@@ -193,16 +177,11 @@
     <div class="col" id="col-1">
         <div class="card">
             <div class="header-label">Habilidades Gerais</div>
-            <label>Geral <button class="btn-add" onclick="addItem('geral')">+</button></label>
-            <div id="list_geral" style="margin-top:5px;"></div>
-            <label style="margin-top:10px;">Vantagens <button class="btn-add" onclick="addItem('vantagens')">+</button></label>
-            <div id="list_vantagens" style="margin-top:5px;"></div>
-            <label style="margin-top:10px;">Arquétipo <button class="btn-add" onclick="addItem('arquetipo_hab')">+</button></label>
-            <div id="list_arquetipo_hab" style="margin-top:5px;"></div>
-            <label style="margin-top:10px;">Artefatos <button class="btn-add" onclick="addItem('artefatos')">+</button></label>
-            <div id="list_artefatos" style="margin-top:5px;"></div>
-            <label style="margin-top:10px;">Técnicas <button class="btn-add" onclick="addItem('tecnicas')">+</button></label>
-            <div id="list_tecnicas" style="margin-top:5px;"></div>
+            <label>Geral <button class="btn-add" onclick="addItem('geral')">+</button></label><div id="list_geral" style="margin-top:5px;"></div>
+            <label style="margin-top:10px;">Vantagens <button class="btn-add" onclick="addItem('vantagens')">+</button></label><div id="list_vantagens" style="margin-top:5px;"></div>
+            <label style="margin-top:10px;">Arquétipo <button class="btn-add" onclick="addItem('arquetipo_hab')">+</button></label><div id="list_arquetipo_hab" style="margin-top:5px;"></div>
+            <label style="margin-top:10px;">Artefatos <button class="btn-add" onclick="addItem('artefatos')">+</button></label><div id="list_artefatos" style="margin-top:5px;"></div>
+            <label style="margin-top:10px;">Técnicas <button class="btn-add" onclick="addItem('tecnicas')">+</button></label><div id="list_tecnicas" style="margin-top:5px;"></div>
         </div>
     </div>
 
@@ -211,53 +190,27 @@
             <div class="header-label">Ações e Deslocamento</div>
             <div class="marker-section">
                 <label style="text-align:center; display:block; color:cyan;">AÇÕES (Triângulos)</label>
-                <div class="marker-controls">
-                    <button class="btn-count" onclick="updateMarkerCount('ações', -1)">-</button>
-                    <span id="count_ações" style="font-weight:bold; color:cyan;">3</span>
-                    <button class="btn-count" onclick="updateMarkerCount('ações', 1)">+</button>
-                </div>
+                <div class="marker-controls"><button class="btn-count" onclick="updateMarkerCount('ações', -1)">-</button><span id="count_ações" style="font-weight:bold; color:cyan;">3</span><button class="btn-count" onclick="updateMarkerCount('ações', 1)">+</button></div>
                 <div id="display_ações" class="marker-display"></div>
             </div>
             <hr style="border:0; border-top:1px solid #5a1a1f; margin: 20px 0;">
             <div class="marker-section">
                 <label style="text-align:center; display:block; color:springgreen;">DESLOCAMENTO (Círculos)</label>
-                <div class="marker-controls">
-                    <button class="btn-count" onclick="updateMarkerCount('desloc', -1)">-</button>
-                    <span id="count_desloc" style="font-weight:bold; color:springgreen;">9</span>
-                    <button class="btn-count" onclick="updateMarkerCount('desloc', 1)">+</button>
-                </div>
+                <div class="marker-controls"><button class="btn-count" onclick="updateMarkerCount('desloc', -1)">-</button><span id="count_desloc" style="font-weight:bold; color:springgreen;">9</span><button class="btn-count" onclick="updateMarkerCount('desloc', 1)">+</button></div>
                 <div id="display_desloc" class="marker-display"></div>
             </div>
-
             <hr style="border:0; border-top:1px solid #5a1a1f; margin: 20px 0;">
             <div class="header-label">Experiência</div>
-            <div class="xp-container">
-                <button class="btn-xp" onclick="gastarPonto()">Gastar</button>
-                <div class="xp-display">
-                    <span id="display_pontos" class="xp-number">0</span>
-                    <span class="xp-label">Pontos</span>
-                </div>
-                <button class="btn-xp" onclick="converterXP()">Converter</button>
-            </div>
-            <div class="xp-info-bar">
-                <span id="display_xp_total">0</span> XP
-            </div>
-
+            <div class="xp-container"><button class="btn-xp" onclick="gastarPonto()">Gastar</button><div class="xp-display"><span id="display_pontos" class="xp-number">0</span><span class="xp-label">Pontos</span></div><button class="btn-xp" onclick="converterXP()">Converter</button></div>
+            <div class="xp-info-bar"><span id="display_xp_total">0</span> XP</div>
             <hr style="border:0; border-top:1px solid #5a1a1f; margin: 20px 0;">
             <div class="header-label">Inventário</div>
-            <div class="weight-display">
-                PESO: <span id="weight_val" class="weight-val">0</span> / <span id="weight_max">0</span>
-            </div>
-            <label>Itens <button class="btn-add" onclick="addItem('inventario')">+</button></label>
-            <div id="list_inventario" style="margin-top:5px;"></div>
+            <div class="weight-display">PESO: <span id="weight_val" class="weight-val">0</span> / <span id="weight_max">0</span></div>
+            <label>Itens <button class="btn-add" onclick="addItem('inventario')">+</button></label><div id="list_inventario" style="margin-top:5px;"></div>
         </div>
     </div>
 </div>
-
-<div class="mobile-nav">
-    <button class="nav-btn" onclick="changeColumn(-1)">◀</button>
-    <button class="nav-btn" onclick="changeColumn(1)">▶</button>
-</div>
+<div class="mobile-nav"><button class="nav-btn" onclick="changeColumn(-1)">◀</button><button class="nav-btn" onclick="changeColumn(1)">▶</button></div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
@@ -282,207 +235,145 @@
     let globalWorldTime = {};
 
     let currentColumn = 0; const totalColumns = 3;
-    window.changeColumn = (dir) => {
-        const cols = document.querySelectorAll('.col'); cols[currentColumn].classList.remove('active');
-        currentColumn += dir; if (currentColumn < 0) currentColumn = 0; if (currentColumn >= totalColumns) currentColumn = totalColumns - 1;
-        cols[currentColumn].classList.add('active'); window.scrollTo({ top: 0, behavior: 'smooth' });
-    };
-
-    const themes = {
-        sangue:   { main: '#800000', card: '#41141a', border: '#5a1a1f', input: '#2a0a0d', light: '#ffaaaa' },
-        oceano:   { main: '#0d47a1', card: '#0a192f', border: '#1565c0', input: '#0d2345', light: '#82b1ff' },
-        floresta: { main: '#1b5e20', card: '#0f2913', border: '#2e7d32', input: '#0a210f', light: '#a5d6a7' },
-        ametista: { main: '#4a148c', card: '#240a33', border: '#7b1fa2', input: '#210530', light: '#e1bee7' },
-        brasa:    { main: '#bf360c', card: '#3e1b05', border: '#d84315', input: '#361505', light: '#ffccbc' },
-        sombra:   { main: '#424242', card: '#212121', border: '#616161', input: '#121212', light: '#bdbdbd' },
-        ouro:     { main: '#ff6f00', card: '#331a00', border: '#ff8f00', input: '#2e1800', light: '#ffecb3' },
-        rosa:     { main: '#880e4f', card: '#33081b', border: '#ad1457', input: '#300518', light: '#f8bbd0' }
-    };
-
+    window.changeColumn = (dir) => { const cols = document.querySelectorAll('.col'); cols[currentColumn].classList.remove('active'); currentColumn += dir; if (currentColumn < 0) currentColumn = 0; if (currentColumn >= totalColumns) currentColumn = totalColumns - 1; cols[currentColumn].classList.add('active'); window.scrollTo({ top: 0, behavior: 'smooth' }); };
+    const themes = { sangue: { main: '#800000', card: '#41141a', border: '#5a1a1f', input: '#2a0a0d', light: '#ffaaaa' }, oceano: { main: '#0d47a1', card: '#0a192f', border: '#1565c0', input: '#0d2345', light: '#82b1ff' }, floresta: { main: '#1b5e20', card: '#0f2913', border: '#2e7d32', input: '#0a210f', light: '#a5d6a7' }, ametista: { main: '#4a148c', card: '#240a33', border: '#7b1fa2', input: '#210530', light: '#e1bee7' }, brasa: { main: '#bf360c', card: '#3e1b05', border: '#d84315', input: '#361505', light: '#ffccbc' }, sombra: { main: '#424242', card: '#212121', border: '#616161', input: '#121212', light: '#bdbdbd' }, ouro: { main: '#ff6f00', card: '#331a00', border: '#ff8f00', input: '#2e1800', light: '#ffecb3' }, rosa: { main: '#880e4f', card: '#33081b', border: '#ad1457', input: '#300518', light: '#f8bbd0' } };
     window.toggleColorPicker = () => { document.getElementById('colorPicker').classList.toggle('open'); };
-    window.setTheme = (themeName) => {
-        const t = themes[themeName]; if(!t) return;
-        const r = document.documentElement.style;
-        r.setProperty('--theme-main', t.main); r.setProperty('--theme-card', t.card); r.setProperty('--theme-border', t.border); r.setProperty('--theme-input', t.input); r.setProperty('--theme-light', t.light);
-        update(ref(db, 'fichas/' + fichaID), { color_theme: themeName });
-        document.getElementById('colorPicker').classList.remove('open');
-    };
+    window.setTheme = (themeName) => { const t = themes[themeName]; if(!t) return; const r = document.documentElement.style; r.setProperty('--theme-main', t.main); r.setProperty('--theme-card', t.card); r.setProperty('--theme-border', t.border); r.setProperty('--theme-input', t.input); r.setProperty('--theme-light', t.light); update(ref(db, 'fichas/' + fichaID), { color_theme: themeName }); document.getElementById('colorPicker').classList.remove('open'); };
+    const picker = document.getElementById('colorPicker'); Object.keys(themes).forEach(key => { const div = document.createElement('div'); div.className = 'color-swatch'; div.style.backgroundColor = themes[key].main; div.onclick = () => setTheme(key); picker.appendChild(div); });
+    const periciasList = [ {id: 'p_animais', nome: 'ANIMAIS'}, {id: 'p_arte', nome: 'ARTE'}, {id: 'p_esporte', nome: 'ESPORTE'}, {id: 'p_influencia', nome: 'INFLUÊNCIA'}, {id: 'p_luta', nome: 'LUTA'}, {id: 'p_manha', nome: 'MANHA'}, {id: 'p_maquinas', nome: 'MÁQUINAS'}, {id: 'p_medicina', nome: 'MEDICINA'}, {id: 'p_mistica', nome: 'MÍSTICA'}, {id: 'p_percepcao', nome: 'PERCEPÇÃO'}, {id: 'p_saber', nome: 'SABER'}, {id: 'p_sobrevivencia', nome: 'SOBREVIVÊNCIA'} ];
+    const camposParaSalvar = [ 'char_name', 'idade', 'florins', 'arquetipo', 'hp_at', 'hp_max', 'mp_at', 'mp_max', 'pa_at', 'pa_max', 'poder', 'habilidade', 'resistencia', 'xp_total', 'xp_pontos', 'color_theme', ...periciasList.map(p => p.id) ];
+    const pContainer = document.getElementById('pericias-list'); periciasList.forEach(p => { pContainer.innerHTML += `<div class="pericia-row"><span>${p.nome}</span><div class="pericia-controls"><button class="btn-p" onclick="updatePericia('${p.id}', -1)">-</button><span id="disp_${p.id}" class="pericia-val">+0</span><span class="dice-icon">🎲</span><input type="hidden" id="${p.id}" value="0"><button class="btn-p" onclick="updatePericia('${p.id}', 1)">+</button></div></div>`; });
 
-    const picker = document.getElementById('colorPicker');
-    Object.keys(themes).forEach(key => { const div = document.createElement('div'); div.className = 'color-swatch'; div.style.backgroundColor = themes[key].main; div.onclick = () => setTheme(key); picker.appendChild(div); });
+    onValue(ref(db, 'world_time'), (snapshot) => { globalWorldTime = snapshot.val() || {}; refreshDisplayValues(); });
 
-    const periciasList = [
-        {id: 'p_animais', nome: 'ANIMAIS'}, {id: 'p_arte', nome: 'ARTE'}, {id: 'p_esporte', nome: 'ESPORTE'}, {id: 'p_influencia', nome: 'INFLUÊNCIA'},
-        {id: 'p_luta', nome: 'LUTA'}, {id: 'p_manha', nome: 'MANHA'}, {id: 'p_maquinas', nome: 'MÁQUINAS'}, {id: 'p_medicina', nome: 'MEDICINA'},
-        {id: 'p_mistica', nome: 'MÍSTICA'}, {id: 'p_percepcao', nome: 'PERCEPÇÃO'}, {id: 'p_saber', nome: 'SABER'}, {id: 'p_sobrevivencia', nome: 'SOBREVIVÊNCIA'}
-    ];
+    function countActiveAbilities() {
+        if (!globalCharData.active_abilities) return 0;
+        let c = 0; if (globalCharData.active_abilities.mask) c++; if (globalCharData.active_abilities.hell) c++; return c;
+    }
 
-    const camposParaSalvar = [
-        'char_name', 'idade', 'florins', 'arquetipo', 'hp_at', 'hp_max', 'mp_at', 'mp_max', 'pa_at', 'pa_max',
-        'poder', 'habilidade', 'resistencia', 'xp_total', 'xp_pontos', 'color_theme', ...periciasList.map(p => p.id)
-    ];
-
-    const pContainer = document.getElementById('pericias-list');
-    periciasList.forEach(p => {
-        pContainer.innerHTML += `<div class="pericia-row"><span>${p.nome}</span><div class="pericia-controls"><button class="btn-p" onclick="updatePericia('${p.id}', -1)">-</button><span id="disp_${p.id}" class="pericia-val">+0</span><span class="dice-icon">🎲</span><input type="hidden" id="${p.id}" value="0"><button class="btn-p" onclick="updatePericia('${p.id}', 1)">+</button></div></div>`;
-    });
-
-    // --- MASCARA LUNAR ---
-    
-    // Escuta o mundo para saber se é lua cheia e noite
-    onValue(ref(db, 'world_time'), (snapshot) => {
-        globalWorldTime = snapshot.val() || {};
-        refreshDisplayValues(); // Recalcula se o tempo mudar
-    });
-
-    window.toggleMask = () => {
-        const isActive = globalCharData.active_abilities && globalCharData.active_abilities.mask;
+    window.toggleAbility = (abilityName) => {
+        const isActive = globalCharData.active_abilities && globalCharData.active_abilities[abilityName];
         const currentMp = parseInt(document.getElementById('mp_at').value) || 0;
+        let cost = 0; if (abilityName === 'mask') cost = 4; if (abilityName === 'hell') cost = 5;
 
         if (!isActive) {
-            // Tentar ativar
-            if (currentMp >= 4) {
-                update(ref(db, 'fichas/' + fichaID), { 
-                    'active_abilities/mask': true,
-                    'mp_at': currentMp - 4
-                });
-            } else {
-                alert("Mana insuficiente para ativar a Máscara Lunar (4 PM).");
+            if (countActiveAbilities() >= 2) { alert("Limite de 2 habilidades ativas atingido."); return; }
+            if (currentMp < cost) { alert(`Mana insuficiente (${cost} PM).`); return; }
+            
+            const updates = { [`active_abilities/${abilityName}`]: true, 'mp_at': currentMp - cost };
+
+            // Específico do Inferno: Dobra o PA no Banco de Dados e Recarrega
+            if (abilityName === 'hell') {
+                const curPaMax = parseInt(globalCharData.pa_max) || 3;
+                updates['pa_max'] = curPaMax * 2;
+                updates['pa_at'] = curPaMax * 2; // Recarrega cheio
             }
+
+            update(ref(db, 'fichas/' + fichaID), updates);
+
         } else {
-            // Desativar
-            update(ref(db, 'fichas/' + fichaID), { 'active_abilities/mask': false });
+            const updates = { [`active_abilities/${abilityName}`]: false };
+            
+            // Reverter PA do Inferno (Divide por 2)
+            if (abilityName === 'hell') {
+                const curPaMax = parseInt(globalCharData.pa_max) || 6;
+                const curPaAt = parseInt(globalCharData.pa_at) || 6;
+                updates['pa_max'] = Math.floor(curPaMax / 2);
+                updates['pa_at'] = Math.floor(curPaAt / 2);
+            }
+            update(ref(db, 'fichas/' + fichaID), updates);
         }
+    };
+
+    window.selectHellAttr = (attr) => {
+        if (globalCharData.active_abilities && globalCharData.active_abilities.hell) { alert("Não pode mudar atributo enquanto Chamado do Inferno está ativo."); return; }
+        update(ref(db, 'fichas/' + fichaID), { 'hell_selected_attr': attr });
     };
 
     function refreshDisplayValues() {
         if (!globalCharData) return;
-
-        const maskActive = globalCharData.active_abilities && globalCharData.active_abilities.mask;
+        const ab = globalCharData.active_abilities || {};
         
-        // 1. Visual do Botão e Corpo
-        const btn = document.getElementById('mask-btn');
-        if (maskActive) {
-            btn.classList.add('active');
-            document.body.classList.add('moon-mode');
-        } else {
-            btn.classList.remove('active');
-            document.body.classList.remove('moon-mode');
-        }
+        const maskBtn = document.getElementById('mask-btn'); const hellBtn = document.getElementById('hell-btn');
+        document.body.classList.remove('moon-mode', 'hell-mode', 'hybrid-mode');
+        maskBtn.classList.toggle('active', !!ab.mask); hellBtn.classList.toggle('active', !!ab.hell);
 
-        // 2. Mostra botão se desbloqueado
-        if (globalCharData.unlocked_abilities && globalCharData.unlocked_abilities.mask) {
-            btn.style.display = 'flex';
-        } else {
-            btn.style.display = 'none';
-        }
+        if (ab.mask && ab.hell) document.body.classList.add('hybrid-mode');
+        else if (ab.mask) document.body.classList.add('moon-mode');
+        else if (ab.hell) document.body.classList.add('hell-mode');
 
-        // 3. Atributos (Poder, Hab, Res)
+        const un = globalCharData.unlocked_abilities || {};
+        maskBtn.style.display = un.mask ? 'flex' : 'none'; hellBtn.style.display = un.hell ? 'flex' : 'none';
+
+        const hellAttr = globalCharData.hell_selected_attr || "";
+        const attrContainer = document.getElementById('attr_container');
+        if (un.hell) attrContainer.classList.add('show-hell-selector'); else attrContainer.classList.remove('show-hell-selector');
+        document.querySelectorAll('.attr-box').forEach(b => b.classList.remove('hell-active'));
+        document.querySelectorAll('.attr-selector').forEach(s => s.classList.remove('selected'));
+        if (hellAttr) { const box = document.getElementById('box_' + hellAttr); if(box) { box.querySelector('.attr-selector').classList.add('selected'); if (ab.hell) box.classList.add('hell-active'); } }
+
         ['poder', 'habilidade', 'resistencia'].forEach(attr => {
             const el = document.getElementById(attr);
             let val = parseInt(globalCharData[attr]) || 0;
-            if (maskActive) val *= 2; // Dobra se ativo
-            el.value = val;
-            // Bloqueia edição se máscara ativa para não salvar o dobro
-            el.disabled = maskActive; 
+            if (ab.hell && hellAttr === attr) { val *= 3; } else if (ab.mask) { val *= 2; }
+            el.value = val; el.disabled = (ab.mask || ab.hell);
         });
 
-        // 4. Perícias
-        periciasList.forEach(p => {
-            let val = parseInt(globalCharData[p.id]) || 0;
-            if (maskActive) {
-                if (val < 2) val += 1; // +1 até o limite de 2
-            }
-            updateDisplayPericia(p.id, val);
-        });
+        // Vida (Hell) - Dobra Visualmente
+        const hpAtEl = document.getElementById('hp_at'); const hpMaxEl = document.getElementById('hp_max');
+        let hpAtVal = parseInt(globalCharData['hp_at']) || 0; let hpMaxVal = parseInt(globalCharData['hp_max']) || 10;
+        if (ab.hell) { hpAtVal *= 2; hpMaxVal *= 2; }
+        if (document.activeElement !== hpAtEl) hpAtEl.value = hpAtVal; if (document.activeElement !== hpMaxEl) hpMaxEl.value = hpMaxVal;
+        const hpPerc = Math.min((hpAtVal/hpMaxVal)*100, 100); document.getElementById('bar_hp').style.width = hpPerc + '%';
 
-        // 5. Ações (Lua Cheia + Noite)
-        const isNight = globalWorldTime.period === 2; // 2 = Noite
-        // Lua cheia (dia 13,14,15,16... approx fase 4. Vamos usar dia % 28)
-        // No calendario.html, Lua Cheia é MOON_PHASES[4].
-        // Dia 1 = Lua Nova. Dia 15 = Lua Cheia.
-        const dayMod = globalWorldTime.day % 28;
-        const isFullMoon = (dayMod >= 13 && dayMod <= 16); 
-        
-        let bonusActions = (maskActive && isNight && isFullMoon) ? 1 : 0;
-        
+        periciasList.forEach(p => { let val = parseInt(globalCharData[p.id]) || 0; if (ab.mask) { if (val < 2) val += 1; } updateDisplayPericia(p.id, val); });
+
+        const isNight = globalWorldTime.period === 2; const dayMod = globalWorldTime.day % 28; const isFullMoon = (dayMod >= 13 && dayMod <= 16); 
+        let bonusActions = (ab.mask && isNight && isFullMoon) ? 1 : 0;
         const totalAcoes = (globalCharData.marcadores?.ações?.total || 3);
-        // Não salvamos o bonus, apenas renderizamos
-        // O renderMarkers precisa saber disso. Vamos ajustar renderMarkers para aceitar um override
         renderMarkers('ações', totalAcoes + bonusActions, globalCharData.marcadores?.ações?.pontos);
         
-        // Peso (recalcula pois força e res mudaram)
         updateWeight();
     }
 
-    // ----------------------
-
-    window.converterXP = () => {
-        const xpSpan = document.getElementById('display_xp_total'); const ptSpan = document.getElementById('display_pontos');
-        let xp = parseInt(xpSpan.innerText) || 0; let pontos = parseInt(ptSpan.innerText) || 0;
-        if (xp >= 10) { const qtd = Math.floor(xp / 10); update(ref(db, 'fichas/' + fichaID), { xp_total: xp - (qtd*10), xp_pontos: pontos + qtd }); } else { alert("XP insuficiente!"); }
-    };
-    window.gastarPonto = () => { const pt = parseInt(document.getElementById('display_pontos').innerText)||0; if (pt>0) update(ref(db, 'fichas/' + fichaID), { xp_pontos: pt-1 }); };
-
-    window.updatePericia = (id, mod) => {
-        // Se a mascara ta ativa, não deixa editar perícia pois o valor visual é falso
-        if (document.body.classList.contains('moon-mode')) { alert("Desative a Máscara para editar."); return; }
+    window.changeVal = (type, mod) => {
+        const elAt = document.getElementById(type + '_at'); const elMax = document.getElementById(type + '_max');
+        let currentDisplay = parseInt(elAt.value) || 0; let maxDisplay = parseInt(elMax.value) || 0;
+        let newDisplay = currentDisplay + mod; if (newDisplay < 0) newDisplay = 0; if (newDisplay > maxDisplay) newDisplay = maxDisplay;
         
-        const current = parseInt(globalCharData[id]) || 0;
-        let newVal = current + mod;
-        if (newVal < -2) newVal = -2; if (newVal > 2) newVal = 2;
-        update(ref(db, 'fichas/' + fichaID), { [id]: newVal });
+        let newBase = newDisplay;
+        // Se for HP e Hell ativo, converte de volta pra base antes de salvar (Visual / 2)
+        if (type === 'hp' && globalCharData.active_abilities?.hell) { newBase = Math.ceil(newDisplay / 2); }
+
+        update(ref(db, 'fichas/' + fichaID), { [type + '_at']: newBase });
+        
+        if (type === 'mp' && newBase <= 0 && globalCharData.active_abilities?.mask) { update(ref(db, 'fichas/' + fichaID), { 'active_abilities/mask': false }); alert("Mana esgotada! Máscara Lunar desativada."); }
     };
 
-    function updateDisplayPericia(id, val) {
-        const display = document.getElementById('disp_' + id);
-        if (display) {
-            const formatted = val >= 0 ? "+" + val : val;
-            display.innerText = formatted;
-            display.style.color = val > 0 ? '#4caf50' : (val < 0 ? '#f44336' : 'white');
-        }
-    }
-
-    function updateWeight() {
-        const inputs = document.querySelectorAll('#list_inventario input.hab-dice');
-        let totalW = 0; inputs.forEach(inp => totalW += parseFloat(inp.value) || 0);
-        // Usa valor visual (que já está dobrado se mascara ativa)
-        const pod = parseInt(document.getElementById('poder').value) || 0;
-        const res = parseInt(document.getElementById('resistencia').value) || 0;
-        const maxW = (pod + res) * 2;
-        const wVal = document.getElementById('weight_val'); const wMax = document.getElementById('weight_max');
-        if(wVal) wVal.innerText = Math.ceil(totalW); if(wMax) wMax.innerText = maxW;
-        wVal.className = 'weight-val'; 
-        if (maxW > 0) { const pct = totalW / maxW; if (pct >= 1) wVal.classList.add('danger'); else if (pct >= 0.7) wVal.classList.add('alert'); }
-    }
+    window.converterXP = () => { const xpSpan = document.getElementById('display_xp_total'); const ptSpan = document.getElementById('display_pontos'); let xp = parseInt(xpSpan.innerText) || 0; let pontos = parseInt(ptSpan.innerText) || 0; if (xp >= 10) { const qtd = Math.floor(xp / 10); update(ref(db, 'fichas/' + fichaID), { xp_total: xp - (qtd*10), xp_pontos: pontos + qtd }); } else { alert("XP insuficiente!"); } };
+    window.gastarPonto = () => { const pt = parseInt(document.getElementById('display_pontos').innerText)||0; if (pt>0) update(ref(db, 'fichas/' + fichaID), { xp_pontos: pt-1 }); };
+    window.updatePericia = (id, mod) => { if (document.body.classList.contains('moon-mode') || document.body.classList.contains('hybrid-mode')) { alert("Desative habilidades para editar."); return; } const current = parseInt(globalCharData[id]) || 0; let newVal = current + mod; if (newVal < -2) newVal = -2; if (newVal > 2) newVal = 2; update(ref(db, 'fichas/' + fichaID), { [id]: newVal }); };
+    function updateDisplayPericia(id, val) { const display = document.getElementById('disp_' + id); if (display) { const formatted = val >= 0 ? "+" + val : val; display.innerText = formatted; display.style.color = val > 0 ? '#4caf50' : (val < 0 ? '#f44336' : 'white'); } }
+    function updateWeight() { const inputs = document.querySelectorAll('#list_inventario input.hab-dice'); let totalW = 0; inputs.forEach(inp => totalW += parseFloat(inp.value) || 0); const pod = parseInt(document.getElementById('poder').value) || 0; const res = parseInt(document.getElementById('resistencia').value) || 0; const maxW = (pod + res) * 2; const wVal = document.getElementById('weight_val'); const wMax = document.getElementById('weight_max'); if(wVal) wVal.innerText = Math.ceil(totalW); if(wMax) wMax.innerText = maxW; wVal.className = 'weight-val'; if (maxW > 0) { const pct = totalW / maxW; if (pct >= 1) wVal.classList.add('danger'); else if (pct >= 0.7) wVal.classList.add('alert'); } }
 
     document.addEventListener('input', (e) => {
         const target = e.target;
-        // Bloqueia salvamento de atributos se mascara ativa (segurança extra)
-        if ((target.id === 'poder' || target.id === 'habilidade' || target.id === 'resistencia') && document.body.classList.contains('moon-mode')) return;
+        const ab = globalCharData.active_abilities || {};
+        if ((target.id === 'poder' || target.id === 'habilidade' || target.id === 'resistencia') && (ab.mask || ab.hell)) return;
 
         if (camposParaSalvar.includes(target.id)) {
-            const updates = {}; updates[target.id] = target.value;
+            let valToSave = target.value;
+            // HP: Converte visual para base se hell ativo
+            if ((target.id === 'hp_at' || target.id === 'hp_max') && ab.hell) { valToSave = Math.ceil(parseInt(valToSave) / 2); }
+            const updates = {}; updates[target.id] = valToSave;
             update(ref(db, 'fichas/' + fichaID), updates);
             if (target.id.includes('_at') || target.id.includes('_max')) updateBarVisual(target.id.split('_')[0]);
         }
     });
 
     onValue(ref(db, 'fichas/' + fichaID), (snapshot) => {
-        const dados = snapshot.val();
-        if (!dados) return;
-        globalCharData = dados; // Salva globalmente
-
-        if (dados.color_theme) {
-            const t = themes[dados.color_theme];
-            if (t) {
-                const r = document.documentElement.style;
-                // Só aplica cores se NÃO estiver no modo lua (modo lua sobrescreve)
-                if (!document.body.classList.contains('moon-mode')) {
-                    r.setProperty('--theme-main', t.main); r.setProperty('--theme-card', t.card); r.setProperty('--theme-border', t.border); r.setProperty('--theme-input', t.input); r.setProperty('--theme-light', t.light);
-                }
-            }
-        }
+        const dados = snapshot.val(); if (!dados) return; globalCharData = dados;
+        if (dados.color_theme && !document.body.classList.contains('moon-mode') && !document.body.classList.contains('hell-mode') && !document.body.classList.contains('hybrid-mode')) { const t = themes[dados.color_theme]; if (t) { const r = document.documentElement.style; r.setProperty('--theme-main', t.main); r.setProperty('--theme-card', t.card); r.setProperty('--theme-border', t.border); r.setProperty('--theme-input', t.input); r.setProperty('--theme-light', t.light); } }
 
         camposParaSalvar.forEach(id => {
             if (dados[id] !== undefined) {
@@ -491,15 +382,11 @@
                 else if (id === 'color_theme') return;
                 else {
                     const el = document.getElementById(id);
-                    // Só atualiza input se não for atributo durante mascara
                     const isAttr = ['poder','habilidade','resistencia'].includes(id);
-                    const maskOn = dados.active_abilities && dados.active_abilities.mask;
+                    const isHp = ['hp_at', 'hp_max'].includes(id);
                     
-                    if (id.startsWith('p_')) { /* Pericias tratadas no refreshDisplayValues */ }
-                    else if (isAttr && maskOn) { /* Atributos tratados no refreshDisplayValues */ }
-                    else if (el && document.activeElement !== el) {
-                        el.value = dados[id];
-                        if (id.includes('_at') || id.includes('_max')) updateBarVisual(id.split('_')[0]);
+                    if (!id.startsWith('p_') && !isAttr && !isHp) {
+                         if (el && document.activeElement !== el) { el.value = dados[id]; if (id.includes('_at') || id.includes('_max')) updateBarVisual(id.split('_')[0]); }
                     }
                 }
             }
@@ -507,30 +394,11 @@
 
         if (dados.char_img) document.getElementById('avatar_display').style.backgroundImage = `url(${dados.char_img})`;
         ['skull1', 'skull2', 'skull3'].forEach(sid => { document.getElementById(sid).classList.toggle('active', dados[sid] === "active"); });
-
         ['geral', 'vantagens', 'arquetipo_hab', 'artefatos', 'tecnicas'].forEach(cat => renderHabs(cat, dados.habilidades?.[cat]));
         renderInventory(dados.habilidades?.['inventario']);
-        
         renderMarkers('desloc', dados.marcadores?.['desloc']?.total, dados.marcadores?.['desloc']?.pontos);
-        
-        // Chamamos Refresh para aplicar a lógica da máscara sobre os dados carregados
         refreshDisplayValues();
     });
-
-    window.changeVal = (type, mod) => {
-        const el = document.getElementById(type + '_at'); const maxEl = document.getElementById(type + '_max');
-        let current = parseInt(el.value) || 0; let max = parseInt(maxEl.value) || 0;
-        let newVal = current + mod; if (newVal < 0) newVal = 0; if (newVal > max) newVal = max;
-        el.value = newVal; update(ref(db, 'fichas/' + fichaID), { [type + '_at']: newVal });
-        
-        // Se a mana zerar e mascara ativa, desativa
-        if (type === 'mp' && newVal <= 0 && globalCharData.active_abilities?.mask) {
-            update(ref(db, 'fichas/' + fichaID), { 'active_abilities/mask': false });
-            alert("Mana esgotada! Máscara Lunar desativada.");
-        }
-        
-        updateBarVisual(type);
-    };
 
     function updateBarVisual(type) {
         const at = parseInt(document.getElementById(type + '_at').value) || 0;
@@ -540,51 +408,19 @@
     }
 
     window.updateMarkerCount = (type, mod) => {
-        const span = document.getElementById('count_' + type);
-        let count = (parseInt(span.innerText) || 0) + mod; if(count < 0) count = 0;
-        // Se mascara ativa e for ação, o count visual é falso, então buscamos do global
-        if (type === 'ações' && document.body.classList.contains('moon-mode')) {
-             count = (globalCharData.marcadores?.ações?.total || 3) + mod;
-        }
-        update(ref(db, `fichas/${fichaID}/marcadores/${type}`), { total: count });
+        let currentTotal = globalCharData.marcadores?.[type]?.total || (type === 'ações' ? 3 : 9);
+        let newTotal = currentTotal + mod; if(newTotal < 0) newTotal = 0;
+        update(ref(db, `fichas/${fichaID}/marcadores/${type}`), { total: newTotal });
     };
 
-    window.togglePoint = (type, index) => {
-        const key = `p_${index}`;
-        const isActive = document.getElementById(`${type}_${index}`).classList.contains('active');
-        update(ref(db, `fichas/${fichaID}/marcadores/${type}/pontos`), { [key]: !isActive });
-    };
-
-    function renderMarkers(type, total, pontos) {
-        const container = document.getElementById('display_' + type);
-        const countSpan = document.getElementById('count_' + type);
-        container.innerHTML = "";
-        // Se for null/undefined, usa padrao
-        const finalTotal = (total !== undefined) ? total : (type === 'ações' ? 3 : 9);
-        countSpan.innerText = finalTotal;
-        
-        const icon = type === 'ações' ? '▲' : '●'; const css = type === 'ações' ? 'tri' : 'circ';
-        for(let i=0; i < finalTotal; i++) {
-            const isActive = pontos && pontos[`p_${i}`] === true;
-            container.innerHTML += `<span id="${type}_${i}" class="marker-item ${css} ${isActive ? 'active' : ''}" onclick="togglePoint('${type}', ${i})">${icon}</span>`;
-        }
-    }
-
+    window.togglePoint = (type, index) => { const key = `p_${index}`; const isActive = document.getElementById(`${type}_${index}`).classList.contains('active'); update(ref(db, `fichas/${fichaID}/marcadores/${type}/pontos`), { [key]: !isActive }); };
+    function renderMarkers(type, total, pontos) { const container = document.getElementById('display_' + type); const countSpan = document.getElementById('count_' + type); container.innerHTML = ""; const finalTotal = (total !== undefined) ? total : (type === 'ações' ? 3 : 9); countSpan.innerText = finalTotal; const icon = type === 'ações' ? '▲' : '●'; const css = type === 'ações' ? 'tri' : 'circ'; for(let i=0; i < finalTotal; i++) { const isActive = pontos && pontos[`p_${i}`] === true; container.innerHTML += `<span id="${type}_${i}" class="marker-item ${css} ${isActive ? 'active' : ''}" onclick="togglePoint('${type}', ${i})">${icon}</span>`; } }
     window.addItem = (category) => { const data = category === 'inventario' ? { titulo: "", peso: 0, desc: "" } : { titulo: "", teste: "", desc: "" }; const newItemRef = push(ref(db, `fichas/${fichaID}/habilidades/${category}`)); set(newItemRef, data); };
     window.removeItem = (category, id) => { if(confirm("Apagar?")) remove(ref(db, `fichas/${fichaID}/habilidades/${category}/${id}`)); };
     window.toggleHab = (id) => { document.getElementById('body_' + id).classList.toggle('open'); };
     window.saveHab = (cat, id, field, val) => { update(ref(db, `fichas/${fichaID}/habilidades/${cat}/${id}`), { [field]: val }).then(() => { if(cat === 'inventario') updateWeight(); }); };
-
-    function renderHabs(category, data) {
-        const container = document.getElementById('list_' + category); if(!container) return; container.innerHTML = ""; if(!data) return;
-        Object.keys(data).forEach(id => { const item = data[id]; const div = document.createElement('div'); div.className = 'hab-item'; div.innerHTML = `<div class="hab-header"><span class="hab-toggle" onclick="toggleHab('${id}')">▼</span><input type="text" class="hab-title" value="${item.titulo || ''}" onchange="saveHab('${category}','${id}','titulo',this.value)" placeholder="Nome"><input type="text" class="hab-dice" value="${item.teste || ''}" onchange="saveHab('${category}','${id}','teste',this.value)" placeholder="Teste"><button class="btn-del" onclick="removeItem('${category}','${id}')">✖</button></div><div class="hab-body" id="body_${id}"><textarea onchange="saveHab('${category}','${id}','desc',this.value)" placeholder="Descrição...">${item.desc || ''}</textarea></div>`; container.appendChild(div); });
-    }
-
-    function renderInventory(data) {
-        const container = document.getElementById('list_inventario'); if(!container) return; container.innerHTML = ""; if(!data) return;
-        Object.keys(data).forEach(id => { const item = data[id]; const div = document.createElement('div'); div.className = 'hab-item'; div.innerHTML = `<div class="hab-header"><span class="hab-toggle" onclick="toggleHab('${id}')">▼</span><input type="text" class="hab-title" value="${item.titulo || ''}" onchange="saveHab('inventario','${id}','titulo',this.value)" placeholder="Item"><input type="number" step="0.1" class="hab-dice" value="${item.peso || 0}" onchange="saveHab('inventario','${id}','peso',this.value)" placeholder="Peso"><button class="btn-del" onclick="removeItem('inventario','${id}')">✖</button></div><div class="hab-body" id="body_${id}"><textarea onchange="saveHab('inventario','${id}','desc',this.value)" placeholder="Detalhes...">${item.desc || ''}</textarea></div>`; container.appendChild(div); });
-    }
-
+    function renderHabs(category, data) { const container = document.getElementById('list_' + category); if(!container) return; container.innerHTML = ""; if(!data) return; Object.keys(data).forEach(id => { const item = data[id]; const div = document.createElement('div'); div.className = 'hab-item'; div.innerHTML = `<div class="hab-header"><span class="hab-toggle" onclick="toggleHab('${id}')">▼</span><input type="text" class="hab-title" value="${item.titulo || ''}" onchange="saveHab('${category}','${id}','titulo',this.value)" placeholder="Nome"><input type="text" class="hab-dice" value="${item.teste || ''}" onchange="saveHab('${category}','${id}','teste',this.value)" placeholder="Teste"><button class="btn-del" onclick="removeItem('${category}','${id}')">✖</button></div><div class="hab-body" id="body_${id}"><textarea onchange="saveHab('${category}','${id}','desc',this.value)" placeholder="Descrição...">${item.desc || ''}</textarea></div>`; container.appendChild(div); }); }
+    function renderInventory(data) { const container = document.getElementById('list_inventario'); if(!container) return; container.innerHTML = ""; if(!data) return; Object.keys(data).forEach(id => { const item = data[id]; const div = document.createElement('div'); div.className = 'hab-item'; div.innerHTML = `<div class="hab-header"><span class="hab-toggle" onclick="toggleHab('${id}')">▼</span><input type="text" class="hab-title" value="${item.titulo || ''}" onchange="saveHab('inventario','${id}','titulo',this.value)" placeholder="Item"><input type="number" step="0.1" class="hab-dice" value="${item.peso || 0}" onchange="saveHab('inventario','${id}','peso',this.value)" placeholder="Peso"><button class="btn-del" onclick="removeItem('inventario','${id}')">✖</button></div><div class="hab-body" id="body_${id}"><textarea onchange="saveHab('inventario','${id}','desc',this.value)" placeholder="Detalhes...">${item.desc || ''}</textarea></div>`; container.appendChild(div); }); }
     window.toggleSkull = (id) => { const el = document.getElementById(id); el.classList.toggle('active'); update(ref(db, 'fichas/' + fichaID), { [id]: el.classList.contains('active') ? "active" : "inactive" }); };
     document.getElementById('img_upload').addEventListener('change', (e) => { const file = e.target.files[0]; const reader = new FileReader(); reader.onload = (readerEvent) => { const image = new Image(); image.onload = () => { const canvas = document.createElement('canvas'); const maxSize = 300; let width = image.width; let height = image.height; if (width > height) { if (width > maxSize) { height *= maxSize / width; width = maxSize; } } else { if (height > maxSize) { width *= maxSize / height; height = maxSize; } } canvas.width = width; canvas.height = height; const ctx = canvas.getContext('2d'); ctx.drawImage(image, 0, 0, width, height); const dataUrl = canvas.toDataURL('image/jpeg', 0.7); document.getElementById('avatar_display').style.backgroundImage = `url(${dataUrl})`; update(ref(db, 'fichas/' + fichaID), { char_img: dataUrl }); }; image.src = readerEvent.target.result; }; reader.readAsDataURL(file); });
 </script>
