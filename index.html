@@ -16,10 +16,27 @@
             --theme-light: #ffaaaa;
         }
 
-        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; padding: 20px; margin: 0; padding-bottom: 80px; }
+        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; padding: 20px; margin: 0; padding-bottom: 80px; transition: 0.5s; }
         .container { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; max-width: 1400px; width: 100%; }
         .col { display: flex; flex-direction: column; gap: 15px; }
         
+        /* EFEITO DA MÁSCARA LUNAR */
+        body.moon-mode {
+            --theme-main: #0088aa; /* Azulado */
+            --theme-light: #00ffff;
+        }
+        body.moon-mode .attr-box input, 
+        body.moon-mode .pericia-val,
+        body.moon-mode #char_name,
+        body.moon-mode #mask-btn {
+            color: #00ffff !important;
+            text-shadow: 0 0 8px #00ffff;
+        }
+        body.moon-mode .attr-box {
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+            border-color: #00ffff;
+        }
+
         .card { background: var(--theme-card); border-radius: 12px; padding: 15px; border: 1px solid var(--theme-border); box-shadow: 0 4px 10px rgba(0,0,0,0.5); position: relative; }
         .header-label { background: var(--theme-main); text-align: center; border-radius: 20px; padding: 5px; margin-bottom: 15px; font-weight: bold; text-transform: uppercase; display: flex; justify-content: center; align-items: center; gap: 10px; }
         
@@ -35,6 +52,18 @@
         .theme-btn { position: absolute; top: 0; right: 20px; background: #222; border: 2px solid var(--theme-light); color: var(--theme-light); border-radius: 50%; width: 30px; height: 30px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; z-index: 20; transition: 0.3s; }
         .theme-btn:hover { background: var(--theme-light); color: #000; }
         
+        /* BOTÃO DA MÁSCARA */
+        .mask-btn { 
+            position: absolute; top: 40px; right: 20px; 
+            background: #111; border: 2px solid #555; color: #555; 
+            border-radius: 50%; width: 30px; height: 30px; 
+            cursor: pointer; display: none; /* Escondido por padrão */
+            align-items: center; justify-content: center; 
+            font-size: 18px; z-index: 20; transition: 0.3s; 
+        }
+        .mask-btn:hover { border-color: white; color: white; }
+        .mask-btn.active { border-color: #00ffff; color: #00ffff; box-shadow: 0 0 10px #00ffff; }
+
         .color-picker { display: none; position: absolute; top: 40px; right: 0; background: #222; border: 1px solid #555; padding: 10px; border-radius: 10px; grid-template-columns: repeat(4, 1fr); gap: 8px; z-index: 30; box-shadow: 0 5px 15px rgba(0,0,0,0.8); }
         .color-picker.open { display: grid; }
         .color-swatch { width: 25px; height: 25px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; transition: 0.2s; }
@@ -68,7 +97,7 @@
         .btn-count { background: var(--theme-main); border: 1px solid var(--theme-light); color: white; border-radius: 50%; width: 22px; height: 22px; cursor: pointer; line-height: 1; font-weight: bold; }
 
         .attr-container { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin: 15px 0; }
-        .attr-box { background: rgba(255,255,255,0.05); border: 1px solid #7a2a2f; border-radius: 12px; padding: 10px 2px; text-align: center; }
+        .attr-box { background: rgba(255,255,255,0.05); border: 1px solid #7a2a2f; border-radius: 12px; padding: 10px 2px; text-align: center; transition: 0.5s; }
         .attr-box input { font-size: 28px; font-weight: bold; text-align: center; border: none; background: transparent; color: white; }
         
         .skull { opacity: 0.2; transition: 0.3s; cursor: pointer; font-size: 30px; margin: 0 5px; }
@@ -89,23 +118,13 @@
         .btn-xp:hover { background: var(--theme-light); color: black; }
         .xp-info-bar { text-align: center; background: #222; border: 1px solid #444; border-radius: 8px; padding: 5px; font-weight: bold; font-size: 14px; color: #4fc3f7; }
 
-        /* --- ESTILOS DO INVENTÁRIO --- */
-        .weight-display {
-            text-align: center;
-            background: rgba(0,0,0,0.5);
-            border: 1px solid var(--theme-border);
-            padding: 5px;
-            border-radius: 10px;
-            margin-bottom: 10px;
-            font-weight: bold;
-        }
+        .weight-display { text-align: center; background: rgba(0,0,0,0.5); border: 1px solid var(--theme-border); padding: 5px; border-radius: 10px; margin-bottom: 10px; font-weight: bold; }
         .weight-val { color: white; transition: 0.3s; }
-        .weight-val.alert { color: #ffeb3b; } /* Amarelo */
-        .weight-val.danger { color: #f44336; } /* Vermelho */
+        .weight-val.alert { color: #ffeb3b; }
+        .weight-val.danger { color: #f44336; }
 
         input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 
-        /* --- ESTILOS MOBILE --- */
         .mobile-nav { display: none; }
         @media (max-width: 768px) {
             .container { display: block; }
@@ -129,6 +148,7 @@
                     <input type="file" id="img_upload" accept="image/*">
                 </div>
                 <button class="theme-btn" onclick="toggleColorPicker()">🎨</button>
+                <button class="mask-btn" id="mask-btn" onclick="toggleMask()" title="Máscara Lunar">🎭</button>
                 <div id="colorPicker" class="color-picker"></div>
                 <input type="text" id="char_name" style="background:transparent; border:none; text-align:center; font-size:18px; font-weight:bold; margin-top:10px; color:white;" placeholder="NOME">
             </div>
@@ -173,10 +193,8 @@
     <div class="col" id="col-1">
         <div class="card">
             <div class="header-label">Habilidades Gerais</div>
-            
             <label>Geral <button class="btn-add" onclick="addItem('geral')">+</button></label>
             <div id="list_geral" style="margin-top:5px;"></div>
-
             <label style="margin-top:10px;">Vantagens <button class="btn-add" onclick="addItem('vantagens')">+</button></label>
             <div id="list_vantagens" style="margin-top:5px;"></div>
             <label style="margin-top:10px;">Arquétipo <button class="btn-add" onclick="addItem('arquetipo_hab')">+</button></label>
@@ -232,7 +250,6 @@
             </div>
             <label>Itens <button class="btn-add" onclick="addItem('inventario')">+</button></label>
             <div id="list_inventario" style="margin-top:5px;"></div>
-
         </div>
     </div>
 </div>
@@ -261,17 +278,14 @@
     const urlParams = new URLSearchParams(window.location.search);
     const fichaID = urlParams.get('p') || "personagem_padrao";
 
-    let currentColumn = 0;
-    const totalColumns = 3;
+    let globalCharData = {};
+    let globalWorldTime = {};
 
+    let currentColumn = 0; const totalColumns = 3;
     window.changeColumn = (dir) => {
-        const cols = document.querySelectorAll('.col');
-        cols[currentColumn].classList.remove('active');
-        currentColumn += dir;
-        if (currentColumn < 0) currentColumn = 0;
-        if (currentColumn >= totalColumns) currentColumn = totalColumns - 1;
-        cols[currentColumn].classList.add('active');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        const cols = document.querySelectorAll('.col'); cols[currentColumn].classList.remove('active');
+        currentColumn += dir; if (currentColumn < 0) currentColumn = 0; if (currentColumn >= totalColumns) currentColumn = totalColumns - 1;
+        cols[currentColumn].classList.add('active'); window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     const themes = {
@@ -287,96 +301,136 @@
 
     window.toggleColorPicker = () => { document.getElementById('colorPicker').classList.toggle('open'); };
     window.setTheme = (themeName) => {
-        const t = themes[themeName];
-        if(!t) return;
+        const t = themes[themeName]; if(!t) return;
         const r = document.documentElement.style;
-        r.setProperty('--theme-main', t.main);
-        r.setProperty('--theme-card', t.card);
-        r.setProperty('--theme-border', t.border);
-        r.setProperty('--theme-input', t.input);
-        r.setProperty('--theme-light', t.light);
+        r.setProperty('--theme-main', t.main); r.setProperty('--theme-card', t.card); r.setProperty('--theme-border', t.border); r.setProperty('--theme-input', t.input); r.setProperty('--theme-light', t.light);
         update(ref(db, 'fichas/' + fichaID), { color_theme: themeName });
         document.getElementById('colorPicker').classList.remove('open');
     };
 
     const picker = document.getElementById('colorPicker');
-    Object.keys(themes).forEach(key => {
-        const div = document.createElement('div');
-        div.className = 'color-swatch';
-        div.style.backgroundColor = themes[key].main;
-        div.onclick = () => setTheme(key);
-        picker.appendChild(div);
-    });
+    Object.keys(themes).forEach(key => { const div = document.createElement('div'); div.className = 'color-swatch'; div.style.backgroundColor = themes[key].main; div.onclick = () => setTheme(key); picker.appendChild(div); });
 
     const periciasList = [
-        {id: 'p_animais', nome: 'ANIMAIS'},
-        {id: 'p_arte', nome: 'ARTE'},
-        {id: 'p_esporte', nome: 'ESPORTE'},
-        {id: 'p_influencia', nome: 'INFLUÊNCIA'},
-        {id: 'p_luta', nome: 'LUTA'},
-        {id: 'p_manha', nome: 'MANHA'},
-        {id: 'p_maquinas', nome: 'MÁQUINAS'},
-        {id: 'p_medicina', nome: 'MEDICINA'},
-        {id: 'p_mistica', nome: 'MÍSTICA'},
-        {id: 'p_percepcao', nome: 'PERCEPÇÃO'},
-        {id: 'p_saber', nome: 'SABER'},
-        {id: 'p_sobrevivencia', nome: 'SOBREVIVÊNCIA'}
+        {id: 'p_animais', nome: 'ANIMAIS'}, {id: 'p_arte', nome: 'ARTE'}, {id: 'p_esporte', nome: 'ESPORTE'}, {id: 'p_influencia', nome: 'INFLUÊNCIA'},
+        {id: 'p_luta', nome: 'LUTA'}, {id: 'p_manha', nome: 'MANHA'}, {id: 'p_maquinas', nome: 'MÁQUINAS'}, {id: 'p_medicina', nome: 'MEDICINA'},
+        {id: 'p_mistica', nome: 'MÍSTICA'}, {id: 'p_percepcao', nome: 'PERCEPÇÃO'}, {id: 'p_saber', nome: 'SABER'}, {id: 'p_sobrevivencia', nome: 'SOBREVIVÊNCIA'}
     ];
 
     const camposParaSalvar = [
-        'char_name', 'idade', 'florins', 'arquetipo',
-        'hp_at', 'hp_max', 'mp_at', 'mp_max', 'pa_at', 'pa_max',
-        'poder', 'habilidade', 'resistencia',
-        'xp_total', 'xp_pontos', 'color_theme',
-        ...periciasList.map(p => p.id)
+        'char_name', 'idade', 'florins', 'arquetipo', 'hp_at', 'hp_max', 'mp_at', 'mp_max', 'pa_at', 'pa_max',
+        'poder', 'habilidade', 'resistencia', 'xp_total', 'xp_pontos', 'color_theme', ...periciasList.map(p => p.id)
     ];
 
     const pContainer = document.getElementById('pericias-list');
     periciasList.forEach(p => {
-        pContainer.innerHTML += `
-            <div class="pericia-row">
-                <span>${p.nome}</span>
-                <div class="pericia-controls">
-                    <button class="btn-p" onclick="updatePericia('${p.id}', -1)">-</button>
-                    <span id="disp_${p.id}" class="pericia-val">+0</span>
-                    <span class="dice-icon">🎲</span>
-                    <input type="hidden" id="${p.id}" value="0">
-                    <button class="btn-p" onclick="updatePericia('${p.id}', 1)">+</button>
-                </div>
-            </div>
-        `;
+        pContainer.innerHTML += `<div class="pericia-row"><span>${p.nome}</span><div class="pericia-controls"><button class="btn-p" onclick="updatePericia('${p.id}', -1)">-</button><span id="disp_${p.id}" class="pericia-val">+0</span><span class="dice-icon">🎲</span><input type="hidden" id="${p.id}" value="0"><button class="btn-p" onclick="updatePericia('${p.id}', 1)">+</button></div></div>`;
     });
 
-    window.converterXP = () => {
-        const xpSpan = document.getElementById('display_xp_total');
-        const ptSpan = document.getElementById('display_pontos');
-        let xp = parseInt(xpSpan.innerText) || 0;
-        let pontos = parseInt(ptSpan.innerText) || 0;
-        if (xp >= 10) {
-            const qtdPontos = Math.floor(xp / 10);
-            const custo = qtdPontos * 10;
-            const novoXP = xp - custo;
-            const novosPontos = pontos + qtdPontos;
-            update(ref(db, 'fichas/' + fichaID), { xp_total: novoXP, xp_pontos: novosPontos });
+    // --- MASCARA LUNAR ---
+    
+    // Escuta o mundo para saber se é lua cheia e noite
+    onValue(ref(db, 'world_time'), (snapshot) => {
+        globalWorldTime = snapshot.val() || {};
+        refreshDisplayValues(); // Recalcula se o tempo mudar
+    });
+
+    window.toggleMask = () => {
+        const isActive = globalCharData.active_abilities && globalCharData.active_abilities.mask;
+        const currentMp = parseInt(document.getElementById('mp_at').value) || 0;
+
+        if (!isActive) {
+            // Tentar ativar
+            if (currentMp >= 4) {
+                update(ref(db, 'fichas/' + fichaID), { 
+                    'active_abilities/mask': true,
+                    'mp_at': currentMp - 4
+                });
+            } else {
+                alert("Mana insuficiente para ativar a Máscara Lunar (4 PM).");
+            }
         } else {
-            alert("XP insuficiente!");
+            // Desativar
+            update(ref(db, 'fichas/' + fichaID), { 'active_abilities/mask': false });
         }
     };
 
-    window.gastarPonto = () => {
-        const ptSpan = document.getElementById('display_pontos');
-        let pontos = parseInt(ptSpan.innerText) || 0;
-        if (pontos > 0) update(ref(db, 'fichas/' + fichaID), { xp_pontos: pontos - 1 });
+    function refreshDisplayValues() {
+        if (!globalCharData) return;
+
+        const maskActive = globalCharData.active_abilities && globalCharData.active_abilities.mask;
+        
+        // 1. Visual do Botão e Corpo
+        const btn = document.getElementById('mask-btn');
+        if (maskActive) {
+            btn.classList.add('active');
+            document.body.classList.add('moon-mode');
+        } else {
+            btn.classList.remove('active');
+            document.body.classList.remove('moon-mode');
+        }
+
+        // 2. Mostra botão se desbloqueado
+        if (globalCharData.unlocked_abilities && globalCharData.unlocked_abilities.mask) {
+            btn.style.display = 'flex';
+        } else {
+            btn.style.display = 'none';
+        }
+
+        // 3. Atributos (Poder, Hab, Res)
+        ['poder', 'habilidade', 'resistencia'].forEach(attr => {
+            const el = document.getElementById(attr);
+            let val = parseInt(globalCharData[attr]) || 0;
+            if (maskActive) val *= 2; // Dobra se ativo
+            el.value = val;
+            // Bloqueia edição se máscara ativa para não salvar o dobro
+            el.disabled = maskActive; 
+        });
+
+        // 4. Perícias
+        periciasList.forEach(p => {
+            let val = parseInt(globalCharData[p.id]) || 0;
+            if (maskActive) {
+                if (val < 2) val += 1; // +1 até o limite de 2
+            }
+            updateDisplayPericia(p.id, val);
+        });
+
+        // 5. Ações (Lua Cheia + Noite)
+        const isNight = globalWorldTime.period === 2; // 2 = Noite
+        // Lua cheia (dia 13,14,15,16... approx fase 4. Vamos usar dia % 28)
+        // No calendario.html, Lua Cheia é MOON_PHASES[4].
+        // Dia 1 = Lua Nova. Dia 15 = Lua Cheia.
+        const dayMod = globalWorldTime.day % 28;
+        const isFullMoon = (dayMod >= 13 && dayMod <= 16); 
+        
+        let bonusActions = (maskActive && isNight && isFullMoon) ? 1 : 0;
+        
+        const totalAcoes = (globalCharData.marcadores?.ações?.total || 3);
+        // Não salvamos o bonus, apenas renderizamos
+        // O renderMarkers precisa saber disso. Vamos ajustar renderMarkers para aceitar um override
+        renderMarkers('ações', totalAcoes + bonusActions, globalCharData.marcadores?.ações?.pontos);
+        
+        // Peso (recalcula pois força e res mudaram)
+        updateWeight();
+    }
+
+    // ----------------------
+
+    window.converterXP = () => {
+        const xpSpan = document.getElementById('display_xp_total'); const ptSpan = document.getElementById('display_pontos');
+        let xp = parseInt(xpSpan.innerText) || 0; let pontos = parseInt(ptSpan.innerText) || 0;
+        if (xp >= 10) { const qtd = Math.floor(xp / 10); update(ref(db, 'fichas/' + fichaID), { xp_total: xp - (qtd*10), xp_pontos: pontos + qtd }); } else { alert("XP insuficiente!"); }
     };
+    window.gastarPonto = () => { const pt = parseInt(document.getElementById('display_pontos').innerText)||0; if (pt>0) update(ref(db, 'fichas/' + fichaID), { xp_pontos: pt-1 }); };
 
     window.updatePericia = (id, mod) => {
-        const input = document.getElementById(id);
-        let current = parseInt(input.value) || 0;
+        // Se a mascara ta ativa, não deixa editar perícia pois o valor visual é falso
+        if (document.body.classList.contains('moon-mode')) { alert("Desative a Máscara para editar."); return; }
+        
+        const current = parseInt(globalCharData[id]) || 0;
         let newVal = current + mod;
-        if (newVal < -2) newVal = -2;
-        if (newVal > 2) newVal = 2;
-        input.value = newVal;
-        updateDisplayPericia(id, newVal);
+        if (newVal < -2) newVal = -2; if (newVal > 2) newVal = 2;
         update(ref(db, 'fichas/' + fichaID), { [id]: newVal });
     };
 
@@ -389,67 +443,44 @@
         }
     }
 
-    // --- CÁLCULO DE PESO E INVENTÁRIO ---
     function updateWeight() {
         const inputs = document.querySelectorAll('#list_inventario input.hab-dice');
-        let totalW = 0;
-        inputs.forEach(inp => {
-            totalW += parseFloat(inp.value) || 0;
-        });
-
-        // Pega atributos
+        let totalW = 0; inputs.forEach(inp => totalW += parseFloat(inp.value) || 0);
+        // Usa valor visual (que já está dobrado se mascara ativa)
         const pod = parseInt(document.getElementById('poder').value) || 0;
         const res = parseInt(document.getElementById('resistencia').value) || 0;
-        
-        // Fórmula: (POD + RES) * 2
         const maxW = (pod + res) * 2;
-
-        const wVal = document.getElementById('weight_val');
-        const wMax = document.getElementById('weight_max');
-
-        if(wVal) wVal.innerText = Math.ceil(totalW);
-        if(wMax) wMax.innerText = maxW;
-
-        // Lógica de Cores
-        wVal.className = 'weight-val'; // Reset
-        if (maxW > 0) {
-            const pct = totalW / maxW;
-            if (pct >= 1) wVal.classList.add('danger');
-            else if (pct >= 0.7) wVal.classList.add('alert');
-        }
+        const wVal = document.getElementById('weight_val'); const wMax = document.getElementById('weight_max');
+        if(wVal) wVal.innerText = Math.ceil(totalW); if(wMax) wMax.innerText = maxW;
+        wVal.className = 'weight-val'; 
+        if (maxW > 0) { const pct = totalW / maxW; if (pct >= 1) wVal.classList.add('danger'); else if (pct >= 0.7) wVal.classList.add('alert'); }
     }
 
     document.addEventListener('input', (e) => {
         const target = e.target;
-        
-        // Se mudar Poder ou Resistência, recalcula peso
-        if (target.id === 'poder' || target.id === 'resistencia') {
-            updateWeight();
-        }
+        // Bloqueia salvamento de atributos se mascara ativa (segurança extra)
+        if ((target.id === 'poder' || target.id === 'habilidade' || target.id === 'resistencia') && document.body.classList.contains('moon-mode')) return;
 
         if (camposParaSalvar.includes(target.id)) {
-            const updates = {};
-            updates[target.id] = target.value;
+            const updates = {}; updates[target.id] = target.value;
             update(ref(db, 'fichas/' + fichaID), updates);
-            if (target.id.includes('_at') || target.id.includes('_max')) {
-                updateBarVisual(target.id.split('_')[0]);
-            }
+            if (target.id.includes('_at') || target.id.includes('_max')) updateBarVisual(target.id.split('_')[0]);
         }
     });
 
     onValue(ref(db, 'fichas/' + fichaID), (snapshot) => {
         const dados = snapshot.val();
         if (!dados) return;
+        globalCharData = dados; // Salva globalmente
 
         if (dados.color_theme) {
             const t = themes[dados.color_theme];
             if (t) {
                 const r = document.documentElement.style;
-                r.setProperty('--theme-main', t.main);
-                r.setProperty('--theme-card', t.card);
-                r.setProperty('--theme-border', t.border);
-                r.setProperty('--theme-input', t.input);
-                r.setProperty('--theme-light', t.light);
+                // Só aplica cores se NÃO estiver no modo lua (modo lua sobrescreve)
+                if (!document.body.classList.contains('moon-mode')) {
+                    r.setProperty('--theme-main', t.main); r.setProperty('--theme-card', t.card); r.setProperty('--theme-border', t.border); r.setProperty('--theme-input', t.input); r.setProperty('--theme-light', t.light);
+                }
             }
         }
 
@@ -460,10 +491,12 @@
                 else if (id === 'color_theme') return;
                 else {
                     const el = document.getElementById(id);
-                    if (id.startsWith('p_')) {
-                        el.value = dados[id];
-                        updateDisplayPericia(id, dados[id]);
-                    }
+                    // Só atualiza input se não for atributo durante mascara
+                    const isAttr = ['poder','habilidade','resistencia'].includes(id);
+                    const maskOn = dados.active_abilities && dados.active_abilities.mask;
+                    
+                    if (id.startsWith('p_')) { /* Pericias tratadas no refreshDisplayValues */ }
+                    else if (isAttr && maskOn) { /* Atributos tratados no refreshDisplayValues */ }
                     else if (el && document.activeElement !== el) {
                         el.value = dados[id];
                         if (id.includes('_at') || id.includes('_max')) updateBarVisual(id.split('_')[0]);
@@ -473,42 +506,29 @@
         });
 
         if (dados.char_img) document.getElementById('avatar_display').style.backgroundImage = `url(${dados.char_img})`;
-        
-        ['skull1', 'skull2', 'skull3'].forEach(sid => {
-            const el = document.getElementById(sid);
-            if(dados[sid] === "active") el.classList.add('active');
-            else el.classList.remove('active');
-        });
+        ['skull1', 'skull2', 'skull3'].forEach(sid => { document.getElementById(sid).classList.toggle('active', dados[sid] === "active"); });
 
-        if(dados.habilidades) {
-            // Adicionado 'geral' na lista de renderização
-            ['geral', 'vantagens', 'arquetipo_hab', 'artefatos', 'tecnicas'].forEach(cat => renderHabs(cat, dados.habilidades[cat]));
-            
-            // Renderiza Inventário separadamente (pois tem campo de peso)
-            renderInventory(dados.habilidades['inventario']);
-        }
+        ['geral', 'vantagens', 'arquetipo_hab', 'artefatos', 'tecnicas'].forEach(cat => renderHabs(cat, dados.habilidades?.[cat]));
+        renderInventory(dados.habilidades?.['inventario']);
         
-        // Atualiza peso sempre que carregar do banco
-        setTimeout(updateWeight, 100);
-
-        if(dados.marcadores) {
-            renderMarkers('ações', dados.marcadores['ações']?.total, dados.marcadores['ações']?.pontos);
-            renderMarkers('desloc', dados.marcadores['desloc']?.total, dados.marcadores['desloc']?.pontos);
-        } else {
-            renderMarkers('ações', 3, null);
-            renderMarkers('desloc', 9, null);
-        }
+        renderMarkers('desloc', dados.marcadores?.['desloc']?.total, dados.marcadores?.['desloc']?.pontos);
+        
+        // Chamamos Refresh para aplicar a lógica da máscara sobre os dados carregados
+        refreshDisplayValues();
     });
 
     window.changeVal = (type, mod) => {
-        const el = document.getElementById(type + '_at');
-        const maxEl = document.getElementById(type + '_max');
-        let current = parseInt(el.value) || 0;
-        let max = parseInt(maxEl.value) || 0;
-        let newVal = current + mod;
-        if (newVal < 0) newVal = 0; if (newVal > max) newVal = max;
-        el.value = newVal; 
-        update(ref(db, 'fichas/' + fichaID), { [type + '_at']: newVal });
+        const el = document.getElementById(type + '_at'); const maxEl = document.getElementById(type + '_max');
+        let current = parseInt(el.value) || 0; let max = parseInt(maxEl.value) || 0;
+        let newVal = current + mod; if (newVal < 0) newVal = 0; if (newVal > max) newVal = max;
+        el.value = newVal; update(ref(db, 'fichas/' + fichaID), { [type + '_at']: newVal });
+        
+        // Se a mana zerar e mascara ativa, desativa
+        if (type === 'mp' && newVal <= 0 && globalCharData.active_abilities?.mask) {
+            update(ref(db, 'fichas/' + fichaID), { 'active_abilities/mask': false });
+            alert("Mana esgotada! Máscara Lunar desativada.");
+        }
+        
         updateBarVisual(type);
     };
 
@@ -516,109 +536,57 @@
         const at = parseInt(document.getElementById(type + '_at').value) || 0;
         const max = parseInt(document.getElementById(type + '_max').value) || 1;
         const percent = Math.min(Math.max((at / max) * 100, 0), 100);
-        const el = document.getElementById('bar_' + type);
-        if (el) el.style.width = percent + '%';
+        const el = document.getElementById('bar_' + type); if (el) el.style.width = percent + '%';
     }
 
     window.updateMarkerCount = (type, mod) => {
         const span = document.getElementById('count_' + type);
-        let count = (parseInt(span.innerText) || 0) + mod;
-        if(count < 0) count = 0;
+        let count = (parseInt(span.innerText) || 0) + mod; if(count < 0) count = 0;
+        // Se mascara ativa e for ação, o count visual é falso, então buscamos do global
+        if (type === 'ações' && document.body.classList.contains('moon-mode')) {
+             count = (globalCharData.marcadores?.ações?.total || 3) + mod;
+        }
         update(ref(db, `fichas/${fichaID}/marcadores/${type}`), { total: count });
     };
 
     window.togglePoint = (type, index) => {
         const key = `p_${index}`;
-        const current = document.getElementById(`${type}_${index}`).classList.contains('active');
-        update(ref(db, `fichas/${fichaID}/marcadores/${type}/pontos`), { [key]: !current });
+        const isActive = document.getElementById(`${type}_${index}`).classList.contains('active');
+        update(ref(db, `fichas/${fichaID}/marcadores/${type}/pontos`), { [key]: !isActive });
     };
 
     function renderMarkers(type, total, pontos) {
         const container = document.getElementById('display_' + type);
         const countSpan = document.getElementById('count_' + type);
         container.innerHTML = "";
-        countSpan.innerText = total || (type === 'ações' ? 3 : 9);
-        const icon = type === 'ações' ? '▲' : '●';
-        const css = type === 'ações' ? 'tri' : 'circ';
-        for(let i=0; i < (total || (type === 'ações' ? 3 : 9)); i++) {
+        // Se for null/undefined, usa padrao
+        const finalTotal = (total !== undefined) ? total : (type === 'ações' ? 3 : 9);
+        countSpan.innerText = finalTotal;
+        
+        const icon = type === 'ações' ? '▲' : '●'; const css = type === 'ações' ? 'tri' : 'circ';
+        for(let i=0; i < finalTotal; i++) {
             const isActive = pontos && pontos[`p_${i}`] === true;
             container.innerHTML += `<span id="${type}_${i}" class="marker-item ${css} ${isActive ? 'active' : ''}" onclick="togglePoint('${type}', ${i})">${icon}</span>`;
         }
     }
 
-    window.addItem = (category) => {
-        // Se for inventário, salva campo peso
-        const data = category === 'inventario' ? { titulo: "", peso: 0, desc: "" } : { titulo: "", teste: "", desc: "" };
-        const newItemRef = push(ref(db, `fichas/${fichaID}/habilidades/${category}`));
-        set(newItemRef, data);
-    };
+    window.addItem = (category) => { const data = category === 'inventario' ? { titulo: "", peso: 0, desc: "" } : { titulo: "", teste: "", desc: "" }; const newItemRef = push(ref(db, `fichas/${fichaID}/habilidades/${category}`)); set(newItemRef, data); };
     window.removeItem = (category, id) => { if(confirm("Apagar?")) remove(ref(db, `fichas/${fichaID}/habilidades/${category}/${id}`)); };
     window.toggleHab = (id) => { document.getElementById('body_' + id).classList.toggle('open'); };
-    
-    // Função unificada para salvar. Se for inventário, atualiza peso
-    window.saveHab = (cat, id, field, val) => { 
-        update(ref(db, `fichas/${fichaID}/habilidades/${cat}/${id}`), { [field]: val })
-        .then(() => { if(cat === 'inventario') updateWeight(); });
-    };
+    window.saveHab = (cat, id, field, val) => { update(ref(db, `fichas/${fichaID}/habilidades/${cat}/${id}`), { [field]: val }).then(() => { if(cat === 'inventario') updateWeight(); }); };
 
     function renderHabs(category, data) {
-        const container = document.getElementById('list_' + category);
-        if(!container) return; container.innerHTML = "";
-        if(!data) return;
-        Object.keys(data).forEach(id => {
-            const item = data[id];
-            const div = document.createElement('div');
-            div.className = 'hab-item';
-            div.innerHTML = `<div class="hab-header"><span class="hab-toggle" onclick="toggleHab('${id}')">▼</span><input type="text" class="hab-title" value="${item.titulo || ''}" onchange="saveHab('${category}','${id}','titulo',this.value)" placeholder="Nome"><input type="text" class="hab-dice" value="${item.teste || ''}" onchange="saveHab('${category}','${id}','teste',this.value)" placeholder="Teste"><button class="btn-del" onclick="removeItem('${category}','${id}')">✖</button></div><div class="hab-body" id="body_${id}"><textarea onchange="saveHab('${category}','${id}','desc',this.value)" placeholder="Descrição...">${item.desc || ''}</textarea></div>`;
-            container.appendChild(div);
-        });
+        const container = document.getElementById('list_' + category); if(!container) return; container.innerHTML = ""; if(!data) return;
+        Object.keys(data).forEach(id => { const item = data[id]; const div = document.createElement('div'); div.className = 'hab-item'; div.innerHTML = `<div class="hab-header"><span class="hab-toggle" onclick="toggleHab('${id}')">▼</span><input type="text" class="hab-title" value="${item.titulo || ''}" onchange="saveHab('${category}','${id}','titulo',this.value)" placeholder="Nome"><input type="text" class="hab-dice" value="${item.teste || ''}" onchange="saveHab('${category}','${id}','teste',this.value)" placeholder="Teste"><button class="btn-del" onclick="removeItem('${category}','${id}')">✖</button></div><div class="hab-body" id="body_${id}"><textarea onchange="saveHab('${category}','${id}','desc',this.value)" placeholder="Descrição...">${item.desc || ''}</textarea></div>`; container.appendChild(div); });
     }
 
-    // NOVA FUNÇÃO DE RENDERIZAR INVENTÁRIO (CAMPO PESO)
     function renderInventory(data) {
-        const container = document.getElementById('list_inventario');
-        if(!container) return; container.innerHTML = "";
-        if(!data) return;
-        Object.keys(data).forEach(id => {
-            const item = data[id];
-            const div = document.createElement('div');
-            div.className = 'hab-item';
-            // Note o input type="number" e placeholder="Peso"
-            div.innerHTML = `<div class="hab-header"><span class="hab-toggle" onclick="toggleHab('${id}')">▼</span><input type="text" class="hab-title" value="${item.titulo || ''}" onchange="saveHab('inventario','${id}','titulo',this.value)" placeholder="Item"><input type="number" step="0.1" class="hab-dice" value="${item.peso || 0}" onchange="saveHab('inventario','${id}','peso',this.value)" placeholder="Peso"><button class="btn-del" onclick="removeItem('inventario','${id}')">✖</button></div><div class="hab-body" id="body_${id}"><textarea onchange="saveHab('inventario','${id}','desc',this.value)" placeholder="Detalhes...">${item.desc || ''}</textarea></div>`;
-            container.appendChild(div);
-        });
+        const container = document.getElementById('list_inventario'); if(!container) return; container.innerHTML = ""; if(!data) return;
+        Object.keys(data).forEach(id => { const item = data[id]; const div = document.createElement('div'); div.className = 'hab-item'; div.innerHTML = `<div class="hab-header"><span class="hab-toggle" onclick="toggleHab('${id}')">▼</span><input type="text" class="hab-title" value="${item.titulo || ''}" onchange="saveHab('inventario','${id}','titulo',this.value)" placeholder="Item"><input type="number" step="0.1" class="hab-dice" value="${item.peso || 0}" onchange="saveHab('inventario','${id}','peso',this.value)" placeholder="Peso"><button class="btn-del" onclick="removeItem('inventario','${id}')">✖</button></div><div class="hab-body" id="body_${id}"><textarea onchange="saveHab('inventario','${id}','desc',this.value)" placeholder="Detalhes...">${item.desc || ''}</textarea></div>`; container.appendChild(div); });
     }
 
-    window.toggleSkull = (id) => {
-        const el = document.getElementById(id);
-        el.classList.toggle('active');
-        update(ref(db, 'fichas/' + fichaID), { [id]: el.classList.contains('active') ? "active" : "inactive" });
-    };
-
-    document.getElementById('img_upload').addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        const reader = new FileReader();
-        reader.onload = (readerEvent) => {
-            const image = new Image();
-            image.onload = () => {
-                const canvas = document.createElement('canvas');
-                const maxSize = 300;
-                let width = image.width; let height = image.height;
-                if (width > height) { if (width > maxSize) { height *= maxSize / width; width = maxSize; } } 
-                else { if (height > maxSize) { width *= maxSize / height; height = maxSize; } }
-                canvas.width = width; canvas.height = height;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(image, 0, 0, width, height);
-                const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
-                document.getElementById('avatar_display').style.backgroundImage = `url(${dataUrl})`;
-                update(ref(db, 'fichas/' + fichaID), { char_img: dataUrl });
-            };
-            image.src = readerEvent.target.result;
-        };
-        reader.readAsDataURL(file);
-    });
+    window.toggleSkull = (id) => { const el = document.getElementById(id); el.classList.toggle('active'); update(ref(db, 'fichas/' + fichaID), { [id]: el.classList.contains('active') ? "active" : "inactive" }); };
+    document.getElementById('img_upload').addEventListener('change', (e) => { const file = e.target.files[0]; const reader = new FileReader(); reader.onload = (readerEvent) => { const image = new Image(); image.onload = () => { const canvas = document.createElement('canvas'); const maxSize = 300; let width = image.width; let height = image.height; if (width > height) { if (width > maxSize) { height *= maxSize / width; width = maxSize; } } else { if (height > maxSize) { width *= maxSize / height; height = maxSize; } } canvas.width = width; canvas.height = height; const ctx = canvas.getContext('2d'); ctx.drawImage(image, 0, 0, width, height); const dataUrl = canvas.toDataURL('image/jpeg', 0.7); document.getElementById('avatar_display').style.backgroundImage = `url(${dataUrl})`; update(ref(db, 'fichas/' + fichaID), { char_img: dataUrl }); }; image.src = readerEvent.target.result; }; reader.readAsDataURL(file); });
 </script>
-
 </body>
 </html>
-
