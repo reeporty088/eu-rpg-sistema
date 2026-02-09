@@ -43,7 +43,6 @@
         .header-label { background: var(--theme-main); text-align: center; border-radius: 20px; padding: 5px; margin-bottom: 15px; font-weight: bold; text-transform: uppercase; display: flex; justify-content: center; align-items: center; gap: 10px; }
         
         input, textarea { background: var(--theme-input); border: 1px solid #555; color: white; padding: 8px; border-radius: 20px; width: 100%; box-sizing: border-box; margin-bottom: 5px; }
-        /* Bloqueio visual para inputs readonly */
         input[readonly] { background: rgba(0,0,0,0.3); color: #aaa; border: 1px dashed #444; cursor: not-allowed; }
         
         label { font-size: 10px; color: var(--theme-light); font-weight: bold; margin-left: 10px; text-transform: uppercase; display: block; }
@@ -76,7 +75,6 @@
         .hp-fill { background: #d32f2f; } .mp-fill { background: #1976d2; } .pa-fill { background: #7b1fa2; }
         .bar-values { position: relative; z-index: 5; width: 100%; display: flex; justify-content: center; align-items: center; pointer-events: none; }
         .bar-values input { pointer-events: auto; width: 45px; background: transparent; border: none; text-align: center; font-size: 14px; font-weight: bold; color: white; text-shadow: 1px 1px 2px #000; margin: 0; padding: 0; }
-        /* Inputs Maximos sem borda ou background diferente quando dentro da barra */
         .bar-values input[readonly] { background: transparent; border: none; color: rgba(255,255,255,0.7); cursor: default; }
 
         .hab-item { background: rgba(0,0,0,0.3); border: 1px solid var(--theme-border); border-radius: 10px; margin-bottom: 8px; overflow: hidden; }
@@ -251,9 +249,8 @@
         let c = 0; if (globalCharData.active_abilities.mask) c++; if (globalCharData.active_abilities.hell) c++; return c;
     }
 
-    // --- NOVA LÓGICA DE CÁLCULO DE STATUS DERIVADOS ---
+    // --- CÁLCULO DE STATUS DERIVADOS ---
     function calculateDerivedStats() {
-        // Usamos valores base do DB (raw), ignorando modificações visuais da Máscara
         const pod = parseInt(globalCharData.poder) || 0;
         const hab = parseInt(globalCharData.habilidade) || 0;
         const res = parseInt(globalCharData.resistencia) || 0;
@@ -268,23 +265,26 @@
             maxPa *= 2;
         }
 
-        // Atualiza inputs visuais (readonly)
         document.getElementById('hp_max').value = maxHp;
         document.getElementById('mp_max').value = maxMp;
         document.getElementById('pa_max').value = maxPa;
 
-        // Salva no DB para o mestre ver
+        // Salva maximos
         update(ref(db, 'fichas/' + fichaID), {
             hp_max: maxHp,
             mp_max: maxMp,
             pa_max: maxPa
         });
+        
+        return { maxHp, maxMp, maxPa };
     }
-    // ---------------------------------------------------
 
     window.toggleAbility = (abilityName) => {
         const isActive = globalCharData.active_abilities && globalCharData.active_abilities[abilityName];
-        const currentMp = parseInt(document.getElementById('mp_at').value) || 0;
+        
+        // CORREÇÃO: Ler MP direto do banco, não do visual (que pode estar bugado)
+        const currentMp = parseInt(globalCharData.mp_at) || 0;
+        
         let cost = 0; if (abilityName === 'mask') cost = 4; if (abilityName === 'hell') cost = 5;
 
         if (!isActive) {
@@ -293,13 +293,11 @@
             
             const updates = { [`active_abilities/${abilityName}`]: true, 'mp_at': currentMp - cost };
             
-            // Ativa e depois recalcula status
             update(ref(db, 'fichas/' + fichaID), updates).then(() => {
-                // Se for Inferno, recarrega PA para o novo máximo
                 if(abilityName === 'hell') {
-                    // Pequeno delay para garantir que o recalculate pegue o status ativo
+                    // Recarrega PA (Dobra)
                     setTimeout(() => {
-                        const newMaxPa = parseInt(document.getElementById('pa_max').value); // Já atualizado pelo listener
+                        const newMaxPa = parseInt(document.getElementById('pa_max').value);
                         update(ref(db, 'fichas/' + fichaID), { pa_at: newMaxPa });
                     }, 200);
                 }
@@ -308,8 +306,8 @@
         } else {
             const updates = { [`active_abilities/${abilityName}`]: false };
             update(ref(db, 'fichas/' + fichaID), updates).then(() => {
-                // Se desativou Inferno, corta PA atual pela metade
                 if(abilityName === 'hell') {
+                    // Corta PA pela metade
                     setTimeout(() => {
                         const curPa = parseInt(globalCharData.pa_at) || 0;
                         update(ref(db, 'fichas/' + fichaID), { pa_at: Math.floor(curPa / 2) });
@@ -327,10 +325,7 @@
     function refreshDisplayValues() {
         if (!globalCharData) return;
         const ab = globalCharData.active_abilities || {};
-        
-        // --- CHAMA O CÁLCULO DE MÁXIMOS ---
-        calculateDerivedStats();
-        // ----------------------------------
+        const stats = calculateDerivedStats(); // Garante maximos atualizados
 
         const maskBtn = document.getElementById('mask-btn'); const hellBtn = document.getElementById('hell-btn');
         document.body.classList.remove('moon-mode', 'hell-mode', 'hybrid-mode');
@@ -357,34 +352,21 @@
             el.value = val; el.disabled = (ab.mask || ab.hell);
         });
 
-        // Valores Atuais (Vida/Mana/PA) - Inferno dobra visualmente o ATUAL também se for HP/PA?
-        // O prompt disse "Dobra a quantia de vida ATUAL". Isso significa que visualmente dobra?
-        // Sim, se o Max dobrou, o Atual deve dobrar visualmente para manter a proporção, ou ser valor real.
-        // A lógica do changeVal já lida com a "Base".
-        // Vamos apenas garantir que os inputs de ATUAL mostrem o valor correto (dobrado se Hell).
+        // Atualiza Inputs Atuais (HP, MP, PA)
+        const hpAtEl = document.getElementById('hp_at'); const paAtEl = document.getElementById('pa_at'); const mpAtEl = document.getElementById('mp_at');
         
-        const hpAtEl = document.getElementById('hp_at');
-        const paAtEl = document.getElementById('pa_at');
-        let hpAtVal = parseInt(globalCharData['hp_at']) || 0;
-        let paAtVal = parseInt(globalCharData['pa_at']) || 0;
-        
-        if (ab.hell) {
-            hpAtVal *= 2;
-            // PA já é dobrado no DB pela função toggleAbility, então não multiplica visualmente de novo aqui
-            // Espera... se toggle salva dobrado, então é valor real.
-            // A Vida: prompt diz "Dobra vida atual". Mas vida é dano.
-            // Vamos manter Vida Dobrada VISUALMENTE (Base no DB) igual fizemos antes.
-            // PA: Prompt diz "Recarrega e dobra". Isso sugere alteração real.
-        }
+        let hpAtVal = parseInt(globalCharData.hp_at) || 0;
+        // Se Hell ativo, o valor BASE deve ser multiplicado visualmente
+        if (ab.hell) hpAtVal *= 2;
         
         if (document.activeElement !== hpAtEl) hpAtEl.value = hpAtVal;
-        // PA usamos valor direto do DB
-        if (document.activeElement !== paAtEl) paAtEl.value = paAtVal;
+        if (document.activeElement !== paAtEl) paAtEl.value = globalCharData.pa_at || 0; // PA é salvo cheio
+        if (document.activeElement !== mpAtEl) mpAtEl.value = globalCharData.mp_at || 0;
 
-        // Atualiza Barras
-        updateBarVisual('hp');
-        updateBarVisual('mp');
-        updateBarVisual('pa');
+        // Barras
+        updateBarVisual('hp', hpAtVal, stats.maxHp);
+        updateBarVisual('mp', parseInt(globalCharData.mp_at)||0, stats.maxMp);
+        updateBarVisual('pa', parseInt(globalCharData.pa_at)||0, stats.maxPa);
 
         periciasList.forEach(p => { let val = parseInt(globalCharData[p.id]) || 0; if (ab.mask) { if (val < 2) val += 1; } updateDisplayPericia(p.id, val); });
 
@@ -396,18 +378,42 @@
         updateWeight();
     }
 
+    // CORREÇÃO CRÍTICA DO CHANGE VAL
     window.changeVal = (type, mod) => {
-        const elAt = document.getElementById(type + '_at'); const elMax = document.getElementById(type + '_max');
-        let currentDisplay = parseInt(elAt.value) || 0; let maxDisplay = parseInt(elMax.value) || 0;
-        let newDisplay = currentDisplay + mod; if (newDisplay < 0) newDisplay = 0; if (newDisplay > maxDisplay) newDisplay = maxDisplay;
+        // Pega valores BASE do DB, não do input visual (que pode estar dobrado)
+        let currentBase = parseInt(globalCharData[type + '_at']) || 0;
         
-        let newBase = newDisplay;
-        // Se for HP e Hell ativo, converte de volta pra base antes de salvar (Visual / 2)
-        if (type === 'hp' && globalCharData.active_abilities?.hell) { newBase = Math.ceil(newDisplay / 2); }
+        // Pega máximos CALCULADOS no momento
+        const pod = parseInt(globalCharData.poder) || 0;
+        const hab = parseInt(globalCharData.habilidade) || 0;
+        const res = parseInt(globalCharData.resistencia) || 0;
+        let maxBase = 0;
+        
+        // Calcula Max BASE
+        if (type === 'hp') maxBase = res * 5;
+        if (type === 'mp') maxBase = hab * 5;
+        if (type === 'pa') maxBase = pod;
+
+        // Se Hell, ajusta logica:
+        // PA já está com valor dobrado salvo no DB, então maxBase deve ser dobrado
+        if (globalCharData.active_abilities?.hell) {
+            if (type === 'pa') maxBase *= 2;
+            // HP está com valor normal no DB, visual que dobra.
+            // Entao operamos na base normal (0 a maxBase normal)
+        }
+
+        let newBase = currentBase + mod;
+        
+        // Clamp
+        if (newBase < 0) newBase = 0;
+        if (newBase > maxBase) newBase = maxBase;
 
         update(ref(db, 'fichas/' + fichaID), { [type + '_at']: newBase });
         
-        if (type === 'mp' && newBase <= 0 && globalCharData.active_abilities?.mask) { update(ref(db, 'fichas/' + fichaID), { 'active_abilities/mask': false }); alert("Mana esgotada! Máscara Lunar desativada."); }
+        if (type === 'mp' && newBase <= 0 && globalCharData.active_abilities?.mask) { 
+            update(ref(db, 'fichas/' + fichaID), { 'active_abilities/mask': false }); 
+            alert("Mana esgotada! Máscara Lunar desativada."); 
+        }
     };
 
     window.converterXP = () => { const xpSpan = document.getElementById('display_xp_total'); const ptSpan = document.getElementById('display_pontos'); let xp = parseInt(xpSpan.innerText) || 0; let pontos = parseInt(ptSpan.innerText) || 0; if (xp >= 10) { const qtd = Math.floor(xp / 10); update(ref(db, 'fichas/' + fichaID), { xp_total: xp - (qtd*10), xp_pontos: pontos + qtd }); } else { alert("XP insuficiente!"); } };
@@ -423,17 +429,15 @@
 
         if (camposParaSalvar.includes(target.id)) {
             let valToSave = target.value;
+            // Se for HP e Hell, o input visual está dobrado. Divide por 2 pra salvar a base.
             if ((target.id === 'hp_at') && ab.hell) { valToSave = Math.ceil(parseInt(valToSave) / 2); }
             
-            // Se mudou atributo, recalcula status
             if (['poder', 'habilidade', 'resistencia'].includes(target.id)) {
-                // Pequeno delay para garantir que o valor salvou antes de calcular
                 const updates = {}; updates[target.id] = valToSave;
                 update(ref(db, 'fichas/' + fichaID), updates).then(() => calculateDerivedStats());
             } else {
                 const updates = {}; updates[target.id] = valToSave;
                 update(ref(db, 'fichas/' + fichaID), updates);
-                if (target.id.includes('_at') || target.id.includes('_max')) updateBarVisual(target.id.split('_')[0]);
             }
         }
     });
@@ -451,7 +455,6 @@
                     const el = document.getElementById(id);
                     const isAttr = ['poder','habilidade','resistencia'].includes(id);
                     const isStat = ['hp_at', 'hp_max', 'mp_at', 'mp_max', 'pa_at', 'pa_max'].includes(id);
-                    
                     if (!id.startsWith('p_') && !isAttr && !isStat) {
                          if (el && document.activeElement !== el) { el.value = dados[id]; }
                     }
@@ -467,10 +470,11 @@
         refreshDisplayValues();
     });
 
-    function updateBarVisual(type) {
-        const at = parseInt(document.getElementById(type + '_at').value) || 0;
-        const max = parseInt(document.getElementById(type + '_max').value) || 1;
-        const percent = Math.min(Math.max((at / max) * 100, 0), 100);
+    function updateBarVisual(type, current, max) {
+        // Se nao vier params, tenta pegar do DOM
+        if (current === undefined) current = parseInt(document.getElementById(type + '_at').value) || 0;
+        if (max === undefined) max = parseInt(document.getElementById(type + '_max').value) || 1;
+        const percent = Math.min(Math.max((current / max) * 100, 0), 100);
         const el = document.getElementById('bar_' + type); if (el) el.style.width = percent + '%';
     }
 
