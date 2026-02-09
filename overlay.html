@@ -2,97 +2,85 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Overlay OBS Text</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Overlay RPG</title>
     <style>
-        /* --- FONTE CUSTOMIZADA --- */
-        /*
-        @font-face {
-            font-family: 'Mitra LT';
-            src: url('MitraLT.ttf'); format('truetype');
-            font-weight: normal;
-            font-style: normal;
-        }
-        */
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Roboto:wght@900&display=swap');
 
         body { 
-            background: transparent; 
             margin: 0; 
-            padding: 20px; 
             overflow: hidden; 
-            font-family: 'Mitra LT', 'Cinzel', serif; 
-        }
-        
-        #widget {
-            width: 100%;
-            max-width: 500px;
-            color: white;
-            text-align: center;
-            /* Sombra forte para destacar os números */
-            text-shadow: 
-                3px 3px 0px #000, 
-                -1px -1px 0px #000, 
-                1px -1px 0px #000, 
-                -1px 1px 0px #000, 
-                0px 3px 5px rgba(0,0,0,0.8);
+            background: transparent; /* Fundo transparente para o OBS */
+            font-family: 'Cinzel', serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
         }
 
-        /* --- MODO 1: NOME (2 linhas) --- */
-        .mode-name {
-            font-weight: 700;
+        /* Container Principal */
+        .overlay-container {
+            text-align: center;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.5s, transform 0.5s;
+        }
+        .overlay-container.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Estilo do Texto Neon */
+        .neon-text {
+            color: #ffffff; /* Texto sempre branco */
+            font-weight: 900;
             text-transform: uppercase;
-            letter-spacing: 2px;
+            /* O text-shadow será injetado via JS baseado na cor do tema */
+        }
+
+        /* --- MODO STATUS (Barras e Números) --- */
+        .status-wrapper {
+            display: flex;
+            gap: 40px;
+            align-items: flex-end;
+        }
+
+        .stat-item {
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
+            position: relative;
         }
 
-        .name-line-1 { font-size: 56px; line-height: 0.9; }
-        .name-line-2 { font-size: 32px; line-height: 1.1; opacity: 0.9; margin-top: 5px; }
-
-        /* --- MODO 2: STATUS (LIMPO) --- */
-        .status-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center; /* Centraliza tudo */
-            gap: 5px; /* Espaço pequeno entre Vida e Mana */
-        }
-
-        /* Estilo dos Números Principais (HP/MP) */
         .stat-value {
-            font-size: 52px; /* Aumentei para ficar bem visível */
-            font-weight: 700;
+            font-size: 56px; /* Números bem grandes */
             line-height: 1;
+            font-family: 'Roboto', sans-serif; /* Fonte mais grossa para números */
         }
 
-        /* Estilo do PA */
-        .pa-value { 
-            font-size: 36px; 
-            font-weight: 700; 
+        .stat-label {
+            font-size: 18px;
+            margin-top: 5px;
+            letter-spacing: 2px;
+            opacity: 0.9;
         }
 
-        /* Espaçamento extra para o PA */
-        .pa-spacing {
-            margin-top: 30px; /* <--- ALTERE AQUI PARA AFASTAR MAIS OU MENOS */
+        /* Ícones opcionais (pode remover se quiser só texto) */
+        .icon { font-size: 24px; margin-bottom: 5px; display: block; }
+
+        /* --- MODO NOME --- */
+        .char-name {
+            font-size: 72px;
+            letter-spacing: 3px;
+            white-space: nowrap;
         }
 
-        /* Cores */
-        .txt-hp { color: #ff4444; }
-        .txt-mp { color: #4488ff; }
-        .txt-pa { color: #aa66cc; }
-
-        .fade-in { animation: fadeIn 0.8s cubic-bezier(0.22, 1, 0.36, 1); }
-        @keyframes fadeIn { 
-            from { opacity: 0; transform: translateY(20px); } 
-            to { opacity: 1; transform: translateY(0); } 
-        }
     </style>
 </head>
 <body>
 
-    <div id="widget"></div>
+    <div id="app" class="overlay-container">
+        </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
@@ -110,53 +98,96 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
-    
+
+    // Pega o ID da URL (ex: overlay.html?p=guerreiro)
     const urlParams = new URLSearchParams(window.location.search);
-    const fichaID = urlParams.get('p') || "personagem_padrao";
+    const fichaID = urlParams.get('p');
 
-    const widget = document.getElementById('widget');
+    // Mapa de Cores (Copiado do index.html)
+    // Se quiser o brilho mais forte, pode clarear essas cores hexadecimais
+    const themeColors = { 
+        sangue: '#ff0000',    // Vermelho vivo
+        oceano: '#0088ff',    // Azul claro
+        floresta: '#00ff00',  // Verde neon
+        ametista: '#d500f9',  // Roxo brilhante
+        brasa: '#ff4400',     // Laranja fogo
+        sombra: '#aaaaaa',    // Cinza claro (para brilhar no fundo escuro)
+        ouro: '#ffcc00',      // Amarelo ouro
+        rosa: '#ff00cc'       // Rosa choque
+    };
 
-    onValue(ref(db, 'fichas/' + fichaID), (snapshot) => {
-        const data = snapshot.val();
-        if (!data) return;
+    if (!fichaID) {
+        document.body.innerHTML = "<h1 style='color:white'>ERRO: ID não especificado na URL (?p=...)</h1>";
+    } else {
+        onValue(ref(db, 'fichas/' + fichaID), (snapshot) => {
+            const data = snapshot.val();
+            if (data) updateOverlay(data);
+        });
+    }
 
-        const rawName = data.char_name || "Desconhecido";
-        const modo = data.overlay_mode || 'nome';
+    function updateOverlay(data) {
+        const container = document.getElementById('app');
+        const mode = data.overlay_mode || 'status'; // 'status' ou 'nome'
+        const theme = data.color_theme || 'sangue';
+        
+        // Pega a cor base. Se não achar, usa vermelho padrão.
+        const glowColor = themeColors[theme] || '#ff0000';
+
+        // Cria o estilo de brilho (Glow)
+        // 3 camadas de sombra para criar um efeito de névoa/neon forte
+        const glowStyle = `text-shadow: 
+            0 0 10px ${glowColor}, 
+            0 0 20px ${glowColor}, 
+            0 0 40px ${glowColor};`;
+
         let html = '';
 
-        if (modo === 'nome') {
-            const partes = rawName.trim().split(' ');
-            if (partes.length > 1) {
-                const primeiro = partes[0];
-                const resto = partes.slice(1).join(' ');
-                html = `<div class="mode-name fade-in"><span class="name-line-1">${primeiro}</span><span class="name-line-2">${resto}</span></div>`;
-            } else {
-                html = `<div class="mode-name fade-in"><span class="name-line-1">${rawName}</span></div>`;
-            }
+        if (mode === 'nome') {
+            // MODO: APENAS NOME
+            html = `
+                <div class="neon-text char-name" style="${glowStyle}">
+                    ${data.char_name || 'Desconhecido'}
+                </div>
+            `;
         } else {
-            // MODO STATUS (Vertical e Limpo)
-            const hpAt = data.hp_at || 0; const hpMax = data.hp_max || 1;
-            const mpAt = data.mp_at || 0; const mpMax = data.mp_max || 1;
-            const paAt = data.pa_at || 0; const paMax = data.pa_max || 1;
+            // MODO: STATUS (Vida, Mana, PA)
+            // Se Máscara Lunar estiver ativa, muda a cor do brilho para Ciano
+            // Se Inferno estiver ativo, muda para Vermelho Sangue
+            let finalGlow = glowStyle;
+            if (data.active_abilities?.mask) {
+                const maskColor = '#00ffff';
+                finalGlow = `text-shadow: 0 0 10px ${maskColor}, 0 0 20px ${maskColor}, 0 0 40px ${maskColor};`;
+            } else if (data.active_abilities?.hell) {
+                const hellColor = '#ff0000';
+                finalGlow = `text-shadow: 0 0 10px ${hellColor}, 0 0 20px ${hellColor}, 0 0 40px ${hellColor};`;
+            }
+
+            // Valores Atuais
+            const hp = data.hp_at || 0;
+            const mp = data.mp_at || 0;
+            const pa = data.pa_at || 0;
 
             html = `
-                <div class="status-container fade-in">
-                    <div class="stat-value txt-hp">
-                        ${hpAt}/${hpMax}
+                <div class="status-wrapper">
+                    <div class="stat-item">
+                        <span class="neon-text stat-value" style="${finalGlow}">${hp}</span>
+                        <span class="neon-text stat-label" style="${finalGlow}">VIDA</span>
                     </div>
-                    
-                    <div class="stat-value txt-mp">
-                        ${mpAt}/${mpMax}
+                    <div class="stat-item">
+                        <span class="neon-text stat-value" style="${finalGlow}">${mp}</span>
+                        <span class="neon-text stat-label" style="${finalGlow}">MANA</span>
                     </div>
-                    
-                    <div class="pa-value txt-pa pa-spacing">
-                         ${paAt} / ${paMax}
+                    <div class="stat-item">
+                        <span class="neon-text stat-value" style="${finalGlow}">${pa}</span>
+                        <span class="neon-text stat-label" style="${finalGlow}">AÇÃO</span>
                     </div>
                 </div>
             `;
         }
-        widget.innerHTML = html;
-    });
+
+        container.innerHTML = html;
+        container.classList.add('visible');
+    }
 </script>
 </body>
 </html>
