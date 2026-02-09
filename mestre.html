@@ -148,7 +148,6 @@
             <button class="btn-calendar" onclick="window.open('calendario.html', '_blank')">📅 Calendário</button>
             <button class="btn-world-obs" onclick="window.open('overlay_world.html', '_blank')">🎥 OBS Mundo</button>
             <button class="btn-global-toggle" onclick="toggleAllOverlays()">👁️ Alternar Todos Overlays</button>
-            
             <button class="btn-journey" onclick="window.open('jornada.html', '_blank')">🗺️ Simulador de Jornada</button>
             <button class="btn-journey" style="border-color:#ffeb3b; color:#ffeb3b;" onclick="window.open('editor.html', '_blank')">📖 Editor Lore</button>
         </div>
@@ -230,6 +229,17 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
     const baseURL = "https://reeporty088.github.io/ed-rpg-fichas/";
+
+    // --- CORREÇÃO: GERAR CAMPOS DE PERÍCIA ---
+    const periciasIds = ['animais', 'arte', 'esporte', 'influencia', 'luta', 'manha', 'maquinas', 'medicina', 'mistica', 'percepcao', 'saber', 'sobrevivencia'];
+    const skillContainer = document.getElementById('npc_skills_container');
+    periciasIds.forEach(pid => {
+        const div = document.createElement('div');
+        div.className = 'skill-input';
+        div.innerHTML = `<label>${pid.toUpperCase().substr(0,3)}</label><input type="number" id="form_skill_${pid}" value="0">`;
+        skillContainer.appendChild(div);
+    });
+    // ----------------------------------------
 
     // --- MUNDO E CLIMA ---
     const SEASONS = ["Primavera", "Verão", "Outono", "Inverno"];
