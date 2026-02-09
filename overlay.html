@@ -2,48 +2,97 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Overlay RPG</title>
+    <title>Overlay OBS Text</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
+    
     <style>
-        /* Fonte padrão igual da ficha (Segoe UI) */
+        /* --- FONTE CUSTOMIZADA --- */
+        /*
+        @font-face {
+            font-family: 'Mitra LT';
+            src: url('MitraLT.ttf'); format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+        */
+
         body { 
+            background: transparent; 
             margin: 0; 
-            padding: 10px;
+            padding: 20px; 
             overflow: hidden; 
-            background: transparent;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            /* Removemos alinhamentos centrais que bagunçavam o OBS */
+            font-family: 'Mitra LT', 'Cinzel', serif; 
+        }
+        
+        #widget {
+            width: 100%;
+            max-width: 500px;
+            color: white;
+            text-align: center;
+            /* Sombra forte para destacar os números */
+            text-shadow: 
+                3px 3px 0px #000, 
+                -1px -1px 0px #000, 
+                1px -1px 0px #000, 
+                -1px 1px 0px #000, 
+                0px 3px 5px rgba(0,0,0,0.8);
         }
 
-        /* Container simples, sem flexbox centralizado */
-        .overlay-container {
-            display: inline-block;
-            text-align: left; /* Alinha à esquerda padrão */
-        }
-
-        /* Estilo das linhas de texto */
-        .stat-row {
-            font-size: 32px; /* Tamanho bom para leitura */
-            font-weight: 900; /* Negrito forte */
-            color: #ffffff; /* Texto Branco */
+        /* --- MODO 1: NOME (2 linhas) --- */
+        .mode-name {
+            font-weight: 700;
             text-transform: uppercase;
-            margin-bottom: 5px;
-            white-space: nowrap;
-            /* Sombra (brilho) será injetada via JS */
+            letter-spacing: 2px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
         }
 
-        .char-name {
-            font-size: 48px;
-            font-weight: 900;
-            color: #ffffff;
-            text-transform: uppercase;
+        .name-line-1 { font-size: 56px; line-height: 0.9; }
+        .name-line-2 { font-size: 32px; line-height: 1.1; opacity: 0.9; margin-top: 5px; }
+
+        /* --- MODO 2: STATUS (LIMPO) --- */
+        .status-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* Centraliza tudo */
+            gap: 5px; /* Espaço pequeno entre Vida e Mana */
+        }
+
+        /* Estilo dos Números Principais (HP/MP) */
+        .stat-value {
+            font-size: 52px; /* Aumentei para ficar bem visível */
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        /* Estilo do PA */
+        .pa-value { 
+            font-size: 36px; 
+            font-weight: 700; 
+        }
+
+        /* Espaçamento extra para o PA */
+        .pa-spacing {
+            margin-top: 30px; /* <--- ALTERE AQUI PARA AFASTAR MAIS OU MENOS */
+        }
+
+        /* Cores */
+        .txt-hp { color: #ff4444; }
+        .txt-mp { color: #4488ff; }
+        .txt-pa { color: #aa66cc; }
+
+        .fade-in { animation: fadeIn 0.8s cubic-bezier(0.22, 1, 0.36, 1); }
+        @keyframes fadeIn { 
+            from { opacity: 0; transform: translateY(20px); } 
+            to { opacity: 1; transform: translateY(0); } 
         }
     </style>
 </head>
 <body>
 
-    <div id="app" class="overlay-container">
-        </div>
+    <div id="widget"></div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
@@ -61,59 +110,53 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
-
+    
     const urlParams = new URLSearchParams(window.location.search);
-    const fichaID = urlParams.get('p');
+    const fichaID = urlParams.get('p') || "personagem_padrao";
 
-    // Cores para o brilho (Glow)
-    const themeColors = { 
-        sangue: '#ff0000', oceano: '#0088ff', floresta: '#00ff00', 
-        ametista: '#d500f9', brasa: '#ff4400', sombra: '#aaaaaa', 
-        ouro: '#ffcc00', rosa: '#ff00cc' 
-    };
+    const widget = document.getElementById('widget');
 
-    if (fichaID) {
-        onValue(ref(db, 'fichas/' + fichaID), (snapshot) => {
-            const data = snapshot.val();
-            if (data) updateOverlay(data);
-        });
-    }
+    onValue(ref(db, 'fichas/' + fichaID), (snapshot) => {
+        const data = snapshot.val();
+        if (!data) return;
 
-    function updateOverlay(data) {
-        const container = document.getElementById('app');
-        const mode = data.overlay_mode || 'status';
-        const theme = data.color_theme || 'sangue';
-        
-        // Define a cor do brilho
-        let glowColor = themeColors[theme] || '#ff0000';
-        
-        // Habilidades Especiais mudam a cor do brilho
-        if (data.active_abilities?.mask) glowColor = '#00ffff'; // Ciano
-        else if (data.active_abilities?.hell) glowColor = '#ff0000'; // Vermelho
-
-        // Estilo do Brilho (Sombra colorida atrás do texto branco)
-        const glowStyle = `text-shadow: 2px 2px 0px #000, 0 0 10px ${glowColor}, 0 0 20px ${glowColor};`;
-
+        const rawName = data.char_name || "Desconhecido";
+        const modo = data.overlay_mode || 'nome';
         let html = '';
 
-        if (mode === 'nome') {
-            html = `<div class="char-name" style="${glowStyle}">${data.char_name || 'Personagem'}</div>`;
+        if (modo === 'nome') {
+            const partes = rawName.trim().split(' ');
+            if (partes.length > 1) {
+                const primeiro = partes[0];
+                const resto = partes.slice(1).join(' ');
+                html = `<div class="mode-name fade-in"><span class="name-line-1">${primeiro}</span><span class="name-line-2">${resto}</span></div>`;
+            } else {
+                html = `<div class="mode-name fade-in"><span class="name-line-1">${rawName}</span></div>`;
+            }
         } else {
-            // Layout Vertical Clássico
-            const hp = data.hp_at || 0;
-            const mp = data.mp_at || 0;
-            const pa = data.pa_at || 0;
-            // Se quiser mostrar o máximo também, mude para: ${hp}/${data.hp_max}
-            
+            // MODO STATUS (Vertical e Limpo)
+            const hpAt = data.hp_at || 0; const hpMax = data.hp_max || 1;
+            const mpAt = data.mp_at || 0; const mpMax = data.mp_max || 1;
+            const paAt = data.pa_at || 0; const paMax = data.pa_max || 1;
+
             html = `
-                <div class="stat-row" style="${glowStyle}">VIDA: ${hp}</div>
-                <div class="stat-row" style="${glowStyle}">MANA: ${mp}</div>
-                <div class="stat-row" style="${glowStyle}">PA: ${pa}</div>
+                <div class="status-container fade-in">
+                    <div class="stat-value txt-hp">
+                        ${hpAt}/${hpMax}
+                    </div>
+                    
+                    <div class="stat-value txt-mp">
+                        ${mpAt}/${mpMax}
+                    </div>
+                    
+                    <div class="pa-value txt-pa pa-spacing">
+                         ${paAt} / ${paMax}
+                    </div>
+                </div>
             `;
         }
-
-        container.innerHTML = html;
-    }
+        widget.innerHTML = html;
+    });
 </script>
 </body>
 </html>
