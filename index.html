@@ -260,7 +260,7 @@
         let maxPa = pod;
         let maxMp = hab * 5;
         let maxHp = res * 5;
-        let deslocTotal = hab * 2; // Cálculo do Deslocamento
+        let deslocTotal = hab * 2; 
 
         // Se Inferno estiver ativo: HP e PA dobram
         if (globalCharData.active_abilities?.hell) {
@@ -272,8 +272,7 @@
         document.getElementById('mp_max').value = maxMp;
         document.getElementById('pa_max').value = maxPa;
 
-        // Salva maximos e deslocamento. 
-        // Verificamos se mudou para evitar loop infinito
+        // Salva maximos
         const updates = { hp_max: maxHp, mp_max: maxMp, pa_max: maxPa };
         if (globalCharData.marcadores?.desloc?.total !== deslocTotal) {
             updates['marcadores/desloc/total'] = deslocTotal;
@@ -287,6 +286,7 @@
     window.toggleAbility = (abilityName) => {
         const isActive = globalCharData.active_abilities && globalCharData.active_abilities[abilityName];
         
+        // CORREÇÃO PARA MANA
         const currentMp = parseInt(globalCharData.mp_at) || 0;
         
         let cost = 0; if (abilityName === 'mask') cost = 4; if (abilityName === 'hell') cost = 5;
@@ -297,6 +297,13 @@
             
             const updates = { [`active_abilities/${abilityName}`]: true, 'mp_at': currentMp - cost };
             
+            // ATIVANDO
+            if (abilityName === 'hell') {
+                // Dobra a VIDA atual
+                const curHp = parseInt(globalCharData.hp_at) || 0;
+                updates['hp_at'] = curHp * 2;
+            }
+
             update(ref(db, 'fichas/' + fichaID), updates).then(() => {
                 if(abilityName === 'hell') {
                     // Recarrega PA (Dobra)
@@ -308,7 +315,15 @@
             });
 
         } else {
+            // DESATIVANDO
             const updates = { [`active_abilities/${abilityName}`]: false };
+            
+            if (abilityName === 'hell') {
+                // Corta a VIDA atual pela metade
+                const curHp = parseInt(globalCharData.hp_at) || 0;
+                updates['hp_at'] = Math.ceil(curHp / 2);
+            }
+
             update(ref(db, 'fichas/' + fichaID), updates).then(() => {
                 if(abilityName === 'hell') {
                     // Corta PA pela metade
@@ -358,14 +373,12 @@
 
         const hpAtEl = document.getElementById('hp_at'); const paAtEl = document.getElementById('pa_at'); const mpAtEl = document.getElementById('mp_at');
         
-        let hpAtVal = parseInt(globalCharData.hp_at) || 0;
-        if (ab.hell) hpAtVal *= 2;
-        
-        if (document.activeElement !== hpAtEl) hpAtEl.value = hpAtVal;
+        // MOSTRA VALOR REAL DO DB (SEM DOBRAR VISUALMENTE)
+        if (document.activeElement !== hpAtEl) hpAtEl.value = globalCharData.hp_at || 0;
         if (document.activeElement !== paAtEl) paAtEl.value = globalCharData.pa_at || 0;
         if (document.activeElement !== mpAtEl) mpAtEl.value = globalCharData.mp_at || 0;
 
-        updateBarVisual('hp', hpAtVal, stats.maxHp);
+        updateBarVisual('hp', parseInt(globalCharData.hp_at)||0, stats.maxHp);
         updateBarVisual('mp', parseInt(globalCharData.mp_at)||0, stats.maxMp);
         updateBarVisual('pa', parseInt(globalCharData.pa_at)||0, stats.maxPa);
 
@@ -376,34 +389,26 @@
         const totalAcoes = (globalCharData.marcadores?.ações?.total || 3);
         renderMarkers('ações', totalAcoes + bonusActions, globalCharData.marcadores?.ações?.pontos);
         
-        // Renderiza Deslocamento com o Total vindo do DB (que foi atualizado em calculateDerivedStats)
         renderMarkers('desloc', globalCharData.marcadores?.desloc?.total, globalCharData.marcadores?.desloc?.pontos);
         
         updateWeight();
     }
 
+    // --- CHANGE VAL SIMPLIFICADO ---
     window.changeVal = (type, mod) => {
-        let currentBase = parseInt(globalCharData[type + '_at']) || 0;
-        const pod = parseInt(globalCharData.poder) || 0;
-        const hab = parseInt(globalCharData.habilidade) || 0;
-        const res = parseInt(globalCharData.resistencia) || 0;
-        let maxBase = 0;
+        // Pega valor real do DB
+        let current = parseInt(globalCharData[type + '_at']) || 0;
         
-        if (type === 'hp') maxBase = res * 5;
-        if (type === 'mp') maxBase = hab * 5;
-        if (type === 'pa') maxBase = pod;
+        // Pega máximos dos inputs (que já foram calculados corretamente)
+        let max = parseInt(document.getElementById(type + '_max').value) || 0;
 
-        if (globalCharData.active_abilities?.hell) {
-            if (type === 'pa') maxBase *= 2;
-        }
+        let newVal = current + mod;
+        if (newVal < 0) newVal = 0;
+        if (newVal > max) newVal = max;
 
-        let newBase = currentBase + mod;
-        if (newBase < 0) newBase = 0;
-        if (newBase > maxBase) newBase = maxBase;
-
-        update(ref(db, 'fichas/' + fichaID), { [type + '_at']: newBase });
+        update(ref(db, 'fichas/' + fichaID), { [type + '_at']: newVal });
         
-        if (type === 'mp' && newBase <= 0 && globalCharData.active_abilities?.mask) { 
+        if (type === 'mp' && newVal <= 0 && globalCharData.active_abilities?.mask) { 
             update(ref(db, 'fichas/' + fichaID), { 'active_abilities/mask': false }); 
             alert("Mana esgotada! Máscara Lunar desativada."); 
         }
@@ -422,8 +427,9 @@
 
         if (camposParaSalvar.includes(target.id)) {
             let valToSave = target.value;
-            if ((target.id === 'hp_at') && ab.hell) { valToSave = Math.ceil(parseInt(valToSave) / 2); }
             
+            // Removemos a lógica de dividir pela metade. Salva o que está escrito.
+            // Apenas para atributos que causam recalculo
             if (['poder', 'habilidade', 'resistencia'].includes(target.id)) {
                 const updates = {}; updates[target.id] = valToSave;
                 update(ref(db, 'fichas/' + fichaID), updates).then(() => calculateDerivedStats());
@@ -458,7 +464,6 @@
         ['skull1', 'skull2', 'skull3'].forEach(sid => { document.getElementById(sid).classList.toggle('active', dados[sid] === "active"); });
         ['geral', 'vantagens', 'arquetipo_hab', 'artefatos', 'tecnicas'].forEach(cat => renderHabs(cat, dados.habilidades?.[cat]));
         renderInventory(dados.habilidades?.['inventario']);
-        // Deslocamento é gerenciado pelo calculateDerivedStats, mas aqui carregamos os pontos
         renderMarkers('ações', dados.marcadores?.['ações']?.total, dados.marcadores?.['ações']?.pontos);
         refreshDisplayValues();
     });
