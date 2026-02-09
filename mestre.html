@@ -15,13 +15,23 @@
         .world-date { font-size: 20px; font-weight: bold; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; }
         .world-time { font-size: 32px; font-weight: bold; color: white; display: flex; align-items: center; gap: 10px; }
         .weather-badge { background: rgba(0,0,0,0.4); padding: 5px 12px; border-radius: 20px; font-size: 14px; border: 1px solid #555; display: flex; align-items: center; gap: 8px; }
+        
+        /* BOTÕES DO TOPO */
         .world-buttons { display: flex; gap: 10px; flex-wrap: wrap; }
+        
         .btn-calendar { background: var(--header-bg); color: white; border: 1px solid var(--accent); padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 14px; text-transform: uppercase; transition: 0.3s; }
         .btn-calendar:hover { background: #a00000; box-shadow: 0 0 10px var(--header-bg); }
+        
         .btn-world-obs { background: transparent; color: #00ffff; border: 1px solid #00ffff; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 14px; text-transform: uppercase; transition: 0.3s; }
         .btn-world-obs:hover { background: rgba(0, 255, 255, 0.1); box-shadow: 0 0 10px rgba(0, 255, 255, 0.3); }
+        
         .btn-global-toggle { background: transparent; color: #ffd700; border: 1px solid #ffd700; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 14px; text-transform: uppercase; transition: 0.3s; }
         .btn-global-toggle:hover { background: rgba(255, 215, 0, 0.1); box-shadow: 0 0 10px rgba(255, 215, 0, 0.3); }
+
+        /* NOVO BOTÃO DE JORNADA */
+        .btn-journey { background: transparent; color: #4caf50; border: 1px solid #4caf50; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 14px; text-transform: uppercase; transition: 0.3s; }
+        .btn-journey:hover { background: rgba(76, 175, 80, 0.1); box-shadow: 0 0 10px rgba(76, 175, 80, 0.3); }
+
 
         .category-container { background: var(--divider-bg); border: 1px solid #333; border-radius: 10px; padding: 15px; margin-bottom: 20px; transition: 0.3s; }
         .category-container.drag-over { border-color: var(--accent); background: #2a1a1a; }
@@ -138,6 +148,9 @@
             <button class="btn-calendar" onclick="window.open('calendario.html', '_blank')">📅 Calendário</button>
             <button class="btn-world-obs" onclick="window.open('overlay_world.html', '_blank')">🎥 OBS Mundo</button>
             <button class="btn-global-toggle" onclick="toggleAllOverlays()">👁️ Alternar Todos Overlays</button>
+            
+            <button class="btn-journey" onclick="window.open('jornada.html', '_blank')">🗺️ Simulador de Jornada</button>
+            <button class="btn-journey" style="border-color:#ffeb3b; color:#ffeb3b;" onclick="window.open('editor.html', '_blank')">📖 Editor Lore</button>
         </div>
     </div>
 
