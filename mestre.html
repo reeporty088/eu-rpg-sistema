@@ -18,17 +18,12 @@
         
         /* BOTÕES DO TOPO */
         .world-buttons { display: flex; gap: 10px; flex-wrap: wrap; }
-        
         .btn-calendar { background: var(--header-bg); color: white; border: 1px solid var(--accent); padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 14px; text-transform: uppercase; transition: 0.3s; }
         .btn-calendar:hover { background: #a00000; box-shadow: 0 0 10px var(--header-bg); }
-        
         .btn-world-obs { background: transparent; color: #00ffff; border: 1px solid #00ffff; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 14px; text-transform: uppercase; transition: 0.3s; }
         .btn-world-obs:hover { background: rgba(0, 255, 255, 0.1); box-shadow: 0 0 10px rgba(0, 255, 255, 0.3); }
-        
         .btn-global-toggle { background: transparent; color: #ffd700; border: 1px solid #ffd700; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 14px; text-transform: uppercase; transition: 0.3s; }
         .btn-global-toggle:hover { background: rgba(255, 215, 0, 0.1); box-shadow: 0 0 10px rgba(255, 215, 0, 0.3); }
-
-        /* NOVO BOTÃO DE JORNADA */
         .btn-journey { background: transparent; color: #4caf50; border: 1px solid #4caf50; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 14px; text-transform: uppercase; transition: 0.3s; }
         .btn-journey:hover { background: rgba(76, 175, 80, 0.1); box-shadow: 0 0 10px rgba(76, 175, 80, 0.3); }
 
@@ -49,10 +44,17 @@
         .player-info h2 { margin: 0; font-size: 16px; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .player-info p { margin: 0; font-size: 11px; color: #ccc; }
         
-        .status-bar { height: 18px; background: #222; border-radius: 10px; margin-bottom: 6px; overflow: hidden; border: 1px solid #444; position: relative; }
+        /* BARRAS DE STATUS COM BOTÕES */
+        .stat-row { display: flex; align-items: center; gap: 4px; margin-bottom: 6px; }
+        .btn-stat { width: 22px; height: 18px; background: #222; border: 1px solid #555; color: #ccc; border-radius: 4px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; transition: 0.2s; }
+        .btn-stat:hover { background: #444; color: white; border-color: white; }
+        .btn-stat.minus:hover { color: #ff5555; }
+        .btn-stat.plus:hover { color: #55ff55; }
+
+        .status-bar { flex-grow: 1; height: 18px; background: #222; border-radius: 10px; overflow: hidden; border: 1px solid #444; position: relative; }
         .bar-fill { height: 100%; transition: width 0.4s ease; }
         .hp { background: #d32f2f; } .mp { background: #1976d2; } .pa { background: #7b1fa2; }
-        .bar-text { position: absolute; width: 100%; text-align: center; font-size: 10px; font-weight: bold; line-height: 18px; text-shadow: 1px 1px 2px #000; z-index: 2; }
+        .bar-text { position: absolute; width: 100%; text-align: center; font-size: 10px; font-weight: bold; line-height: 18px; text-shadow: 1px 1px 2px #000; z-index: 2; pointer-events: none; }
         
         .skull-display { text-align: center; font-size: 20px; margin-top: 5px; opacity: 0.8; }
         .skull-icon { opacity: 0.15; filter: grayscale(1); margin: 0 2px; }
@@ -230,7 +232,6 @@
     const db = getDatabase(app);
     const baseURL = "https://reeporty088.github.io/ed-rpg-fichas/";
 
-    // --- CORREÇÃO: GERAR CAMPOS DE PERÍCIA ---
     const periciasIds = ['animais', 'arte', 'esporte', 'influencia', 'luta', 'manha', 'maquinas', 'medicina', 'mistica', 'percepcao', 'saber', 'sobrevivencia'];
     const skillContainer = document.getElementById('npc_skills_container');
     periciasIds.forEach(pid => {
@@ -239,9 +240,7 @@
         div.innerHTML = `<label>${pid.toUpperCase().substr(0,3)}</label><input type="number" id="form_skill_${pid}" value="0">`;
         skillContainer.appendChild(div);
     });
-    // ----------------------------------------
 
-    // --- MUNDO E CLIMA ---
     const SEASONS = ["Primavera", "Verão", "Outono", "Inverno"];
     const WEATHER_TYPES = { "Primavera": ["Sol", "Nublado", "Nublado", "Chuva", "Tempestade"], "Verão": ["Sol Intenso", "Sol", "Nublado", "Tempestade", "Vendaval"], "Outono": ["Nublado", "Chuva", "Neblina", "Vento", "Seco"], "Inverno": ["Nublado", "Neve Fraca", "Neve Forte", "Vento Gelado", "Nevasca"] };
     const WEATHER_ICONS = { "Sol": "☀", "Sol Intenso": "🔥", "Nublado": "☁", "Chuva": "🌧", "Tempestade": "⛈", "Neblina": "🌫", "Vento": "🌬", "Vento Gelado": "🌬", "Seco": "🍂", "Neve Fraca": "🌨", "Neve Forte": "❄", "Nevasca": "☃", "Vendaval": "🌪" };
@@ -262,9 +261,6 @@
         document.getElementById('wd_weather_icon').innerText = weather.icon; document.getElementById('wd_weather_text').innerText = weather.name;
     });
 
-    // ==========================================
-    // SISTEMA GERAL
-    // ==========================================
     let globalPlayers = {}; let globalNpcs = {}; let globalDivisions = { players: {}, npcs: {} };
 
     function createDividerHTML(divId, divName, type) {
@@ -292,7 +288,6 @@
     onValue(ref(db, 'fichas'), (snap) => { globalPlayers = snap.val() || {}; renderAll(); });
     onValue(ref(db, 'npcs'), (snap) => { globalNpcs = snap.val() || {}; renderAll(); });
 
-    // CONFIG DE JOGADOR
     window.openPlayerConfig = (id) => {
         const f = globalPlayers[id]; if(!f) return;
         document.getElementById('cfg_player_id').value = id;
@@ -330,13 +325,66 @@
 
     function createNpcCard(id, n) {
         const el = document.createElement('div'); el.className = 'player-card npc-card'; el.draggable = true; el.ondragstart = (e) => drag(e, id, 'npcs');
-        const mpMax = n.mp || 1; const mpAt = (n.mp_at !== undefined) ? n.mp_at : mpMax; const mpP = Math.min((mpAt/mpMax)*100, 100);
+        
+        // Dados de Mana
+        const mpMax = n.mp || 1; 
+        const mpAt = (n.mp_at !== undefined) ? n.mp_at : mpMax; 
+        const mpP = Math.min((mpAt/mpMax)*100, 100);
+
+        // Dados de Vida
+        const hpMax = n.hp || 1;
+        const hpAt = (n.hp_at !== undefined) ? n.hp_at : hpMax;
+        const hpP = Math.min((hpAt/hpMax)*100, 100);
+
         const periciasIds = ['animais', 'arte', 'esporte', 'influencia', 'luta', 'manha', 'maquinas', 'medicina', 'mistica', 'percepcao', 'saber', 'sobrevivencia'];
         let skillHtml = ''; periciasIds.forEach(pid => { const val = n.skills ? (parseInt(n.skills[pid]) || 0) : 0; if (val !== 0) { const css = val > 0 ? 'pos' : 'neg'; const txt = val > 0 ? `+${val}` : val; skillHtml += `<span class="skill-tag ${css}">${pid.toUpperCase().substr(0,3)} ${txt}</span>`; } });
         let habHtml = ''; if (n.habs) { n.habs.forEach((h, idx) => { habHtml += `<div class="npc-hab-item"><div class="npc-hab-title" onclick="toggleNpcDesc('${id}_hab_${idx}')"><span>${h.titulo}</span> <span>[${h.teste}]</span></div><div class="npc-hab-desc" id="desc_${id}_hab_${idx}">${h.desc}</div></div>`; }); }
-        el.innerHTML = `<div class="player-header"><div class="player-img" style="background-image: url('${n.img || ''}')"></div><div class="player-info"><h2>${n.name || 'NPC'}</h2><div class="controls-row"><button class="btn-small" onclick='editNpc(${JSON.stringify(id)})'>✏️ Editar</button><button class="btn-small" style="background:#c62828" onclick="deleteNpc('${id}')">🗑️</button></div></div></div><div class="status-bar"><div class="bar-text">PV ${n.hp}/${n.hp}</div><div class="bar-fill hp" style="width:100%"></div></div><div class="status-bar"><div class="bar-text">PM ${mpAt}/${mpMax}</div><div class="bar-fill mp" style="width:${mpP}%"></div></div><button class="npc-expand-btn" onclick="toggleNpcDetails('${id}')">▼ DETALHES ▼</button><div id="details_${id}" class="npc-details"><div class="npc-attr-row"><div class="npc-attr">POD<span>${n.pod}</span></div><div class="npc-attr">HAB<span>${n.hab}</span></div><div class="npc-attr">RES<span>${n.res}</span></div><div class="npc-attr" style="color:#aa66cc">PA<span>${n.pa}</span></div></div><div class="tag-container">${skillHtml || '<span style="color:#666; font-size:10px">Sem perícias</span>'}</div><div class="npc-hab-list">${habHtml}</div></div>`;
+        
+        el.innerHTML = `
+            <div class="player-header"><div class="player-img" style="background-image: url('${n.img || ''}')"></div><div class="player-info"><h2>${n.name || 'NPC'}</h2><div class="controls-row"><button class="btn-small" onclick='editNpc(${JSON.stringify(id)})'>✏️ Editar</button><button class="btn-small" style="background:#c62828" onclick="deleteNpc('${id}')">🗑️</button></div></div></div>
+            
+            <div class="stat-row">
+                <button class="btn-stat minus" onclick="changeNpcStat('${id}', 'hp', -1)">-</button>
+                <div class="status-bar">
+                    <div class="bar-text">PV ${hpAt}/${hpMax}</div>
+                    <div class="bar-fill hp" style="width:${hpP}%"></div>
+                </div>
+                <button class="btn-stat plus" onclick="changeNpcStat('${id}', 'hp', 1)">+</button>
+            </div>
+
+            <div class="stat-row">
+                <button class="btn-stat minus" onclick="changeNpcStat('${id}', 'mp', -1)">-</button>
+                <div class="status-bar">
+                    <div class="bar-text">PM ${mpAt}/${mpMax}</div>
+                    <div class="bar-fill mp" style="width:${mpP}%"></div>
+                </div>
+                <button class="btn-stat plus" onclick="changeNpcStat('${id}', 'mp', 1)">+</button>
+            </div>
+            
+            <button class="npc-expand-btn" onclick="toggleNpcDetails('${id}')">▼ DETALHES ▼</button>
+            <div id="details_${id}" class="npc-details"><div class="npc-attr-row"><div class="npc-attr">POD<span>${n.pod}</span></div><div class="npc-attr">HAB<span>${n.hab}</span></div><div class="npc-attr">RES<span>${n.res}</span></div><div class="npc-attr" style="color:#aa66cc">PA<span>${n.pa}</span></div></div><div class="tag-container">${skillHtml || '<span style="color:#666; font-size:10px">Sem perícias</span>'}</div><div class="npc-hab-list">${habHtml}</div></div>
+        `;
         return el;
     }
+
+    // NOVA FUNÇÃO: Alterar Status de NPC
+    window.changeNpcStat = (id, type, mod) => {
+        const n = globalNpcs[id];
+        if(!n) return;
+        
+        const maxKey = type; // 'hp' ou 'mp'
+        const curKey = type + '_at';
+        
+        const max = parseInt(n[maxKey]) || 1;
+        // Se _at não existe (nunca foi mexido), assume que está cheio (max)
+        const current = (n[curKey] !== undefined) ? parseInt(n[curKey]) : max;
+        
+        let newVal = current + mod;
+        if(newVal < 0) newVal = 0;
+        if(newVal > max) newVal = max;
+        
+        update(ref(db, `npcs/${id}`), { [curKey]: newVal });
+    };
 
     window.allowDrop = (ev) => ev.preventDefault();
     window.drag = (ev, id, type) => ev.dataTransfer.setData("text/plain", JSON.stringify({id: id, type: type}));
@@ -345,9 +393,6 @@
     window.renameCategory = (type, catId, oldName) => { const newName = prompt("Nome da divisória:", oldName); if (newName && newName !== oldName) update(ref(db, `divisoes/${type}/${catId}`), { name: newName }); };
     window.deleteCategory = (type, catId) => { if(confirm("Excluir divisória?")) remove(ref(db, `divisoes/${type}/${catId}`)); };
 
-    // ==========================================
-    // SISTEMA DE COMBATE (SIDEBAR)
-    // ==========================================
     let autoRegen = true;
 
     window.toggleAutoRegen = () => {
@@ -423,7 +468,6 @@
         }, { onlyOnce: true });
     };
 
-    // --- FUNÇÕES GERAIS ---
     window.openNpcForm = () => { document.getElementById('npc_id').value = ""; document.getElementById('npc_name').value = ""; document.getElementById('npc_img_data').value = ""; document.getElementById('npc_img_file').value = ""; document.getElementById('npc_pod').value = 0; document.getElementById('npc_hab').value = 0; document.getElementById('npc_res').value = 0; document.getElementById('npc_hp').value = 10; document.getElementById('npc_mp').value = 10; document.getElementById('npc_pa').value = 3; const periciasIds = ['animais', 'arte', 'esporte', 'influencia', 'luta', 'manha', 'maquinas', 'medicina', 'mistica', 'percepcao', 'saber', 'sobrevivencia']; periciasIds.forEach(pid => document.getElementById(`form_skill_${pid}`).value = 0); document.getElementById('hab_editor_list').innerHTML = ""; document.getElementById('form-npc-container').classList.add('open'); };
     window.closeNpcForm = () => document.getElementById('form-npc-container').classList.remove('open');
     window.addHabRow = (titulo="", teste="", desc="") => { const div = document.createElement('div'); div.className = 'hab-editor-row'; div.innerHTML = `<div style="flex-grow:1"><input type="text" placeholder="Nome" class="hab-row-title" value="${titulo}" style="margin-bottom:2px"><input type="text" placeholder="Teste" class="hab-row-test" value="${teste}" style="margin-bottom:2px"><textarea placeholder="Descrição" class="hab-row-desc" rows="2">${desc}</textarea></div><button type="button" class="btn-icon" onclick="this.parentElement.remove()">✖</button>`; document.getElementById('hab_editor_list').appendChild(div); };
