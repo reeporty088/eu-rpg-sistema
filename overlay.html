@@ -27,15 +27,9 @@
         #widget {
             width: 100%;
             max-width: 500px;
-            color: white;
+            color: white; /* Texto base branco */
             text-align: center;
-            /* Sombra forte para destacar os números */
-            text-shadow: 
-                3px 3px 0px #000, 
-                -1px -1px 0px #000, 
-                1px -1px 0px #000, 
-                -1px 1px 0px #000, 
-                0px 3px 5px rgba(0,0,0,0.8);
+            /* A sombra base foi movida para o JavaScript para ser dinâmica */
         }
 
         /* --- MODO 1: NOME (2 linhas) --- */
@@ -78,10 +72,7 @@
             margin-top: 30px; /* <--- ALTERE AQUI PARA AFASTAR MAIS OU MENOS */
         }
 
-        /* Cores */
-        .txt-hp { color: #ff4444; }
-        .txt-mp { color: #4488ff; }
-        .txt-pa { color: #aa66cc; }
+        /* Removemos as cores fixas daqui (.txt-hp, .txt-mp) pois agora são dinâmicas */
 
         .fade-in { animation: fadeIn 0.8s cubic-bezier(0.22, 1, 0.36, 1); }
         @keyframes fadeIn { 
@@ -116,12 +107,46 @@
 
     const widget = document.getElementById('widget');
 
+    // Mapeamento de Cores dos Temas
+    const themeColors = { 
+        sangue: '#ff0000',    // Vermelho
+        oceano: '#00ccff',    // Azul Ciano
+        floresta: '#00ff00',  // Verde Neon
+        ametista: '#d500f9',  // Roxo
+        brasa: '#ff5500',     // Laranja
+        sombra: '#aaaaaa',    // Cinza
+        ouro: '#ffcc00',      // Amarelo
+        rosa: '#ff00cc'       // Rosa
+    };
+
     onValue(ref(db, 'fichas/' + fichaID), (snapshot) => {
         const data = snapshot.val();
         if (!data) return;
 
         const rawName = data.char_name || "Desconhecido";
         const modo = data.overlay_mode || 'nome';
+        
+        // --- LÓGICA DE COR DINÂMICA ---
+        const theme = data.color_theme || 'sangue';
+        let glowColor = themeColors[theme] || '#ff0000'; // Cor base do tema
+
+        // Habilidades sobrepõem a cor do tema
+        if (data.active_abilities?.mask) glowColor = '#00ffff'; // Ciano se Máscara
+        else if (data.active_abilities?.hell) glowColor = '#ff0000'; // Vermelho se Inferno
+
+        // Cria o estilo inline com a sombra preta pesada (do seu código original) + o brilho colorido
+        const dynamicStyle = `
+            color: #ffffff;
+            text-shadow: 
+                3px 3px 0px #000, 
+                -1px -1px 0px #000, 
+                1px -1px 0px #000, 
+                -1px 1px 0px #000, 
+                0 0 15px ${glowColor}, 
+                0 0 30px ${glowColor};
+        `;
+        // ------------------------------
+
         let html = '';
 
         if (modo === 'nome') {
@@ -129,9 +154,9 @@
             if (partes.length > 1) {
                 const primeiro = partes[0];
                 const resto = partes.slice(1).join(' ');
-                html = `<div class="mode-name fade-in"><span class="name-line-1">${primeiro}</span><span class="name-line-2">${resto}</span></div>`;
+                html = `<div class="mode-name fade-in" style="${dynamicStyle}"><span class="name-line-1">${primeiro}</span><span class="name-line-2">${resto}</span></div>`;
             } else {
-                html = `<div class="mode-name fade-in"><span class="name-line-1">${rawName}</span></div>`;
+                html = `<div class="mode-name fade-in" style="${dynamicStyle}"><span class="name-line-1">${rawName}</span></div>`;
             }
         } else {
             // MODO STATUS (Vertical e Limpo)
@@ -140,16 +165,16 @@
             const paAt = data.pa_at || 0; const paMax = data.pa_max || 1;
 
             html = `
-                <div class="status-container fade-in">
-                    <div class="stat-value txt-hp">
+                <div class="status-container fade-in" style="${dynamicStyle}">
+                    <div class="stat-value">
                         ${hpAt}/${hpMax}
                     </div>
                     
-                    <div class="stat-value txt-mp">
+                    <div class="stat-value">
                         ${mpAt}/${mpMax}
                     </div>
                     
-                    <div class="pa-value txt-pa pa-spacing">
+                    <div class="pa-value pa-spacing">
                          ${paAt} / ${paMax}
                     </div>
                 </div>
