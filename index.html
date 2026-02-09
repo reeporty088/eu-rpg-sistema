@@ -20,14 +20,11 @@
         .col { display: flex; flex-direction: column; gap: 15px; }
         
         /* --- MODOS ESPECIAIS --- */
-        /* MÁSCARA LUNAR (AZUL) */
         body.moon-mode { --theme-main: #0088aa; --theme-light: #00ffff; }
         body.moon-mode .attr-box input, body.moon-mode .pericia-val, body.moon-mode #char_name, body.moon-mode #mask-btn { color: #00ffff !important; text-shadow: 0 0 8px #00ffff; }
         body.moon-mode .attr-box { box-shadow: 0 0 10px rgba(0, 255, 255, 0.3); border-color: #00ffff; }
 
-        /* CHAMADO DO INFERNO (VERMELHO) */
         body.hell-mode { --theme-main: #880000; --theme-light: #ff0000; }
-        /* Aplica brilho vermelho na Vida e PA (inputs dentro das barras) e atributos */
         body.hell-mode .attr-box.hell-active input, 
         body.hell-mode #bar_hp .bar-values input, 
         body.hell-mode #bar_pa .bar-values input, 
@@ -37,7 +34,6 @@
         }
         body.hell-mode .attr-box.hell-active { box-shadow: 0 0 15px rgba(255, 0, 0, 0.5); border-color: #ff0000; }
 
-        /* MODO HÍBRIDO (ROXO) */
         body.hybrid-mode { --theme-main: #4a0072; --theme-light: #d500f9; }
         body.hybrid-mode #char_name, body.hybrid-mode #mask-btn, body.hybrid-mode #hell-btn { color: #d500f9 !important; text-shadow: 0 0 10px #d500f9; }
         body.hybrid-mode .attr-box input { color: #00ffff !important; } 
@@ -47,6 +43,9 @@
         .header-label { background: var(--theme-main); text-align: center; border-radius: 20px; padding: 5px; margin-bottom: 15px; font-weight: bold; text-transform: uppercase; display: flex; justify-content: center; align-items: center; gap: 10px; }
         
         input, textarea { background: var(--theme-input); border: 1px solid #555; color: white; padding: 8px; border-radius: 20px; width: 100%; box-sizing: border-box; margin-bottom: 5px; }
+        /* Bloqueio visual para inputs readonly */
+        input[readonly] { background: rgba(0,0,0,0.3); color: #aaa; border: 1px dashed #444; cursor: not-allowed; }
+        
         label { font-size: 10px; color: var(--theme-light); font-weight: bold; margin-left: 10px; text-transform: uppercase; display: block; }
         .hab-body textarea { min-height: 120px; resize: vertical; line-height: 1.4; font-size: 14px; }
         
@@ -56,7 +55,6 @@
         .theme-btn { position: absolute; top: 0; right: 20px; background: #222; border: 2px solid var(--theme-light); color: var(--theme-light); border-radius: 50%; width: 30px; height: 30px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; z-index: 20; transition: 0.3s; }
         .theme-btn:hover { background: var(--theme-light); color: #000; }
         
-        /* BOTÕES DE HABILIDADES ESPECIAIS */
         .ability-btn { position: absolute; top: 40px; right: 20px; background: #111; border: 2px solid #555; color: #555; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; display: none; align-items: center; justify-content: center; font-size: 18px; z-index: 20; transition: 0.3s; }
         .ability-btn:hover { border-color: white; color: white; }
         #mask-btn { right: 20px; } 
@@ -78,6 +76,8 @@
         .hp-fill { background: #d32f2f; } .mp-fill { background: #1976d2; } .pa-fill { background: #7b1fa2; }
         .bar-values { position: relative; z-index: 5; width: 100%; display: flex; justify-content: center; align-items: center; pointer-events: none; }
         .bar-values input { pointer-events: auto; width: 45px; background: transparent; border: none; text-align: center; font-size: 14px; font-weight: bold; color: white; text-shadow: 1px 1px 2px #000; margin: 0; padding: 0; }
+        /* Inputs Maximos sem borda ou background diferente quando dentro da barra */
+        .bar-values input[readonly] { background: transparent; border: none; color: rgba(255,255,255,0.7); cursor: default; }
 
         .hab-item { background: rgba(0,0,0,0.3); border: 1px solid var(--theme-border); border-radius: 10px; margin-bottom: 8px; overflow: hidden; }
         .hab-header { display: flex; align-items: center; padding: 8px; gap: 5px; }
@@ -150,16 +150,16 @@
             
             <div class="header-label" style="margin-top:15px;">Status</div>
             <div class="bar-container">
-                <label class="bar-label">PONTOS DE VIDA</label>
-                <div class="bar-controls"><button class="btn-math" onclick="changeVal('hp', -1)">-</button><div class="bar-bg"><div id="bar_hp" class="bar-fill hp-fill"></div><div class="bar-values"><input type="number" id="hp_at" value="10"> / <input type="number" id="hp_max" value="10"></div></div><button class="btn-math" onclick="changeVal('hp', 1)">+</button></div>
+                <label class="bar-label">PONTOS DE VIDA (Max = Res x 5)</label>
+                <div class="bar-controls"><button class="btn-math" onclick="changeVal('hp', -1)">-</button><div class="bar-bg"><div id="bar_hp" class="bar-fill hp-fill"></div><div class="bar-values"><input type="number" id="hp_at" value="10"> / <input type="number" id="hp_max" value="10" readonly></div></div><button class="btn-math" onclick="changeVal('hp', 1)">+</button></div>
             </div>
             <div class="bar-container">
-                <label class="bar-label">PONTOS DE MANA</label>
-                <div class="bar-controls"><button class="btn-math" onclick="changeVal('mp', -1)">-</button><div class="bar-bg"><div id="bar_mp" class="bar-fill mp-fill"></div><div class="bar-values"><input type="number" id="mp_at" value="10"> / <input type="number" id="mp_max" value="10"></div></div><button class="btn-math" onclick="changeVal('mp', 1)">+</button></div>
+                <label class="bar-label">PONTOS DE MANA (Max = Hab x 5)</label>
+                <div class="bar-controls"><button class="btn-math" onclick="changeVal('mp', -1)">-</button><div class="bar-bg"><div id="bar_mp" class="bar-fill mp-fill"></div><div class="bar-values"><input type="number" id="mp_at" value="10"> / <input type="number" id="mp_max" value="10" readonly></div></div><button class="btn-math" onclick="changeVal('mp', 1)">+</button></div>
             </div>
             <div class="bar-container">
-                <label class="bar-label">PONTOS DE AÇÃO</label>
-                <div class="bar-controls"><button class="btn-math" onclick="changeVal('pa', -1)">-</button><div class="bar-bg"><div id="bar_pa" class="bar-fill pa-fill"></div><div class="bar-values"><input type="number" id="pa_at" value="3"> / <input type="number" id="pa_max" value="3"></div></div><button class="btn-math" onclick="changeVal('pa', 1)">+</button></div>
+                <label class="bar-label">PONTOS DE AÇÃO (Max = Pod)</label>
+                <div class="bar-controls"><button class="btn-math" onclick="changeVal('pa', -1)">-</button><div class="bar-bg"><div id="bar_pa" class="bar-fill pa-fill"></div><div class="bar-values"><input type="number" id="pa_at" value="3"> / <input type="number" id="pa_max" value="3" readonly></div></div><button class="btn-math" onclick="changeVal('pa', 1)">+</button></div>
             </div>
             <div style="text-align:center; margin: 10px 0;"><span class="skull" id="skull1" onclick="toggleSkull('skull1')">💀</span><span class="skull" id="skull2" onclick="toggleSkull('skull2')">💀</span><span class="skull" id="skull3" onclick="toggleSkull('skull3')">💀</span></div>
             
@@ -241,7 +241,7 @@
     window.setTheme = (themeName) => { const t = themes[themeName]; if(!t) return; const r = document.documentElement.style; r.setProperty('--theme-main', t.main); r.setProperty('--theme-card', t.card); r.setProperty('--theme-border', t.border); r.setProperty('--theme-input', t.input); r.setProperty('--theme-light', t.light); update(ref(db, 'fichas/' + fichaID), { color_theme: themeName }); document.getElementById('colorPicker').classList.remove('open'); };
     const picker = document.getElementById('colorPicker'); Object.keys(themes).forEach(key => { const div = document.createElement('div'); div.className = 'color-swatch'; div.style.backgroundColor = themes[key].main; div.onclick = () => setTheme(key); picker.appendChild(div); });
     const periciasList = [ {id: 'p_animais', nome: 'ANIMAIS'}, {id: 'p_arte', nome: 'ARTE'}, {id: 'p_esporte', nome: 'ESPORTE'}, {id: 'p_influencia', nome: 'INFLUÊNCIA'}, {id: 'p_luta', nome: 'LUTA'}, {id: 'p_manha', nome: 'MANHA'}, {id: 'p_maquinas', nome: 'MÁQUINAS'}, {id: 'p_medicina', nome: 'MEDICINA'}, {id: 'p_mistica', nome: 'MÍSTICA'}, {id: 'p_percepcao', nome: 'PERCEPÇÃO'}, {id: 'p_saber', nome: 'SABER'}, {id: 'p_sobrevivencia', nome: 'SOBREVIVÊNCIA'} ];
-    const camposParaSalvar = [ 'char_name', 'idade', 'florins', 'arquetipo', 'hp_at', 'hp_max', 'mp_at', 'mp_max', 'pa_at', 'pa_max', 'poder', 'habilidade', 'resistencia', 'xp_total', 'xp_pontos', 'color_theme', ...periciasList.map(p => p.id) ];
+    const camposParaSalvar = [ 'char_name', 'idade', 'florins', 'arquetipo', 'hp_at', 'mp_at', 'pa_at', 'poder', 'habilidade', 'resistencia', 'xp_total', 'xp_pontos', 'color_theme', ...periciasList.map(p => p.id) ];
     const pContainer = document.getElementById('pericias-list'); periciasList.forEach(p => { pContainer.innerHTML += `<div class="pericia-row"><span>${p.nome}</span><div class="pericia-controls"><button class="btn-p" onclick="updatePericia('${p.id}', -1)">-</button><span id="disp_${p.id}" class="pericia-val">+0</span><span class="dice-icon">🎲</span><input type="hidden" id="${p.id}" value="0"><button class="btn-p" onclick="updatePericia('${p.id}', 1)">+</button></div></div>`; });
 
     onValue(ref(db, 'world_time'), (snapshot) => { globalWorldTime = snapshot.val() || {}; refreshDisplayValues(); });
@@ -250,6 +250,37 @@
         if (!globalCharData.active_abilities) return 0;
         let c = 0; if (globalCharData.active_abilities.mask) c++; if (globalCharData.active_abilities.hell) c++; return c;
     }
+
+    // --- NOVA LÓGICA DE CÁLCULO DE STATUS DERIVADOS ---
+    function calculateDerivedStats() {
+        // Usamos valores base do DB (raw), ignorando modificações visuais da Máscara
+        const pod = parseInt(globalCharData.poder) || 0;
+        const hab = parseInt(globalCharData.habilidade) || 0;
+        const res = parseInt(globalCharData.resistencia) || 0;
+
+        let maxPa = pod;
+        let maxMp = hab * 5;
+        let maxHp = res * 5;
+
+        // Se Inferno estiver ativo: HP e PA dobram
+        if (globalCharData.active_abilities?.hell) {
+            maxHp *= 2;
+            maxPa *= 2;
+        }
+
+        // Atualiza inputs visuais (readonly)
+        document.getElementById('hp_max').value = maxHp;
+        document.getElementById('mp_max').value = maxMp;
+        document.getElementById('pa_max').value = maxPa;
+
+        // Salva no DB para o mestre ver
+        update(ref(db, 'fichas/' + fichaID), {
+            hp_max: maxHp,
+            mp_max: maxMp,
+            pa_max: maxPa
+        });
+    }
+    // ---------------------------------------------------
 
     window.toggleAbility = (abilityName) => {
         const isActive = globalCharData.active_abilities && globalCharData.active_abilities[abilityName];
@@ -261,27 +292,30 @@
             if (currentMp < cost) { alert(`Mana insuficiente (${cost} PM).`); return; }
             
             const updates = { [`active_abilities/${abilityName}`]: true, 'mp_at': currentMp - cost };
-
-            // Específico do Inferno: Dobra o PA no Banco de Dados e Recarrega
-            if (abilityName === 'hell') {
-                const curPaMax = parseInt(globalCharData.pa_max) || 3;
-                updates['pa_max'] = curPaMax * 2;
-                updates['pa_at'] = curPaMax * 2; // Recarrega cheio
-            }
-
-            update(ref(db, 'fichas/' + fichaID), updates);
+            
+            // Ativa e depois recalcula status
+            update(ref(db, 'fichas/' + fichaID), updates).then(() => {
+                // Se for Inferno, recarrega PA para o novo máximo
+                if(abilityName === 'hell') {
+                    // Pequeno delay para garantir que o recalculate pegue o status ativo
+                    setTimeout(() => {
+                        const newMaxPa = parseInt(document.getElementById('pa_max').value); // Já atualizado pelo listener
+                        update(ref(db, 'fichas/' + fichaID), { pa_at: newMaxPa });
+                    }, 200);
+                }
+            });
 
         } else {
             const updates = { [`active_abilities/${abilityName}`]: false };
-            
-            // Reverter PA do Inferno (Divide por 2)
-            if (abilityName === 'hell') {
-                const curPaMax = parseInt(globalCharData.pa_max) || 6;
-                const curPaAt = parseInt(globalCharData.pa_at) || 6;
-                updates['pa_max'] = Math.floor(curPaMax / 2);
-                updates['pa_at'] = Math.floor(curPaAt / 2);
-            }
-            update(ref(db, 'fichas/' + fichaID), updates);
+            update(ref(db, 'fichas/' + fichaID), updates).then(() => {
+                // Se desativou Inferno, corta PA atual pela metade
+                if(abilityName === 'hell') {
+                    setTimeout(() => {
+                        const curPa = parseInt(globalCharData.pa_at) || 0;
+                        update(ref(db, 'fichas/' + fichaID), { pa_at: Math.floor(curPa / 2) });
+                    }, 200);
+                }
+            });
         }
     };
 
@@ -294,6 +328,10 @@
         if (!globalCharData) return;
         const ab = globalCharData.active_abilities || {};
         
+        // --- CHAMA O CÁLCULO DE MÁXIMOS ---
+        calculateDerivedStats();
+        // ----------------------------------
+
         const maskBtn = document.getElementById('mask-btn'); const hellBtn = document.getElementById('hell-btn');
         document.body.classList.remove('moon-mode', 'hell-mode', 'hybrid-mode');
         maskBtn.classList.toggle('active', !!ab.mask); hellBtn.classList.toggle('active', !!ab.hell);
@@ -319,12 +357,34 @@
             el.value = val; el.disabled = (ab.mask || ab.hell);
         });
 
-        // Vida (Hell) - Dobra Visualmente
-        const hpAtEl = document.getElementById('hp_at'); const hpMaxEl = document.getElementById('hp_max');
-        let hpAtVal = parseInt(globalCharData['hp_at']) || 0; let hpMaxVal = parseInt(globalCharData['hp_max']) || 10;
-        if (ab.hell) { hpAtVal *= 2; hpMaxVal *= 2; }
-        if (document.activeElement !== hpAtEl) hpAtEl.value = hpAtVal; if (document.activeElement !== hpMaxEl) hpMaxEl.value = hpMaxVal;
-        const hpPerc = Math.min((hpAtVal/hpMaxVal)*100, 100); document.getElementById('bar_hp').style.width = hpPerc + '%';
+        // Valores Atuais (Vida/Mana/PA) - Inferno dobra visualmente o ATUAL também se for HP/PA?
+        // O prompt disse "Dobra a quantia de vida ATUAL". Isso significa que visualmente dobra?
+        // Sim, se o Max dobrou, o Atual deve dobrar visualmente para manter a proporção, ou ser valor real.
+        // A lógica do changeVal já lida com a "Base".
+        // Vamos apenas garantir que os inputs de ATUAL mostrem o valor correto (dobrado se Hell).
+        
+        const hpAtEl = document.getElementById('hp_at');
+        const paAtEl = document.getElementById('pa_at');
+        let hpAtVal = parseInt(globalCharData['hp_at']) || 0;
+        let paAtVal = parseInt(globalCharData['pa_at']) || 0;
+        
+        if (ab.hell) {
+            hpAtVal *= 2;
+            // PA já é dobrado no DB pela função toggleAbility, então não multiplica visualmente de novo aqui
+            // Espera... se toggle salva dobrado, então é valor real.
+            // A Vida: prompt diz "Dobra vida atual". Mas vida é dano.
+            // Vamos manter Vida Dobrada VISUALMENTE (Base no DB) igual fizemos antes.
+            // PA: Prompt diz "Recarrega e dobra". Isso sugere alteração real.
+        }
+        
+        if (document.activeElement !== hpAtEl) hpAtEl.value = hpAtVal;
+        // PA usamos valor direto do DB
+        if (document.activeElement !== paAtEl) paAtEl.value = paAtVal;
+
+        // Atualiza Barras
+        updateBarVisual('hp');
+        updateBarVisual('mp');
+        updateBarVisual('pa');
 
         periciasList.forEach(p => { let val = parseInt(globalCharData[p.id]) || 0; if (ab.mask) { if (val < 2) val += 1; } updateDisplayPericia(p.id, val); });
 
@@ -363,11 +423,18 @@
 
         if (camposParaSalvar.includes(target.id)) {
             let valToSave = target.value;
-            // HP: Converte visual para base se hell ativo
-            if ((target.id === 'hp_at' || target.id === 'hp_max') && ab.hell) { valToSave = Math.ceil(parseInt(valToSave) / 2); }
-            const updates = {}; updates[target.id] = valToSave;
-            update(ref(db, 'fichas/' + fichaID), updates);
-            if (target.id.includes('_at') || target.id.includes('_max')) updateBarVisual(target.id.split('_')[0]);
+            if ((target.id === 'hp_at') && ab.hell) { valToSave = Math.ceil(parseInt(valToSave) / 2); }
+            
+            // Se mudou atributo, recalcula status
+            if (['poder', 'habilidade', 'resistencia'].includes(target.id)) {
+                // Pequeno delay para garantir que o valor salvou antes de calcular
+                const updates = {}; updates[target.id] = valToSave;
+                update(ref(db, 'fichas/' + fichaID), updates).then(() => calculateDerivedStats());
+            } else {
+                const updates = {}; updates[target.id] = valToSave;
+                update(ref(db, 'fichas/' + fichaID), updates);
+                if (target.id.includes('_at') || target.id.includes('_max')) updateBarVisual(target.id.split('_')[0]);
+            }
         }
     });
 
@@ -383,10 +450,10 @@
                 else {
                     const el = document.getElementById(id);
                     const isAttr = ['poder','habilidade','resistencia'].includes(id);
-                    const isHp = ['hp_at', 'hp_max'].includes(id);
+                    const isStat = ['hp_at', 'hp_max', 'mp_at', 'mp_max', 'pa_at', 'pa_max'].includes(id);
                     
-                    if (!id.startsWith('p_') && !isAttr && !isHp) {
-                         if (el && document.activeElement !== el) { el.value = dados[id]; if (id.includes('_at') || id.includes('_max')) updateBarVisual(id.split('_')[0]); }
+                    if (!id.startsWith('p_') && !isAttr && !isStat) {
+                         if (el && document.activeElement !== el) { el.value = dados[id]; }
                     }
                 }
             }
