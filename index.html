@@ -187,14 +187,16 @@
         <div class="card">
             <div class="header-label">Ações e Deslocamento</div>
             <div class="marker-section">
-                <label style="text-align:center; display:block; color:cyan;">AÇÕES (Triângulos)</label>
+                <label style="text-align:center; display:block; color:cyan;">AÇÃO COMPLETA</label>
                 <div class="marker-controls"><button class="btn-count" onclick="updateMarkerCount('ações', -1)">-</button><span id="count_ações" style="font-weight:bold; color:cyan;">3</span><button class="btn-count" onclick="updateMarkerCount('ações', 1)">+</button></div>
                 <div id="display_ações" class="marker-display"></div>
             </div>
             <hr style="border:0; border-top:1px solid #5a1a1f; margin: 20px 0;">
             <div class="marker-section">
-                <label style="text-align:center; display:block; color:springgreen;">DESLOCAMENTO (Círculos)</label>
-                <div class="marker-controls"><button class="btn-count" onclick="updateMarkerCount('desloc', -1)">-</button><span id="count_desloc" style="font-weight:bold; color:springgreen;">9</span><button class="btn-count" onclick="updateMarkerCount('desloc', 1)">+</button></div>
+                <label style="text-align:center; display:block; color:springgreen;">DESLOCAMENTO</label>
+                <div class="marker-controls">
+                    <span id="count_desloc" style="font-weight:bold; color:springgreen;">0</span>
+                </div>
                 <div id="display_desloc" class="marker-display"></div>
             </div>
             <hr style="border:0; border-top:1px solid #5a1a1f; margin: 20px 0;">
@@ -258,6 +260,7 @@
         let maxPa = pod;
         let maxMp = hab * 5;
         let maxHp = res * 5;
+        let deslocTotal = hab * 2; // Cálculo do Deslocamento
 
         // Se Inferno estiver ativo: HP e PA dobram
         if (globalCharData.active_abilities?.hell) {
@@ -269,12 +272,14 @@
         document.getElementById('mp_max').value = maxMp;
         document.getElementById('pa_max').value = maxPa;
 
-        // Salva maximos
-        update(ref(db, 'fichas/' + fichaID), {
-            hp_max: maxHp,
-            mp_max: maxMp,
-            pa_max: maxPa
-        });
+        // Salva maximos e deslocamento. 
+        // Verificamos se mudou para evitar loop infinito
+        const updates = { hp_max: maxHp, mp_max: maxMp, pa_max: maxPa };
+        if (globalCharData.marcadores?.desloc?.total !== deslocTotal) {
+            updates['marcadores/desloc/total'] = deslocTotal;
+        }
+        
+        update(ref(db, 'fichas/' + fichaID), updates);
         
         return { maxHp, maxMp, maxPa };
     }
@@ -282,7 +287,6 @@
     window.toggleAbility = (abilityName) => {
         const isActive = globalCharData.active_abilities && globalCharData.active_abilities[abilityName];
         
-        // CORREÇÃO: Ler MP direto do banco, não do visual (que pode estar bugado)
         const currentMp = parseInt(globalCharData.mp_at) || 0;
         
         let cost = 0; if (abilityName === 'mask') cost = 4; if (abilityName === 'hell') cost = 5;
@@ -352,18 +356,15 @@
             el.value = val; el.disabled = (ab.mask || ab.hell);
         });
 
-        // Atualiza Inputs Atuais (HP, MP, PA)
         const hpAtEl = document.getElementById('hp_at'); const paAtEl = document.getElementById('pa_at'); const mpAtEl = document.getElementById('mp_at');
         
         let hpAtVal = parseInt(globalCharData.hp_at) || 0;
-        // Se Hell ativo, o valor BASE deve ser multiplicado visualmente
         if (ab.hell) hpAtVal *= 2;
         
         if (document.activeElement !== hpAtEl) hpAtEl.value = hpAtVal;
-        if (document.activeElement !== paAtEl) paAtEl.value = globalCharData.pa_at || 0; // PA é salvo cheio
+        if (document.activeElement !== paAtEl) paAtEl.value = globalCharData.pa_at || 0;
         if (document.activeElement !== mpAtEl) mpAtEl.value = globalCharData.mp_at || 0;
 
-        // Barras
         updateBarVisual('hp', hpAtVal, stats.maxHp);
         updateBarVisual('mp', parseInt(globalCharData.mp_at)||0, stats.maxMp);
         updateBarVisual('pa', parseInt(globalCharData.pa_at)||0, stats.maxPa);
@@ -375,36 +376,28 @@
         const totalAcoes = (globalCharData.marcadores?.ações?.total || 3);
         renderMarkers('ações', totalAcoes + bonusActions, globalCharData.marcadores?.ações?.pontos);
         
+        // Renderiza Deslocamento com o Total vindo do DB (que foi atualizado em calculateDerivedStats)
+        renderMarkers('desloc', globalCharData.marcadores?.desloc?.total, globalCharData.marcadores?.desloc?.pontos);
+        
         updateWeight();
     }
 
-    // CORREÇÃO CRÍTICA DO CHANGE VAL
     window.changeVal = (type, mod) => {
-        // Pega valores BASE do DB, não do input visual (que pode estar dobrado)
         let currentBase = parseInt(globalCharData[type + '_at']) || 0;
-        
-        // Pega máximos CALCULADOS no momento
         const pod = parseInt(globalCharData.poder) || 0;
         const hab = parseInt(globalCharData.habilidade) || 0;
         const res = parseInt(globalCharData.resistencia) || 0;
         let maxBase = 0;
         
-        // Calcula Max BASE
         if (type === 'hp') maxBase = res * 5;
         if (type === 'mp') maxBase = hab * 5;
         if (type === 'pa') maxBase = pod;
 
-        // Se Hell, ajusta logica:
-        // PA já está com valor dobrado salvo no DB, então maxBase deve ser dobrado
         if (globalCharData.active_abilities?.hell) {
             if (type === 'pa') maxBase *= 2;
-            // HP está com valor normal no DB, visual que dobra.
-            // Entao operamos na base normal (0 a maxBase normal)
         }
 
         let newBase = currentBase + mod;
-        
-        // Clamp
         if (newBase < 0) newBase = 0;
         if (newBase > maxBase) newBase = maxBase;
 
@@ -429,7 +422,6 @@
 
         if (camposParaSalvar.includes(target.id)) {
             let valToSave = target.value;
-            // Se for HP e Hell, o input visual está dobrado. Divide por 2 pra salvar a base.
             if ((target.id === 'hp_at') && ab.hell) { valToSave = Math.ceil(parseInt(valToSave) / 2); }
             
             if (['poder', 'habilidade', 'resistencia'].includes(target.id)) {
@@ -466,12 +458,12 @@
         ['skull1', 'skull2', 'skull3'].forEach(sid => { document.getElementById(sid).classList.toggle('active', dados[sid] === "active"); });
         ['geral', 'vantagens', 'arquetipo_hab', 'artefatos', 'tecnicas'].forEach(cat => renderHabs(cat, dados.habilidades?.[cat]));
         renderInventory(dados.habilidades?.['inventario']);
-        renderMarkers('desloc', dados.marcadores?.['desloc']?.total, dados.marcadores?.['desloc']?.pontos);
+        // Deslocamento é gerenciado pelo calculateDerivedStats, mas aqui carregamos os pontos
+        renderMarkers('ações', dados.marcadores?.['ações']?.total, dados.marcadores?.['ações']?.pontos);
         refreshDisplayValues();
     });
 
     function updateBarVisual(type, current, max) {
-        // Se nao vier params, tenta pegar do DOM
         if (current === undefined) current = parseInt(document.getElementById(type + '_at').value) || 0;
         if (max === undefined) max = parseInt(document.getElementById(type + '_max').value) || 1;
         const percent = Math.min(Math.max((current / max) * 100, 0), 100);
@@ -485,7 +477,7 @@
     };
 
     window.togglePoint = (type, index) => { const key = `p_${index}`; const isActive = document.getElementById(`${type}_${index}`).classList.contains('active'); update(ref(db, `fichas/${fichaID}/marcadores/${type}/pontos`), { [key]: !isActive }); };
-    function renderMarkers(type, total, pontos) { const container = document.getElementById('display_' + type); const countSpan = document.getElementById('count_' + type); container.innerHTML = ""; const finalTotal = (total !== undefined) ? total : (type === 'ações' ? 3 : 9); countSpan.innerText = finalTotal; const icon = type === 'ações' ? '▲' : '●'; const css = type === 'ações' ? 'tri' : 'circ'; for(let i=0; i < finalTotal; i++) { const isActive = pontos && pontos[`p_${i}`] === true; container.innerHTML += `<span id="${type}_${i}" class="marker-item ${css} ${isActive ? 'active' : ''}" onclick="togglePoint('${type}', ${i})">${icon}</span>`; } }
+    function renderMarkers(type, total, pontos) { const container = document.getElementById('display_' + type); const countSpan = document.getElementById('count_' + type); container.innerHTML = ""; const finalTotal = (total !== undefined) ? total : (type === 'ações' ? 3 : 0); countSpan.innerText = finalTotal; const icon = type === 'ações' ? '▲' : '●'; const css = type === 'ações' ? 'tri' : 'circ'; for(let i=0; i < finalTotal; i++) { const isActive = pontos && pontos[`p_${i}`] === true; container.innerHTML += `<span id="${type}_${i}" class="marker-item ${css} ${isActive ? 'active' : ''}" onclick="togglePoint('${type}', ${i})">${icon}</span>`; } }
     window.addItem = (category) => { const data = category === 'inventario' ? { titulo: "", peso: 0, desc: "" } : { titulo: "", teste: "", desc: "" }; const newItemRef = push(ref(db, `fichas/${fichaID}/habilidades/${category}`)); set(newItemRef, data); };
     window.removeItem = (category, id) => { if(confirm("Apagar?")) remove(ref(db, `fichas/${fichaID}/habilidades/${category}/${id}`)); };
     window.toggleHab = (id) => { document.getElementById('body_' + id).classList.toggle('open'); };
