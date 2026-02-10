@@ -56,6 +56,11 @@
 
         #viewer-msg { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.7); padding: 5px 15px; border-radius: 20px; border: 1px solid #ffaa00; color: #ffaa00; font-weight: bold; display: none; z-index: 5; }
         body.viewer-mode #viewer-msg { display: block; }
+        
+        .input-group { display: flex; gap: 5px; margin-bottom: 5px; }
+        .input-group input { margin-bottom: 0; }
+        .input-group button { width: 40px; margin-bottom: 0; display: flex; align-items: center; justify-content: center; }
+
     </style>
 </head>
 <body>
@@ -75,9 +80,13 @@
         </div>
 
         <h2>Configuração Global</h2>
-        <label>URL da Imagem de Fundo (Cole aqui)</label>
-        <input type="text" id="bgUrlInput" placeholder="https://exemplo.com/mapa.jpg" onchange="updateBgFromUrl(this.value)">
-        <small style="color:#666; font-size:10px; margin-bottom:5px; display:block;">Use link direto (Discord/Imgur) para funcionar no Viewer.</small>
+        
+        <label>URL da Imagem de Fundo</label>
+        <div class="input-group">
+            <input type="text" id="bgUrlInput" placeholder="Link direto da imagem...">
+            <button class="btn" onclick="updateBgFromUrl(document.getElementById('bgUrlInput').value)" title="Carregar Imagem">OK</button>
+        </div>
+        <small style="color:#666; font-size:10px; margin-bottom:5px; display:block;">Use link direto (Discord/Imgur/Google Drive).</small>
 
         <label>Tamanho Hexágono</label>
         <input type="range" id="hexSize" min="10" max="150" value="30">
@@ -122,7 +131,7 @@
     // --- ESTADO DO SISTEMA ---
     const urlParams = new URLSearchParams(window.location.search);
     const MODE = urlParams.get('mode') === 'view' ? 'VIEW' : 'EDIT';
-    const MAP_ID = 'mapa_mundi_principal'; // ID fixo para facilitar, ou use urlParams.get('id')
+    const MAP_ID = 'mapa_mundi_principal'; // ID fixo para facilitar
 
     if (MODE === 'VIEW') {
         document.body.classList.add('viewer-mode');
@@ -245,7 +254,11 @@
         update(ref(db, 'maps/' + MAP_ID), dataToSave)
             .then(() => {
                 led.className = 'status-led on';
-                // alert("Mapa salvo com sucesso!"); // Opcional, o led já indica
+                // Feedback visual rápido
+                const btn = document.querySelector('.btn-save');
+                const oldText = btn.innerText;
+                btn.innerText = "✅ SALVO!";
+                setTimeout(() => btn.innerText = oldText, 2000);
             })
             .catch((err) => {
                 alert("Erro ao salvar: " + err.message);
@@ -254,6 +267,7 @@
     };
 
     window.updateBgFromUrl = (url) => {
+        if(!url) return;
         bgImageUrl = url;
         loadImage(url);
     };
@@ -272,7 +286,7 @@
             draw();
         };
         img.onerror = () => {
-            console.warn("Não foi possível carregar a imagem (Erro de CORS ou URL inválida).");
+            console.warn("Não foi possível carregar a imagem diretamente (Erro de CORS). Tente links do Discord ou Imgur.");
         };
         img.src = url;
     }
@@ -394,9 +408,12 @@
         if (bgImage) {
             ctx.drawImage(bgImage, -bgImage.width/2, -bgImage.height/2);
         } else if (bgImageUrl) {
-            // Placeholder enquanto carrega ou se falhar
+            // Placeholder
             ctx.fillStyle = "#222";
-            ctx.fillText("Carregando Imagem...", 0, 0);
+            ctx.font = "30px Arial";
+            ctx.fillStyle = "#555";
+            ctx.textAlign = "center";
+            ctx.fillText("Carregando Imagem de Fundo...", 0, 0);
         }
 
         // 2. Hexágonos
@@ -433,7 +450,7 @@
         } else {
             hexMap[key] = { type: currentTerrain };
         }
-        draw(); // Redesenha localmente na hora para feedback rápido
+        draw(); // Redesenha localmente
     }
 
     // --- INPUTS ---
@@ -461,7 +478,7 @@
             canvas.style.cursor = 'grabbing';
         } else if (isLeftClick && MODE === 'EDIT') {
             paintHex(e.clientX, e.clientY);
-            isDragging = true; // Flag para pintar arrastando
+            isDragging = true; 
         }
     });
 
@@ -506,6 +523,9 @@
             isDragging = false;
         }
     });
+
+    // Loop inicial
+    requestAnimationFrame(draw);
 
 </script>
 </body>
