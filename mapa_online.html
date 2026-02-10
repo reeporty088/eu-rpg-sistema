@@ -227,12 +227,17 @@
         '#4a148c', '#7b1fa2', '#ce93d8', '#3e2723'  // Roxos/Outros
     ];
 
+    // --- ÍCONES EXPANDIDOS (NOVO) ---
     const PALETTE_ICONS = [
-        '❌', '🌲', '🌳', '🌴', '🌵', '🌾', 
-        '⛰️', '🗻', '🌋', '🌊', '💧', '❄️', 
-        '🏰', '🏯', '🏠', '⛺', '🏚️', '🗿', 
-        '⚔️', '💀', '🐉', '🦇', '🔥', '✨',
-        '🛤️', '⚓', '🚩', '📍', '⭐', '❓'
+        '❌', 
+        // NATUREZA
+        '🌲', '🌳', '🌴', '🌵', '🌾', '🍄', '🌻', '🍂', '🎋', '⛰️', '🗻', '🌋', '🌊', '💧', '❄️', '🌫️', '🌑',
+        // CONSTRUÇÕES
+        '🏰', '🏯', '🏠', '🛖', '⛺', '🏚️', '🏛️', '⛪', '🌉', '🧱', '🚜', '⚓',
+        // ENCONTROS/MONSTROS
+        '⚔️', '💀', '🐉', '🐺', '🕷️', '🧟', '👻', '👁️', '🐙', '🦖', '🔥', '✨',
+        // MARCADORES
+        '🚩', '📍', '⭐', '❓', '💎', '📜', '🗝️', '🛡️', '🎯', '👣', '🛑'
     ];
 
     // --- SETUP INICIAL ---
@@ -389,12 +394,9 @@
 
     // --- DRAWING ---
     function drawHex(ctx, x, y, size, data) {
-        // DATA AGORA É { color: '...', icon: '...', customImg: '...' }
-        // Se for antigo { type: 'forest' }, tentamos converter visualmente
         let color = data.color;
         let icon = data.icon;
 
-        // Migração visual em tempo real para mapas antigos
         if (!color && data.type) {
              const legacy = { 'grass': '#2e7d32', 'ocean': '#1a237e', 'desert': '#fbc02d', 'mountain': '#5d4037' };
              color = legacy[data.type] || '#555';
@@ -428,14 +430,14 @@
             if (img.complete && img.naturalWidth > 0) {
                 const s = size * 1.5;
                 ctx.save();
-                ctx.globalAlpha = 1; // Tokens sempre opacos
+                ctx.globalAlpha = 1; 
                 ctx.drawImage(img, x - s/2, y - s/2, s, s);
                 ctx.restore();
             }
         }
         // 4. ÍCONE EMOJI
         else if (icon) {
-            ctx.fillStyle = `rgba(255,255,255,${hexOpacity + 0.2})`; // Um pouco mais brilhante que o fundo
+            ctx.fillStyle = `rgba(255,255,255,${hexOpacity + 0.2})`; 
             ctx.font = `${Math.floor(size/1.3)}px Arial`;
             ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
             ctx.shadowColor = "black"; ctx.shadowBlur = 4; ctx.fillText(icon, x, y); ctx.shadowBlur = 0;
@@ -508,11 +510,10 @@
 
         if(activeTool === 'color') {
             hexMap[k].color = selectedColor;
-            // Limpa se for transparente E não tiver ícone
             if(selectedColor === 'transparent' && !hexMap[k].icon && !hexMap[k].customImg) delete hexMap[k];
         }
         else if(activeTool === 'icon') {
-            hexMap[k].icon = selectedIcon; // Pode ser null (borracha)
+            hexMap[k].icon = selectedIcon; 
         }
         else if(activeTool === 'customImg' && isClick) {
             if(isCustomImgEraser) delete hexMap[k].customImg;
@@ -532,18 +533,17 @@
         draw();
     }
 
-    // Eventos Mouse
     canvas.addEventListener('mousedown', e => {
         if(e.button===1 || (activeTool==='hand' || isSpacePressed)) {
             isDragging=true; dragStart={x:e.clientX, y:e.clientY}; canvas.style.cursor='grabbing';
         } else if(e.button===0 && MODE==='EDIT') {
             handleInput(e.clientX, e.clientY, true);
-            if(activeTool==='color' || activeTool==='icon' || activeTool==='border') isDragging=true; // Permite arrastar para pintar
+            if(activeTool==='color' || activeTool==='icon' || activeTool==='border') isDragging=true; 
         }
     });
     canvas.addEventListener('mousemove', e => {
         lastMouse={x:e.clientX, y:e.clientY};
-        if(!isDragging) { if(MODE==='EDIT') draw(); return; } // Hover redraw
+        if(!isDragging) { if(MODE==='EDIT') draw(); return; } 
 
         if(activeTool==='hand' || isSpacePressed || e.buttons===4) {
             const dx=(e.clientX-dragStart.x)/camera.zoom; const dy=(e.clientY-dragStart.y)/camera.zoom;
@@ -560,7 +560,6 @@
         if(z>0.05 && z<10) { camera.zoom=z; const mw2 = screenToWorld(e.clientX, e.clientY); camera.x+=(mw.x-mw2.x); camera.y+=(mw.y-mw2.y); draw(); }
     }, {passive:false});
 
-    // Eventos Teclado
     window.addEventListener('keydown', e => {
         if(e.code==='Space') { isSpacePressed=true; canvas.style.cursor='grab'; }
         if(MODE==='EDIT') {
@@ -573,7 +572,6 @@
     });
     window.addEventListener('keyup', e => { if(e.code==='Space') { isSpacePressed=false; isDragging=false; canvas.style.cursor='default'; } });
 
-    // Inputs Sliders
     if(MODE==='EDIT') {
         document.getElementById('hexSize').addEventListener('input', e => { hexRadius=parseInt(e.target.value); draw(); });
         document.getElementById('gridOpacity').addEventListener('input', e => { gridOpacity=parseFloat(e.target.value); draw(); });
