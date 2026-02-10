@@ -3,41 +3,54 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mapa Mundi - RPG</title>
+    <title>Hexamap Studio - RPG</title>
     <style>
         body { margin: 0; overflow: hidden; background: #1a1a1a; font-family: 'Segoe UI', sans-serif; color: white; user-select: none; }
         
-        /* UI DO EDITOR */
+        /* UI LATERAL */
         #ui-layer {
-            position: absolute; top: 0; left: 0; width: 320px; height: 100%;
-            background: rgba(30, 30, 30, 0.95); border-right: 2px solid #444;
+            position: absolute; top: 0; left: 0; width: 340px; height: 100%;
+            background: rgba(30, 30, 30, 0.98); border-right: 2px solid #444;
             padding: 15px; box-sizing: border-box; display: flex; flex-direction: column; gap: 8px;
             z-index: 10; box-shadow: 5px 0 15px rgba(0,0,0,0.5);
             transition: transform 0.3s;
             overflow-y: auto;
         }
 
-        body.viewer-mode #ui-layer { transform: translateX(-350px); }
+        body.viewer-mode #ui-layer { transform: translateX(-360px); }
 
         canvas { display: block; background: #111; cursor: default; }
         
-        h2 { margin: 5px 0 5px 0; color: #ffaa00; text-transform: uppercase; font-size: 14px; border-bottom: 1px solid #444; padding-bottom: 5px; }
+        h2 { margin: 10px 0 5px 0; color: #ffaa00; text-transform: uppercase; font-size: 13px; border-bottom: 1px solid #444; padding-bottom: 2px; letter-spacing: 1px; }
         label { font-size: 11px; color: #aaa; display: block; margin-bottom: 2px; margin-top: 5px; }
-        input[type="range"], input[type="text"], input[type="color"] { width: 100%; box-sizing: border-box; margin-bottom: 5px; background: #222; border: 1px solid #555; color: white; padding: 4px; border-radius: 4px; }
         
+        input[type="range"], input[type="text"] { width: 100%; box-sizing: border-box; margin-bottom: 5px; background: #222; border: 1px solid #555; color: white; padding: 4px; border-radius: 4px; }
+        input[type="color"] { width: 100%; height: 30px; border: none; padding: 0; background: none; cursor: pointer; }
+
         .btn { background: #444; color: white; border: 1px solid #666; padding: 8px; cursor: pointer; width: 100%; margin-bottom: 5px; font-weight: bold; border-radius: 4px; transition: 0.2s; font-size: 12px; }
         .btn:hover { background: #666; }
         .btn-save { background: #2e7d32; border-color: #4caf50; }
         
-        .tools-row { display: flex; gap: 5px; margin-bottom: 5px; }
-        .tool-btn { flex: 1; padding: 10px; font-size: 18px; background: #222; border: 1px solid #555; cursor: pointer; border-radius: 5px; }
-        .tool-btn.active { background: #ffaa00; border-color: white; color: black; }
+        /* BARRA DE FERRAMENTAS */
+        .tools-row { display: flex; gap: 5px; margin-bottom: 10px; background: #222; padding: 5px; border-radius: 8px; border: 1px solid #444; }
+        .tool-btn { flex: 1; padding: 8px 0; font-size: 18px; background: transparent; border: none; cursor: pointer; border-radius: 5px; transition: 0.2s; color: #888; }
+        .tool-btn:hover { background: rgba(255,255,255,0.1); color: white; }
+        .tool-btn.active { background: #ffaa00; color: black; box-shadow: 0 0 10px rgba(255, 170, 0, 0.4); }
 
-        .palette { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin-bottom: 10px; max-height: 200px; overflow-y: auto; padding-right: 5px; }
-        .swatch { width: 100%; aspect-ratio: 1; border: 2px solid #555; cursor: pointer; transition: 0.2s; position: relative; border-radius: 4px; display:flex; align-items:center; justify-content:center; background: #222; }
-        .swatch:hover { border-color: white; transform: scale(1.1); z-index: 2; }
-        .swatch.selected { border-color: #ffaa00; box-shadow: 0 0 10px #ffaa00; z-index: 2; }
+        /* PALETAS */
+        .palette-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; margin-bottom: 10px; }
         
+        /* Cores */
+        .color-swatch { width: 100%; aspect-ratio: 1; border-radius: 50%; cursor: pointer; border: 2px solid #444; transition: transform 0.2s; }
+        .color-swatch:hover { transform: scale(1.2); z-index: 2; border-color: white; }
+        .color-swatch.selected { border-color: white; box-shadow: 0 0 8px white; transform: scale(1.1); }
+        .color-swatch.transparent { background: repeating-linear-gradient(45deg, #333, #333 5px, #444 5px, #444 10px); }
+
+        /* Ícones */
+        .icon-swatch { width: 100%; aspect-ratio: 1; display: flex; align-items: center; justify-content: center; font-size: 20px; cursor: pointer; border: 1px solid #333; background: #222; border-radius: 4px; }
+        .icon-swatch:hover { background: #444; border-color: #888; }
+        .icon-swatch.selected { background: #ffaa00; color: black; border-color: #ffaa00; }
+
         .status-led { width: 10px; height: 10px; border-radius: 50%; background: #444; display: inline-block; margin-right: 5px; }
         .status-led.on { background: #00ff00; box-shadow: 0 0 5px #00ff00; }
         .status-led.busy { background: #ffaa00; animation: blink 0.5s infinite; }
@@ -53,60 +66,70 @@
         .input-group input { margin-bottom: 0; }
         .input-group button { width: 40px; margin-bottom: 0; display: flex; align-items: center; justify-content: center; }
 
-        .tool-controls { display: none; background: #222; padding: 10px; border-radius: 5px; border: 1px solid #555; margin-bottom: 10px; }
-        .tool-controls.visible { display: block; }
-        
-        .preview-icon { width: 40px; height: 40px; background: #333; border: 1px solid #555; margin: 0 auto 5px auto; display: flex; align-items: center; justify-content: center; overflow: hidden; }
-        .preview-icon img { max-width: 100%; max-height: 100%; }
+        /* Paineis de Contexto */
+        .context-panel { display: none; background: #252525; padding: 10px; border-radius: 6px; border: 1px solid #444; margin-bottom: 10px; }
+        .context-panel.visible { display: block; animation: fadeIn 0.3s; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+
+        .color-mixer { display: flex; align-items: center; gap: 10px; background: #111; padding: 5px; border-radius: 5px; margin-bottom: 5px; }
     </style>
 </head>
 <body>
 
-    <div id="viewer-msg">MODO VISUALIZADOR (Somente Leitura)</div>
-    <div class="loading-overlay" id="loader">Carregando Mapa...</div>
+    <div id="viewer-msg">MODO VISUALIZADOR</div>
+    <div class="loading-overlay" id="loader">Carregando Mundo...</div>
 
     <div id="ui-layer">
         <div style="display:flex; justify-content:space-between; align-items:center;">
-            <h2>EDITOR DE MAPA</h2>
+            <h1 style="font-size:16px; margin:0; color:#eee;">HEXAMAP STUDIO</h1>
             <div title="Status da Conexão"><span id="db-led" class="status-led"></span></div>
         </div>
 
+        <h2>Ferramentas</h2>
         <div class="tools-row">
-            <button class="tool-btn active" id="btnBrush" onclick="setTool('brush')" title="Pintar (B)">🖌️</button>
-            <button class="tool-btn" id="btnIcon" onclick="setTool('icon')" title="Carimbo de Ícone (I)">📍</button>
-            <button class="tool-btn" id="btnBorder" onclick="setTool('border')" title="Fronteira (F)">✏️</button>
-            <button class="tool-btn" id="btnGen" onclick="setTool('generator')" title="Gerador (G)">🪄</button>
+            <button class="tool-btn active" id="btnColor" onclick="setTool('color')" title="Pintar Cor (1)">🎨</button>
+            <button class="tool-btn" id="btnIcon" onclick="setTool('icon')" title="Carimbar Ícone (2)">🌲</button>
+            <button class="tool-btn" id="btnImg" onclick="setTool('customImg')" title="Imagem Personalizada (3)">🖼️</button>
+            <button class="tool-btn" id="btnBorder" onclick="setTool('border')" title="Fronteira (4)">✏️</button>
             <button class="tool-btn" id="btnHand" onclick="setTool('hand')" title="Mover (H)">✋</button>
         </div>
 
-        <div id="icon-controls" class="tool-controls">
-            <label style="margin-top:0; color:#4fc3f7;">Carimbo de Ícone</label>
-            <div class="preview-icon" id="iconPreview">❓</div>
-            <label>URL da Imagem do Ícone</label>
-            <div class="input-group">
-                <input type="text" id="iconUrl" placeholder="https://..." onchange="updateIconPreview(this.value)">
+        <div id="panel-color" class="context-panel visible">
+            <label style="margin-top:0">Paleta de Cores</label>
+            <div class="color-mixer">
+                <input type="color" id="customColorPicker" value="#ffffff" onchange="pickCustomColor(this.value)">
+                <span style="font-size:11px; color:#aaa;">Misturador Livre</span>
             </div>
-            <button class="btn" onclick="setEraseIconMode()">❌ Modo Borracha de Ícone</button>
-            <small style="color:#aaa; font-size:10px;">Clique no mapa para carimbar. Use imagens PNG com fundo transparente.</small>
+            <div class="palette-grid" id="colorPalette">
+                </div>
+            <small style="color:#aaa; font-size:10px;">Clique para pintar o fundo do hexágono.</small>
         </div>
 
-        <div id="gen-controls" class="tool-controls">
-            <label style="margin-top:0; color:#4caf50;">Gerador de Bioma</label>
-            <label>Raio: <span id="genRadiusVal">3</span></label>
-            <input type="range" id="genRadius" min="1" max="10" value="3" oninput="document.getElementById('genRadiusVal').innerText=this.value">
-            <label>Densidade: <span id="genDensityVal">80%</span></label>
-            <input type="range" id="genDensity" min="10" max="100" value="80" oninput="document.getElementById('genDensityVal').innerText=this.value+'%'">
+        <div id="panel-icon" class="context-panel">
+            <label style="margin-top:0">Biblioteca de Símbolos</label>
+            <div class="palette-grid" id="iconPalette">
+                </div>
+            <button class="btn" onclick="selectIcon(null)" style="margin-top:5px; background:#444;">❌ Borracha de Símbolo</button>
         </div>
 
-        <div id="border-controls" class="tool-controls">
-            <label style="margin-top:0; color:#ffaa00;">Fronteira</label>
-            <label>Cor</label>
+        <div id="panel-customImg" class="context-panel">
+            <label style="margin-top:0">Ícone de Imagem (URL)</label>
+            <div class="input-group">
+                <input type="text" id="customImgUrl" placeholder="https://imgur.com/...">
+            </div>
+            <button class="btn" style="background:#c62828" onclick="setEraseCustomImg()">Borracha de Imagem</button>
+            <small style="color:#aaa; font-size:10px;">Cola o link de uma imagem transparente para usar como token/ícone.</small>
+        </div>
+
+        <div id="panel-border" class="context-panel">
+            <label style="margin-top:0">Configurar Fronteira</label>
             <input type="color" id="borderColor" value="#ff0000">
             <label>Espessura</label>
             <input type="range" id="borderWidth" min="2" max="10" value="4">
+            <button class="btn" onclick="setEraseBorderMode()" style="background:#c62828; margin-top:5px;">Borracha de Fronteira</button>
         </div>
 
-        <h2>Configuração Global</h2>
+        <h2>Mundo & Visualização</h2>
         <label>URL Imagem de Fundo</label>
         <div class="input-group">
             <input type="text" id="bgUrlInput" placeholder="Link direto...">
@@ -115,24 +138,21 @@
 
         <label>Tamanho Hex</label>
         <input type="range" id="hexSize" min="10" max="150" value="30">
-        <label>Opacidade Grade</label>
-        <input type="range" id="gridOpacity" min="0" max="1" step="0.1" value="0.3">
-        <label>Opacidade Terrenos</label>
-        <input type="range" id="hexOpacity" min="0" max="1" step="0.1" value="1">
+        
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:5px;">
+            <div><label>Opac. Grade</label><input type="range" id="gridOpacity" min="0" max="1" step="0.1" value="0.3"></div>
+            <div><label>Opac. Cores</label><input type="range" id="hexOpacity" min="0" max="1" step="0.1" value="0.8"></div>
+        </div>
         <label>Opacidade Fundo</label>
         <input type="range" id="bgOpacity" min="0" max="1" step="0.1" value="1">
 
         <hr style="border:0; border-top:1px solid #444; width:100%;">
         
-        <h2>Terrenos</h2>
-        <div class="palette" id="palette"></div>
-
-        <button class="btn btn-save" onclick="saveToCloud()">☁️ SALVAR NO CLOUD</button>
-        <button class="btn" style="background:#c62828;" onclick="clearHexes()">🗑️ Limpar Tudo</button>
+        <button class="btn btn-save" onclick="saveToCloud()">☁️ SALVAR ALTERAÇÕES</button>
+        <button class="btn" style="background:#c62828;" onclick="clearHexes()">🗑️ Limpar Mapa Inteiro</button>
         
         <div style="margin-top:auto; font-size:11px; color:#666; text-align:center;">
-            Link Visualizador:<br>
-            <a href="#" id="viewLink" style="color:#4fc3f7; word-break:break-all;" target="_blank">...</a>
+            <a href="#" id="viewLink" style="color:#4fc3f7; text-decoration:none;" target="_blank">🔗 Link do Jogador</a>
         </div>
     </div>
 
@@ -163,7 +183,6 @@
     else {
         const baseUrl = window.location.href.split('?')[0];
         document.getElementById('viewLink').href = `${baseUrl}?mode=view`;
-        document.getElementById('viewLink').innerText = "Clique para abrir modo Visualizador";
     }
 
     const canvas = document.getElementById('mapCanvas');
@@ -172,66 +191,142 @@
 
     let camera = { x: 0, y: 0, zoom: 1 };
     
-    // Ferramentas
-    let activeTool = 'brush'; 
-    let isSpacePressed = false;
+    // ESTADO DO EDITOR
+    let activeTool = 'color'; // color, icon, customImg, border, hand
     let isDragging = false;
+    let isSpacePressed = false;
     let lastMouse = { x: 0, y: 0 };
     let dragStart = { x: 0, y: 0 };
-    let isIconEraser = false; // Sub-modo para apagar ícones
     
-    // Dados
+    // SELEÇÕES ATUAIS
+    let selectedColor = '#2e7d32'; // Verde padrão
+    let selectedIcon = '🌲';
+    let isBorderEraser = false;
+    let isCustomImgEraser = false;
+
+    // DADOS DO MAPA
     let bgImage = null;
     let bgImageUrl = "";
-    let hexMap = {}; 
+    let hexMap = {}; // { "q,r": { color: "#...", icon: "...", customImg: "..." } }
     let borderMap = {}; 
     let hexRadius = 30;
     let gridOpacity = 0.3;
-    let hexOpacity = 1.0;
+    let hexOpacity = 0.8;
     let bgOpacity = 1.0;
 
-    // Cache de Imagens para Ícones
-    const iconCache = {};
+    // CACHE DE IMAGENS
+    const imgCache = {};
 
-    // TERRENOS
-    const TERRAINS = {
-        'void': { color: 'transparent', icon: '❌', label: 'Apagar' },
-        'grass': { color: '#2e7d32', icon: '🌱', label: 'Planície' },
-        'forest': { color: '#1b5e20', icon: '🌲', label: 'Floresta' },
-        'ocean': { color: '#1a237e', icon: '🌊', label: 'Oceano' },
-        'mountain': { color: '#5d4037', icon: '⛰️', label: 'Montanha' },
-        'desert': { color: '#fbc02d', icon: '🌵', label: 'Deserto' },
-        'snow': { color: '#eceff1', icon: '❄️', label: 'Neve' },
-        'swamp': { color: '#2e3828', icon: '🐸', label: 'Pântano' },
-        'coast': { color: '#4fc3f7', icon: '💧', label: 'Costa' },
-        'city': { color: '#9e9e9e', icon: '🏰', label: 'Cidade' },
-        'village': { color: '#795548', icon: '🏠', label: 'Vila' },
-        'ruin': { color: '#000000', icon: '💀', label: 'Ruína' },
-        'tower': { color: '#5c6bc0', icon: '🗼', label: 'Torre' },
-        'cave': { color: '#3e2723', icon: '🦇', label: 'Caverna' },
-        'road': { color: '#ff9800', icon: '🛤️', label: 'Estrada' },
-        'danger': { color: '#b71c1c', icon: '⚔️', label: 'Perigo' },
-        'poi': { color: '#d500f9', icon: '⭐', label: 'Interesse' }
+    // --- PALETAS DEFINIDAS ---
+    const PALETTE_COLORS = [
+        'transparent', '#ffffff', '#000000', '#9e9e9e', '#5d4037', '#795548', // Especiais
+        '#1a237e', '#1565c0', '#4fc3f7', '#80deea', // Azuis (Água/Gelo)
+        '#1b5e20', '#2e7d32', '#4caf50', '#81c784', // Verdes (Natureza)
+        '#f57f17', '#fbc02d', '#fff176', '#fff9c4', // Amarelos (Deserto)
+        '#b71c1c', '#e53935', '#ff8a80', '#880e4f', // Vermelhos (Perigo/Lava)
+        '#4a148c', '#7b1fa2', '#ce93d8', '#3e2723'  // Roxos/Outros
+    ];
+
+    const PALETTE_ICONS = [
+        '❌', '🌲', '🌳', '🌴', '🌵', '🌾', 
+        '⛰️', '🗻', '🌋', '🌊', '💧', '❄️', 
+        '🏰', '🏯', '🏠', '⛺', '🏚️', '🗿', 
+        '⚔️', '💀', '🐉', '🦇', '🔥', '✨',
+        '🛤️', '⚓', '🚩', '📍', '⭐', '❓'
+    ];
+
+    // --- SETUP INICIAL ---
+    function initUI() {
+        if (MODE !== 'EDIT') return;
+
+        // Gerar Paleta de Cores
+        const colorGrid = document.getElementById('colorPalette');
+        PALETTE_COLORS.forEach(c => {
+            const div = document.createElement('div');
+            div.className = 'color-swatch';
+            if(c === 'transparent') {
+                div.classList.add('transparent');
+                div.title = "Apagar Cor (Transparente)";
+            } else {
+                div.style.backgroundColor = c;
+            }
+            div.onclick = () => { selectColor(c); highlightSwatch(div, 'color-swatch'); };
+            colorGrid.appendChild(div);
+        });
+
+        // Gerar Paleta de Ícones
+        const iconGrid = document.getElementById('iconPalette');
+        PALETTE_ICONS.forEach(i => {
+            const div = document.createElement('div');
+            div.className = 'icon-swatch';
+            div.innerText = i === '❌' ? '🚫' : i; // Visualmente diferente para apagar
+            div.title = i === '❌' ? 'Apagar Ícone' : 'Carimbar';
+            div.onclick = () => { selectIcon(i === '❌' ? null : i); highlightSwatch(div, 'icon-swatch'); };
+            iconGrid.appendChild(div);
+        });
+
+        // Selecionar padrões
+        selectColor('#2e7d32');
+    }
+
+    function highlightSwatch(el, className) {
+        document.querySelectorAll('.' + className).forEach(e => e.classList.remove('selected'));
+        el.classList.add('selected');
+    }
+
+    // --- API DE FERRAMENTAS ---
+    window.setTool = (tool) => {
+        activeTool = tool;
+        // Atualiza botões
+        ['btnColor', 'btnIcon', 'btnImg', 'btnBorder', 'btnHand'].forEach(id => {
+            document.getElementById(id).classList.remove('active');
+        });
+        
+        const btnMap = { 'color': 'btnColor', 'icon': 'btnIcon', 'customImg': 'btnImg', 'border': 'btnBorder', 'hand': 'btnHand' };
+        if(btnMap[tool]) document.getElementById(btnMap[tool]).classList.add('active');
+
+        // Atualiza Paineis
+        document.querySelectorAll('.context-panel').forEach(p => p.classList.remove('visible'));
+        if(tool === 'color') document.getElementById('panel-color').classList.add('visible');
+        if(tool === 'icon') document.getElementById('panel-icon').classList.add('visible');
+        if(tool === 'customImg') document.getElementById('panel-customImg').classList.add('visible');
+        if(tool === 'border') document.getElementById('panel-border').classList.add('visible');
+
+        canvas.style.cursor = tool === 'hand' ? 'grab' : 'default';
+        if(tool === 'color') canvas.style.cursor = 'cell';
+        if(tool === 'icon') canvas.style.cursor = 'crosshair';
+        if(tool === 'customImg') canvas.style.cursor = 'copy';
     };
-    let currentTerrain = 'grass';
 
+    window.selectColor = (c) => { selectedColor = c; };
+    window.pickCustomColor = (c) => { selectedColor = c; };
+    window.selectIcon = (i) => { selectedIcon = i; };
+    window.setEraseCustomImg = () => { isCustomImgEraser = true; };
+    window.setEraseBorderMode = () => { isBorderEraser = true; };
+
+    // --- ENGINE GRÁFICA ---
     function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; draw(); }
-    window.addEventListener('resize', resize); resize();
+    window.addEventListener('resize', resize);
+    initUI();
+    resize();
 
+    // --- CARREGAMENTO FIREBASE ---
     const mapRef = ref(db, 'maps/' + MAP_ID);
     document.getElementById('loader').classList.add('active');
     
     onValue(mapRef, (snapshot) => {
         const data = snapshot.val();
         if (data) {
+            // Carregar Config
             if (data.config) {
                 hexRadius = data.config.hexSize || 30;
-                gridOpacity = data.config.gridOpacity !== undefined ? data.config.gridOpacity : 0.3;
-                hexOpacity = data.config.hexOpacity !== undefined ? data.config.hexOpacity : 1.0;
-                bgOpacity = data.config.bgOpacity !== undefined ? data.config.bgOpacity : 1.0;
+                gridOpacity = data.config.gridOpacity ?? 0.3;
+                hexOpacity = data.config.hexOpacity ?? 0.8;
+                bgOpacity = data.config.bgOpacity ?? 1.0;
+                
                 if (data.config.bgUrl && data.config.bgUrl !== bgImageUrl) {
                     bgImageUrl = data.config.bgUrl;
-                    if(MODE === 'EDIT') document.getElementById('bgUrlInput').value = bgImageUrl;
+                    if(MODE==='EDIT') document.getElementById('bgUrlInput').value = bgImageUrl;
                     loadImage(bgImageUrl);
                 }
                 if (MODE === 'EDIT') {
@@ -243,31 +338,22 @@
             }
             hexMap = data.hexes || {};
             borderMap = data.borders || {};
-            // Pré-carrega ícones encontrados
-            for(let k in hexMap) { if(hexMap[k].customIcon) getIconFromCache(hexMap[k].customIcon); }
         }
         document.getElementById('loader').classList.remove('active');
         led.classList.add('on');
         draw();
-    }, (err) => { alert("Erro ao carregar!"); console.error(err); });
+    }, (err) => console.error(err));
 
     window.saveToCloud = () => {
-        if (MODE === 'VIEW') return;
+        if(MODE==='VIEW') return;
         led.className = 'status-led busy';
         update(ref(db, 'maps/' + MAP_ID), {
-            config: {
-                bgUrl: bgImageUrl,
-                hexSize: parseInt(document.getElementById('hexSize').value),
-                gridOpacity: parseFloat(document.getElementById('gridOpacity').value),
-                hexOpacity: parseFloat(document.getElementById('hexOpacity').value),
-                bgOpacity: parseFloat(document.getElementById('bgOpacity').value)
-            },
+            config: { bgUrl: bgImageUrl, hexSize: hexRadius, gridOpacity, hexOpacity, bgOpacity },
             hexes: hexMap,
             borders: borderMap
         }).then(() => {
             led.className = 'status-led on';
-            const btn = document.querySelector('.btn-save'); const oldText = btn.innerText; btn.innerText = "✅ SALVO!"; setTimeout(() => btn.innerText = oldText, 2000);
-        }).catch(err => { alert("Erro: " + err); led.className = 'status-led'; });
+        });
     };
 
     window.updateBgFromUrl = (url) => { if(url) { bgImageUrl = url; loadImage(url); } };
@@ -275,116 +361,45 @@
         const img = new Image(); img.crossOrigin = "Anonymous";
         img.onload = () => {
             bgImage = img;
-            if (camera.x === 0 && camera.y === 0) { camera.x = canvas.width/2 - img.width/2; camera.y = canvas.height/2 - img.height/2; }
+            if(camera.x === 0 && camera.y === 0) { camera.x = canvas.width/2 - img.width/2; camera.y = canvas.height/2 - img.height/2; }
             draw();
         }; img.src = url;
     }
+    window.clearHexes = () => { if(confirm("Apagar tudo?")) { hexMap = {}; borderMap = {}; draw(); } };
 
-    // --- ICON MANAGEMENT ---
-    function getIconFromCache(url) {
-        if (iconCache[url]) return iconCache[url];
-        const img = new Image();
-        img.crossOrigin = "Anonymous";
-        img.src = url;
-        img.onload = () => draw(); // Redraw when loaded
-        iconCache[url] = img;
-        return img;
-    }
-
-    window.updateIconPreview = (url) => {
-        isIconEraser = false;
-        const prev = document.getElementById('iconPreview');
-        if(url) { prev.innerHTML = `<img src="${url}">`; } else { prev.innerHTML = '❓'; }
-    }
-    window.setEraseIconMode = () => {
-        isIconEraser = true;
-        document.getElementById('iconPreview').innerHTML = '❌';
-        document.getElementById('iconUrl').value = '';
-    }
-
-    if (MODE === 'EDIT') {
-        const paletteDiv = document.getElementById('palette');
-        Object.keys(TERRAINS).forEach(key => {
-            const t = TERRAINS[key];
-            const div = document.createElement('div'); div.className = 'swatch'; div.innerHTML = `<span style="font-size:24px">${t.icon}</span>`; div.title = t.label;
-            div.onclick = () => {
-                currentTerrain = key;
-                document.querySelectorAll('.swatch').forEach(s => s.classList.remove('selected'));
-                div.classList.add('selected');
-                if (activeTool !== 'generator') window.setTool('brush');
-            };
-            if(key === 'grass') div.classList.add('selected');
-            paletteDiv.appendChild(div);
-        });
-
-        window.setTool = (tool) => {
-            activeTool = tool;
-            document.getElementById('btnBrush').classList.toggle('active', tool === 'brush');
-            document.getElementById('btnIcon').classList.toggle('active', tool === 'icon');
-            document.getElementById('btnHand').classList.toggle('active', tool === 'hand');
-            document.getElementById('btnBorder').classList.toggle('active', tool === 'border');
-            document.getElementById('btnGen').classList.toggle('active', tool === 'generator');
-            
-            document.getElementById('icon-controls').classList.toggle('visible', tool === 'icon');
-            document.getElementById('border-controls').classList.toggle('visible', tool === 'border');
-            document.getElementById('gen-controls').classList.toggle('visible', tool === 'generator');
-            
-            canvas.style.cursor = tool === 'hand' ? 'grab' : (tool === 'generator' ? 'crosshair' : 'default');
-        };
-
-        window.clearHexes = () => { if(confirm('Limpar TUDO?')) { hexMap = {}; borderMap = {}; draw(); } };
-        
-        document.getElementById('hexSize').addEventListener('input', (e) => { hexRadius = parseInt(e.target.value); draw(); });
-        document.getElementById('gridOpacity').addEventListener('input', (e) => { gridOpacity = parseFloat(e.target.value); draw(); });
-        document.getElementById('hexOpacity').addEventListener('input', (e) => { hexOpacity = parseFloat(e.target.value); draw(); });
-        document.getElementById('bgOpacity').addEventListener('input', (e) => { bgOpacity = parseFloat(e.target.value); draw(); });
-    }
-
-    // --- MATH ---
+    // --- MATH & HELPERS ---
     function hexToPixel(q, r) { return { x: hexRadius * (3/2 * q), y: hexRadius * (Math.sqrt(3)/2 * q + Math.sqrt(3) * r) }; }
     function pixelToHex(x, y) { return cubeRound((2/3 * x) / hexRadius, (-1/3 * x + Math.sqrt(3)/3 * y) / hexRadius); }
-    function cubeRound(fracQ, fracR) {
-        let fracS = -fracQ - fracR;
-        let q = Math.round(fracQ); let r = Math.round(fracR); let s = Math.round(fracS);
-        const qDiff = Math.abs(q - fracQ); const rDiff = Math.abs(r - fracR); const sDiff = Math.abs(s - fracS);
-        if (qDiff > rDiff && qDiff > sDiff) q = -r - s; else if (rDiff > sDiff) r = -q - s; else s = -q - r;
-        return { q, r };
+    function cubeRound(q, r) {
+        let s = -q-r; let rq = Math.round(q); let rr = Math.round(r); let rs = Math.round(s);
+        const qd = Math.abs(rq - q); const rd = Math.abs(rr - r); const sd = Math.abs(rs - s);
+        if (qd > rd && qd > sd) rq = -rr - rs; else if (rd > sd) rr = -rq - rs; else rs = -rq - rr;
+        return { q: rq, r: rr };
     }
     function screenToWorld(sx, sy) { return { x: (sx - canvas.width / 2) / camera.zoom + camera.x, y: (sy - canvas.height / 2) / camera.zoom + camera.y }; }
-    function hexDistance(a, b) { return (Math.abs(a.q - b.q) + Math.abs(a.q + a.r - b.q - b.r) + Math.abs(a.r - b.r)) / 2; }
-    function getClosestSide(hexCenter, mouseWorld) {
-        const dx = mouseWorld.x - hexCenter.x; const dy = mouseWorld.y - hexCenter.y;
-        let angle = Math.atan2(dy, dx) * 180 / Math.PI; if (angle < 0) angle += 360;
+    function getClosestSide(center, world) {
+        let angle = Math.atan2(world.y - center.y, world.x - center.x) * 180 / Math.PI; if (angle < 0) angle += 360;
         return Math.floor(angle / 60);
     }
-
-    // --- GENERATOR ---
-    function generateBiome(centerQ, centerR) {
-        const radius = parseInt(document.getElementById('genRadius').value);
-        const density = parseInt(document.getElementById('genDensity').value) / 100;
-        const mainType = currentTerrain;
-        let mixType = 'grass';
-        if (mainType === 'desert') mixType = 'mountain';
-        if (mainType === 'snow') mixType = 'mountain';
-        if (mainType === 'ocean') mixType = 'coast';
-        for (let q = -radius; q <= radius; q++) {
-            for (let r = Math.max(-radius, -q - radius); r <= Math.min(radius, -q + radius); r++) {
-                const hex = { q: centerQ + q, r: centerR + r };
-                const dist = hexDistance({q:centerQ, r:centerR}, hex);
-                const key = `${hex.q},${hex.r}`;
-                let chance = density; if (dist > radius * 0.7) chance *= 0.6; 
-                if (Math.random() < chance) {
-                    let finalType = mainType; const rand = Math.random();
-                    if (rand < 0.05) finalType = 'ruin'; else if (rand < 0.15) finalType = mixType; 
-                    if (mainType === 'void') delete hexMap[key]; else hexMap[key] = { type: finalType };
-                }
-            }
-        }
-        draw();
+    function getImg(url) {
+        if(imgCache[url]) return imgCache[url];
+        const i = new Image(); i.crossOrigin = "Anonymous"; i.src = url; i.onload = draw;
+        imgCache[url] = i; return i;
     }
 
-    // --- DRAW ---
-    function drawHex(ctx, x, y, size, color, icon, customIconUrl) {
+    // --- DRAWING ---
+    function drawHex(ctx, x, y, size, data) {
+        // DATA AGORA É { color: '...', icon: '...', customImg: '...' }
+        // Se for antigo { type: 'forest' }, tentamos converter visualmente
+        let color = data.color;
+        let icon = data.icon;
+
+        // Migração visual em tempo real para mapas antigos
+        if (!color && data.type) {
+             const legacy = { 'grass': '#2e7d32', 'ocean': '#1a237e', 'desert': '#fbc02d', 'mountain': '#5d4037' };
+             color = legacy[data.type] || '#555';
+        }
+
         ctx.beginPath();
         for (let i = 0; i < 6; i++) {
             const angle_rad = Math.PI / 180 * (60 * i);
@@ -393,185 +408,179 @@
             if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
         }
         ctx.closePath();
-        
-        if (color && color !== 'transparent') { ctx.fillStyle = color; ctx.fill(); }
-        if (gridOpacity > 0) { ctx.strokeStyle = `rgba(255,255,255,${gridOpacity})`; ctx.lineWidth = 1; ctx.stroke(); }
-        
-        // Custom Icon Image
-        if (customIconUrl) {
-            const img = getIconFromCache(customIconUrl);
-            if (img.complete && img.naturalHeight !== 0) {
-                // Desenha imagem centralizada
-                const imgSize = size * 1.5;
-                ctx.globalAlpha = 1.0; // Ícones personalizados sempre opacos? Ou seguem terreno?
-                // Vamos deixar opacos para destaque, ou seguir hexOpacity se quiser consistência. 
-                // Por enquanto segue hexOpacity pois está dentro do bloco globalAlpha no draw()
-                ctx.drawImage(img, x - imgSize/2, y - imgSize/2, imgSize, imgSize);
+
+        // 1. COR DO FUNDO
+        if (color && color !== 'transparent') {
+            ctx.fillStyle = color;
+            ctx.fill();
+        }
+
+        // 2. GRADE
+        if (gridOpacity > 0) {
+            ctx.strokeStyle = `rgba(255,255,255,${gridOpacity})`;
+            ctx.lineWidth = 1;
+            ctx.stroke();
+        }
+
+        // 3. ÍCONE DE IMAGEM
+        if (data.customImg) {
+            const img = getImg(data.customImg);
+            if (img.complete && img.naturalWidth > 0) {
+                const s = size * 1.5;
+                ctx.save();
+                ctx.globalAlpha = 1; // Tokens sempre opacos
+                ctx.drawImage(img, x - s/2, y - s/2, s, s);
+                ctx.restore();
             }
-        } 
-        // Default Emoji Icon (Só desenha se NÃO tiver ícone customizado)
+        }
+        // 4. ÍCONE EMOJI
         else if (icon) {
-            ctx.fillStyle = `rgba(255,255,255,${hexOpacity})`; 
+            ctx.fillStyle = `rgba(255,255,255,${hexOpacity + 0.2})`; // Um pouco mais brilhante que o fundo
             ctx.font = `${Math.floor(size/1.3)}px Arial`;
             ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
             ctx.shadowColor = "black"; ctx.shadowBlur = 4; ctx.fillText(icon, x, y); ctx.shadowBlur = 0;
         }
     }
-    
-    function drawBorderLine(ctx, x, y, size, side, color, width) {
-        const a1 = Math.PI / 180 * (60 * side); const a2 = Math.PI / 180 * (60 * ((side + 1) % 6));
-        const px1 = x + size * Math.cos(a1); const py1 = y + size * Math.sin(a1);
-        const px2 = x + size * Math.cos(a2); const py2 = y + size * Math.sin(a2);
-        ctx.beginPath(); ctx.moveTo(px1, py1); ctx.lineTo(px2, py2);
-        ctx.strokeStyle = color; ctx.lineWidth = width; ctx.lineCap = 'round'; ctx.stroke();
-    }
 
     function draw() {
         ctx.fillStyle = '#111'; ctx.fillRect(0, 0, canvas.width, canvas.height);
-        
         ctx.save();
         ctx.translate(canvas.width / 2, canvas.height / 2); ctx.scale(camera.zoom, camera.zoom); ctx.translate(-camera.x, -camera.y);
 
-        ctx.save();
-        ctx.globalAlpha = bgOpacity;
-        if (bgImage) ctx.drawImage(bgImage, -bgImage.width/2, -bgImage.height/2);
-        else if (bgImageUrl) { ctx.fillStyle = "#555"; ctx.textAlign = "center"; ctx.fillText("Carregando Imagem...", 0, 0); }
+        // Fundo
+        ctx.save(); ctx.globalAlpha = bgOpacity;
+        if(bgImage) ctx.drawImage(bgImage, -bgImage.width/2, -bgImage.height/2);
+        else if(bgImageUrl) { ctx.fillStyle="#555"; ctx.textAlign="center"; ctx.fillText("Carregando...", 0, 0); }
         ctx.restore();
 
-        ctx.save();
-        ctx.globalAlpha = hexOpacity;
-        for (let key in hexMap) {
-            const [q, r] = key.split(',').map(Number);
+        // Hexágonos
+        ctx.save(); ctx.globalAlpha = hexOpacity;
+        for (let k in hexMap) {
+            const [q, r] = k.split(',').map(Number);
             const pos = hexToPixel(q, r);
-            const data = hexMap[key];
-            const terrain = TERRAINS[data.type];
-            if (terrain) drawHex(ctx, pos.x, pos.y, hexRadius, terrain.color, terrain.icon, data.customIcon);
+            drawHex(ctx, pos.x, pos.y, hexRadius, hexMap[k]);
         }
         ctx.restore();
 
-        for (let key in borderMap) {
-            const [q, r, s] = key.split(',').map(Number);
-            const pos = hexToPixel(q, r);
-            const b = borderMap[key];
-            drawBorderLine(ctx, pos.x, pos.y, hexRadius, s, b.color, b.width);
+        // Bordas
+        for (let k in borderMap) {
+            const [q,r,s] = k.split(',').map(Number);
+            const pos = hexToPixel(q,r);
+            const b = borderMap[k];
+            const a1 = Math.PI/180*(60*s); const a2 = Math.PI/180*(60*((s+1)%6));
+            ctx.beginPath();
+            ctx.moveTo(pos.x+hexRadius*Math.cos(a1), pos.y+hexRadius*Math.sin(a1));
+            ctx.lineTo(pos.x+hexRadius*Math.cos(a2), pos.y+hexRadius*Math.sin(a2));
+            ctx.strokeStyle = b.color; ctx.lineWidth = b.width; ctx.lineCap='round'; ctx.stroke();
         }
 
-        if (!isDragging && MODE === 'EDIT') {
-            const mouseWorld = screenToWorld(lastMouse.x, lastMouse.y);
-            const hex = pixelToHex(mouseWorld.x, mouseWorld.y);
-            const center = hexToPixel(hex.q, hex.r);
-            
-            if (activeTool === 'border') {
-                const side = getClosestSide(center, mouseWorld);
-                const color = document.getElementById('borderColor').value;
-                const width = document.getElementById('borderWidth').value;
-                drawBorderLine(ctx, center.x, center.y, hexRadius, side, color, width);
-            } else if (activeTool === 'generator') {
-                const radius = parseInt(document.getElementById('genRadius').value);
-                ctx.beginPath(); ctx.arc(center.x, center.y, radius * hexRadius * 1.5, 0, 2*Math.PI);
-                ctx.strokeStyle = 'rgba(255,255,0,0.5)'; ctx.lineWidth = 2; ctx.stroke();
-            } else if (activeTool === 'icon') {
-                 // Preview do ícone no mouse
-                 const url = document.getElementById('iconUrl').value;
-                 if (url && !isIconEraser) {
-                     const img = getIconFromCache(url);
-                     if(img.complete) ctx.drawImage(img, center.x - hexRadius/2, center.y - hexRadius/2, hexRadius, hexRadius);
-                 } else if (isIconEraser) {
-                     ctx.fillStyle = "red"; ctx.font = "20px Arial"; ctx.textAlign = "center"; ctx.fillText("❌", center.x, center.y);
-                 }
-            } else if (activeTool === 'brush') {
-                drawHex(ctx, center.x, center.y, hexRadius, 'rgba(255, 255, 255, 0.2)', null);
+        // Mouse Hover
+        if(!isDragging && MODE === 'EDIT') {
+            const mw = screenToWorld(lastMouse.x, lastMouse.y);
+            const hex = pixelToHex(mw.x, mw.y);
+            const cp = hexToPixel(hex.q, hex.r);
+
+            if(activeTool === 'border') {
+                const s = getClosestSide(cp, mw);
+                const a1 = Math.PI/180*(60*s); const a2 = Math.PI/180*(60*((s+1)%6));
+                ctx.beginPath();
+                ctx.moveTo(cp.x+hexRadius*Math.cos(a1), cp.y+hexRadius*Math.sin(a1));
+                ctx.lineTo(cp.x+hexRadius*Math.cos(a2), cp.y+hexRadius*Math.sin(a2));
+                ctx.strokeStyle = document.getElementById('borderColor').value;
+                ctx.lineWidth = 4; ctx.stroke();
+            } else {
+                // Highlight Hex
+                drawHex(ctx, cp.x, cp.y, hexRadius, { color: 'rgba(255,255,255,0.2)' });
             }
         }
+
         ctx.restore();
     }
 
-    function handleInput(screenX, screenY, isClick) {
-        if (MODE === 'VIEW') return;
-        const worldPos = screenToWorld(screenX, screenY);
-        const hex = pixelToHex(worldPos.x, worldPos.y);
-        const key = `${hex.q},${hex.r}`;
-        const center = hexToPixel(hex.q, hex.r);
-        
-        if (activeTool === 'brush') {
-            if (currentTerrain === 'void') delete hexMap[key];
+    // --- INTERAÇÃO ---
+    function handleInput(sx, sy, isClick) {
+        if(MODE==='VIEW') return;
+        const mw = screenToWorld(sx, sy);
+        const h = pixelToHex(mw.x, mw.y);
+        const k = `${h.q},${h.r}`;
+
+        if(!hexMap[k]) hexMap[k] = {};
+
+        if(activeTool === 'color') {
+            hexMap[k].color = selectedColor;
+            // Limpa se for transparente E não tiver ícone
+            if(selectedColor === 'transparent' && !hexMap[k].icon && !hexMap[k].customImg) delete hexMap[k];
+        }
+        else if(activeTool === 'icon') {
+            hexMap[k].icon = selectedIcon; // Pode ser null (borracha)
+        }
+        else if(activeTool === 'customImg' && isClick) {
+            if(isCustomImgEraser) delete hexMap[k].customImg;
             else {
-                // Preserva o ícone customizado se já existir
-                const oldIcon = hexMap[key]?.customIcon;
-                hexMap[key] = { type: currentTerrain, customIcon: oldIcon };
-            }
-        } 
-        else if (activeTool === 'border') {
-            const side = getClosestSide(center, worldPos);
-            const bKey = `${hex.q},${hex.r},${side}`;
-            if (currentTerrain === 'void') delete borderMap[bKey];
-            else borderMap[bKey] = { color: document.getElementById('borderColor').value, width: parseInt(document.getElementById('borderWidth').value) };
-        }
-        else if (activeTool === 'generator' && isClick) {
-            generateBiome(hex.q, hex.r);
-        }
-        else if (activeTool === 'icon' && isClick) {
-            if (hexMap[key]) {
-                if (isIconEraser) {
-                    delete hexMap[key].customIcon;
-                } else {
-                    const url = document.getElementById('iconUrl').value;
-                    if (url) hexMap[key].customIcon = url;
-                }
+                const url = document.getElementById('customImgUrl').value;
+                if(url) hexMap[k].customImg = url;
             }
         }
+        else if(activeTool === 'border') {
+            const cp = hexToPixel(h.q, h.r);
+            const s = getClosestSide(cp, mw);
+            const bk = `${h.q},${h.r},${s}`;
+            if(isBorderEraser) delete borderMap[bk];
+            else borderMap[bk] = { color: document.getElementById('borderColor').value, width: document.getElementById('borderWidth').value };
+        }
+
         draw();
     }
 
-    canvas.addEventListener('wheel', (e) => {
-        e.preventDefault();
-        const zoomIntensity = 0.1;
-        const mouseWorldBefore = screenToWorld(e.clientX, e.clientY);
-        const newZoom = camera.zoom * (1 + -Math.sign(e.deltaY) * zoomIntensity);
-        if (newZoom < 0.05 || newZoom > 10) return;
-        camera.zoom = newZoom;
-        const mouseWorldAfter = screenToWorld(e.clientX, e.clientY);
-        camera.x += (mouseWorldBefore.x - mouseWorldAfter.x); camera.y += (mouseWorldBefore.y - mouseWorldAfter.y);
-        draw();
-    }, { passive: false });
-
-    canvas.addEventListener('mousedown', (e) => {
-        const isMiddle = e.button === 1; const isLeft = e.button === 0;
-        if (activeTool === 'hand' || isSpacePressed || isMiddle) {
-            isDragging = true; dragStart = { x: e.clientX, y: e.clientY }; canvas.style.cursor = 'grabbing';
-        } else if (isLeft && MODE === 'EDIT') {
-            handleInput(e.clientX, e.clientY, true); 
-            if (activeTool !== 'generator' && activeTool !== 'icon') isDragging = true; 
+    // Eventos Mouse
+    canvas.addEventListener('mousedown', e => {
+        if(e.button===1 || (activeTool==='hand' || isSpacePressed)) {
+            isDragging=true; dragStart={x:e.clientX, y:e.clientY}; canvas.style.cursor='grabbing';
+        } else if(e.button===0 && MODE==='EDIT') {
+            handleInput(e.clientX, e.clientY, true);
+            if(activeTool==='color' || activeTool==='icon' || activeTool==='border') isDragging=true; // Permite arrastar para pintar
         }
     });
+    canvas.addEventListener('mousemove', e => {
+        lastMouse={x:e.clientX, y:e.clientY};
+        if(!isDragging) { if(MODE==='EDIT') draw(); return; } // Hover redraw
 
-    canvas.addEventListener('mousemove', (e) => {
-        lastMouse = { x: e.clientX, y: e.clientY };
-        if (!isDragging) { if(MODE==='EDIT') draw(); return; }
-
-        const isHandMode = (activeTool === 'hand' || isSpacePressed || e.buttons === 4);
-        if (isHandMode) {
-            const dx = (e.clientX - dragStart.x) / camera.zoom; const dy = (e.clientY - dragStart.y) / camera.zoom;
-            camera.x -= dx; camera.y -= dy; dragStart = { x: e.clientX, y: e.clientY }; draw();
-        } else if (MODE === 'EDIT') {
+        if(activeTool==='hand' || isSpacePressed || e.buttons===4) {
+            const dx=(e.clientX-dragStart.x)/camera.zoom; const dy=(e.clientY-dragStart.y)/camera.zoom;
+            camera.x-=dx; camera.y-=dy; dragStart={x:e.clientX, y:e.clientY}; draw();
+        } else if(MODE==='EDIT' && (activeTool==='color' || activeTool==='icon' || activeTool==='border')) {
             handleInput(e.clientX, e.clientY, false);
         }
     });
+    canvas.addEventListener('mouseup', () => { isDragging=false; canvas.style.cursor = (activeTool==='hand'||isSpacePressed)?'grab': (activeTool==='color'?'cell':'default'); });
+    canvas.addEventListener('wheel', e => {
+        e.preventDefault();
+        const mw = screenToWorld(e.clientX, e.clientY);
+        const z = camera.zoom * (1 - Math.sign(e.deltaY)*0.1);
+        if(z>0.05 && z<10) { camera.zoom=z; const mw2 = screenToWorld(e.clientX, e.clientY); camera.x+=(mw.x-mw2.x); camera.y+=(mw.y-mw2.y); draw(); }
+    }, {passive:false});
 
-    window.addEventListener('mouseup', () => { isDragging = false; canvas.style.cursor = (activeTool === 'hand' || isSpacePressed) ? 'grab' : (['generator','icon'].includes(activeTool)?'crosshair':'default'); });
-    window.addEventListener('keydown', (e) => {
-        if (e.code === 'Space' && !isSpacePressed) { isSpacePressed = true; canvas.style.cursor = 'grab'; }
-        if (MODE === 'EDIT') {
-            if (e.key.toLowerCase() === 'b') window.setTool('brush');
-            if (e.key.toLowerCase() === 'h') window.setTool('hand');
-            if (e.key.toLowerCase() === 'f') window.setTool('border');
-            if (e.key.toLowerCase() === 'g') window.setTool('generator');
-            if (e.key.toLowerCase() === 'i') window.setTool('icon');
+    // Eventos Teclado
+    window.addEventListener('keydown', e => {
+        if(e.code==='Space') { isSpacePressed=true; canvas.style.cursor='grab'; }
+        if(MODE==='EDIT') {
+            if(e.key==='1') setTool('color');
+            if(e.key==='2') setTool('icon');
+            if(e.key==='3') setTool('customImg');
+            if(e.key==='4') setTool('border');
+            if(e.key.toLowerCase()==='h') setTool('hand');
         }
     });
-    window.addEventListener('keyup', (e) => { if (e.code === 'Space') { isSpacePressed = false; canvas.style.cursor = activeTool === 'hand' ? 'grab' : 'default'; isDragging = false; } });
-    
-    requestAnimationFrame(draw);
+    window.addEventListener('keyup', e => { if(e.code==='Space') { isSpacePressed=false; isDragging=false; canvas.style.cursor='default'; } });
+
+    // Inputs Sliders
+    if(MODE==='EDIT') {
+        document.getElementById('hexSize').addEventListener('input', e => { hexRadius=parseInt(e.target.value); draw(); });
+        document.getElementById('gridOpacity').addEventListener('input', e => { gridOpacity=parseFloat(e.target.value); draw(); });
+        document.getElementById('hexOpacity').addEventListener('input', e => { hexOpacity=parseFloat(e.target.value); draw(); });
+        document.getElementById('bgOpacity').addEventListener('input', e => { bgOpacity=parseFloat(e.target.value); draw(); });
+    }
+
 </script>
 </body>
 </html>
