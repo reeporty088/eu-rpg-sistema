@@ -101,8 +101,15 @@
 
         <label>Tamanho Hexágono</label>
         <input type="range" id="hexSize" min="10" max="150" value="30">
-        <label>Opacidade Grade</label>
+        
+        <label>Opacidade da Grade</label>
         <input type="range" id="gridOpacity" min="0" max="1" step="0.1" value="0.3">
+        
+        <label>Opacidade dos Terrenos (Hex)</label>
+        <input type="range" id="hexOpacity" min="0" max="1" step="0.1" value="1">
+        
+        <label>Opacidade do Fundo (Imagem)</label>
+        <input type="range" id="bgOpacity" min="0" max="1" step="0.1" value="1">
 
         <hr style="border:0; border-top:1px solid #444; width:100%;">
         
@@ -168,6 +175,8 @@
     let borderMap = {}; 
     let hexRadius = 30;
     let gridOpacity = 0.3;
+    let hexOpacity = 1.0; // Nova Opacidade
+    let bgOpacity = 1.0;  // Nova Opacidade
 
     // TERRENOS
     const TERRAINS = {
@@ -208,6 +217,9 @@
             if (data.config) {
                 hexRadius = data.config.hexSize || 30;
                 gridOpacity = data.config.gridOpacity !== undefined ? data.config.gridOpacity : 0.3;
+                hexOpacity = data.config.hexOpacity !== undefined ? data.config.hexOpacity : 1.0;
+                bgOpacity = data.config.bgOpacity !== undefined ? data.config.bgOpacity : 1.0;
+
                 if (data.config.bgUrl && data.config.bgUrl !== bgImageUrl) {
                     bgImageUrl = data.config.bgUrl;
                     if(MODE === 'EDIT') document.getElementById('bgUrlInput').value = bgImageUrl;
@@ -216,6 +228,8 @@
                 if (MODE === 'EDIT') {
                     document.getElementById('hexSize').value = hexRadius;
                     document.getElementById('gridOpacity').value = gridOpacity;
+                    document.getElementById('hexOpacity').value = hexOpacity;
+                    document.getElementById('bgOpacity').value = bgOpacity;
                 }
             }
             hexMap = data.hexes || {};
@@ -233,7 +247,9 @@
             config: {
                 bgUrl: bgImageUrl,
                 hexSize: parseInt(document.getElementById('hexSize').value),
-                gridOpacity: parseFloat(document.getElementById('gridOpacity').value)
+                gridOpacity: parseFloat(document.getElementById('gridOpacity').value),
+                hexOpacity: parseFloat(document.getElementById('hexOpacity').value),
+                bgOpacity: parseFloat(document.getElementById('bgOpacity').value)
             },
             hexes: hexMap,
             borders: borderMap
@@ -284,26 +300,24 @@
         };
 
         window.clearHexes = () => { if(confirm('Limpar TUDO?')) { hexMap = {}; borderMap = {}; draw(); } };
+        
+        // Listeners para os sliders
         document.getElementById('hexSize').addEventListener('input', (e) => { hexRadius = parseInt(e.target.value); draw(); });
         document.getElementById('gridOpacity').addEventListener('input', (e) => { gridOpacity = parseFloat(e.target.value); draw(); });
+        document.getElementById('hexOpacity').addEventListener('input', (e) => { hexOpacity = parseFloat(e.target.value); draw(); });
+        document.getElementById('bgOpacity').addEventListener('input', (e) => { bgOpacity = parseFloat(e.target.value); draw(); });
     }
 
-    // --- MATH CORRIGIDA ---
+    // --- MATH ---
     function hexToPixel(q, r) { return { x: hexRadius * (3/2 * q), y: hexRadius * (Math.sqrt(3)/2 * q + Math.sqrt(3) * r) }; }
-    
-    function pixelToHex(x, y) {
-        const q = (2/3 * x) / hexRadius;
-        const r = (-1/3 * x + Math.sqrt(3)/3 * y) / hexRadius;
-        return cubeRound(q, r, -q-r); // Envia o 3º componente (S) calculado corretamente
-    }
-
-    function cubeRound(fracQ, fracR, fracS) {
+    function pixelToHex(x, y) { return cubeRound((2/3 * x) / hexRadius, (-1/3 * x + Math.sqrt(3)/3 * y) / hexRadius); }
+    function cubeRound(fracQ, fracR) {
+        let fracS = -fracQ - fracR;
         let q = Math.round(fracQ); let r = Math.round(fracR); let s = Math.round(fracS);
         const qDiff = Math.abs(q - fracQ); const rDiff = Math.abs(r - fracR); const sDiff = Math.abs(s - fracS);
         if (qDiff > rDiff && qDiff > sDiff) q = -r - s; else if (rDiff > sDiff) r = -q - s; else s = -q - r;
         return { q, r };
     }
-
     function screenToWorld(sx, sy) { return { x: (sx - canvas.width / 2) / camera.zoom + camera.x, y: (sy - canvas.height / 2) / camera.zoom + camera.y }; }
     function hexDistance(a, b) { return (Math.abs(a.q - b.q) + Math.abs(a.q + a.r - b.q - b.r) + Math.abs(a.r - b.r)) / 2; }
     function getClosestSide(hexCenter, mouseWorld) {
@@ -352,14 +366,28 @@
             if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
         }
         ctx.closePath();
-        if (color && color !== 'transparent') { ctx.fillStyle = color; ctx.fill(); }
-        if (gridOpacity > 0) { ctx.strokeStyle = `rgba(255,255,255,${gridOpacity})`; ctx.lineWidth = 1; ctx.stroke(); }
+        
+        // Aplica opacidade apenas para o preenchimento (cor)
+        if (color && color !== 'transparent') { 
+            ctx.fillStyle = color; 
+            ctx.fill(); 
+        }
+        
+        // Grade (sempre desenhada se gridOpacity > 0, independente da opacidade do terreno)
+        if (gridOpacity > 0) { 
+            ctx.strokeStyle = `rgba(255,255,255,${gridOpacity})`; 
+            ctx.lineWidth = 1; 
+            ctx.stroke(); 
+        }
+        
         if (icon) {
-            ctx.fillStyle = 'white'; ctx.font = `${Math.floor(size/1.3)}px Arial`;
+            ctx.fillStyle = `rgba(255,255,255,${hexOpacity})`; // Ícone desvanece junto com terreno
+            ctx.font = `${Math.floor(size/1.3)}px Arial`;
             ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
             ctx.shadowColor = "black"; ctx.shadowBlur = 4; ctx.fillText(icon, x, y); ctx.shadowBlur = 0;
         }
     }
+    
     function drawBorderLine(ctx, x, y, size, side, color, width) {
         const a1 = Math.PI / 180 * (60 * side); const a2 = Math.PI / 180 * (60 * ((side + 1) % 6));
         const px1 = x + size * Math.cos(a1); const py1 = y + size * Math.sin(a1);
@@ -367,20 +395,32 @@
         ctx.beginPath(); ctx.moveTo(px1, py1); ctx.lineTo(px2, py2);
         ctx.strokeStyle = color; ctx.lineWidth = width; ctx.lineCap = 'round'; ctx.stroke();
     }
+
     function draw() {
         ctx.fillStyle = '#111'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
         ctx.save();
         ctx.translate(canvas.width / 2, canvas.height / 2); ctx.scale(camera.zoom, camera.zoom); ctx.translate(-camera.x, -camera.y);
 
+        // 1. Fundo (com opacidade)
+        ctx.save();
+        ctx.globalAlpha = bgOpacity;
         if (bgImage) ctx.drawImage(bgImage, -bgImage.width/2, -bgImage.height/2);
         else if (bgImageUrl) { ctx.fillStyle = "#555"; ctx.textAlign = "center"; ctx.fillText("Carregando Imagem...", 0, 0); }
+        ctx.restore();
 
+        // 2. Hexágonos (com opacidade global para o batch)
+        ctx.save();
+        ctx.globalAlpha = hexOpacity;
         for (let key in hexMap) {
             const [q, r] = key.split(',').map(Number);
             const pos = hexToPixel(q, r);
             const terrain = TERRAINS[hexMap[key].type];
             if (terrain) drawHex(ctx, pos.x, pos.y, hexRadius, terrain.color, terrain.icon);
         }
+        ctx.restore();
+
+        // 3. Fronteiras (não afetadas pela opacidade do hex, para continuarem visíveis)
         for (let key in borderMap) {
             const [q, r, s] = key.split(',').map(Number);
             const pos = hexToPixel(q, r);
@@ -388,6 +428,7 @@
             drawBorderLine(ctx, pos.x, pos.y, hexRadius, s, b.color, b.width);
         }
 
+        // 4. Hover
         if (!isDragging && MODE === 'EDIT') {
             const mouseWorld = screenToWorld(lastMouse.x, lastMouse.y);
             const hex = pixelToHex(mouseWorld.x, mouseWorld.y);
@@ -402,9 +443,7 @@
                 const radius = parseInt(document.getElementById('genRadius').value);
                 ctx.beginPath();
                 ctx.arc(center.x, center.y, radius * hexRadius * 1.5, 0, 2*Math.PI);
-                ctx.strokeStyle = 'rgba(255,255,0,0.5)';
-                ctx.lineWidth = 2;
-                ctx.stroke();
+                ctx.strokeStyle = 'rgba(255,255,0,0.5)'; ctx.lineWidth = 2; ctx.stroke();
             } else if (activeTool === 'brush') {
                 drawHex(ctx, center.x, center.y, hexRadius, 'rgba(255, 255, 255, 0.2)', null);
             }
