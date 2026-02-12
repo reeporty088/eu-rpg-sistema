@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Banco de Habilidades - RPG</title>
+    <style>
+        :root { --bg: #121212; --card-bg: #1e1e1e; --accent: #800000; --text: #eee; }
+        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        
+        h1 { color: var(--accent); text-transform: uppercase; letter-spacing: 2px; }
+        
+        .nav-tabs { display: flex; gap: 10px; margin-bottom: 20px; }
+        .tab-btn { background: #333; color: #aaa; border: 1px solid #444; padding: 10px 20px; cursor: pointer; border-radius: 5px; font-weight: bold; transition: 0.3s; }
+        .tab-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
+        .tab-btn:hover { color: white; background: #444; }
+
+        .container { width: 100%; max-width: 800px; }
+        
+        .form-box { background: var(--card-bg); padding: 20px; border-radius: 10px; border: 1px solid #444; margin-bottom: 20px; }
+        .form-row { display: grid; grid-template-columns: 2fr 1fr; gap: 10px; margin-bottom: 10px; }
+        input, textarea, select { width: 100%; background: #111; border: 1px solid #333; color: white; padding: 10px; border-radius: 5px; box-sizing: border-box; }
+        textarea { resize: vertical; min-height: 80px; }
+        
+        .btn-add { width: 100%; background: #2e7d32; color: white; border: none; padding: 12px; font-weight: bold; cursor: pointer; border-radius: 5px; margin-top: 10px; }
+        .btn-add:hover { background: #4caf50; }
+
+        .search-bar { width: 100%; padding: 10px; margin-bottom: 15px; background: #111; border: 1px solid #444; color: white; border-radius: 5px; }
+
+        .item-list { display: flex; flex-direction: column; gap: 10px; }
+        .item-card { background: var(--card-bg); border-left: 4px solid var(--accent); padding: 15px; border-radius: 5px; position: relative; }
+        .item-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+        .item-title { font-weight: bold; font-size: 16px; color: #ffaaaa; }
+        .item-cost { background: #333; padding: 2px 8px; border-radius: 4px; font-size: 12px; }
+        .item-desc { font-size: 13px; color: #ccc; white-space: pre-wrap; }
+        .btn-delete { position: absolute; top: 10px; right: 10px; background: transparent; border: none; color: #666; cursor: pointer; font-size: 16px; }
+        .btn-delete:hover { color: #f44336; }
+
+    </style>
+</head>
+<body>
+
+    <h1>Biblioteca do Mestre</h1>
+
+    <div class="nav-tabs">
+        <button class="tab-btn active" onclick="setTab('vantagens')">Vantagens</button>
+        <button class="tab-btn" onclick="setTab('desvantagens')">Desvantagens</button>
+        <button class="tab-btn" onclick="setTab('habilidades')">Habilidades</button>
+        <button class="tab-btn" onclick="setTab('artefatos')">Artefatos</button>
+    </div>
+
+    <div class="container">
+        <div class="form-box">
+            <h3>Adicionar Novo</h3>
+            <div class="form-row">
+                <input type="text" id="inp_name" placeholder="Nome (ex: Ataque Poderoso)">
+                <input type="text" id="inp_cost" placeholder="Custo/Tipo (ex: 2 PM ou Passiva)">
+            </div>
+            <textarea id="inp_desc" placeholder="Descrição detalhada do efeito..."></textarea>
+            <button class="btn-add" onclick="addItem()">SALVAR NA BIBLIOTECA</button>
+        </div>
+
+        <input type="text" class="search-bar" id="search" placeholder="🔍 Buscar na lista..." onkeyup="renderList()">
+        <div id="list-container" class="item-list"></div>
+    </div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyCvxxwfsonP5a45nbcz34cxYhXaWBZVhwQ",
+        authDomain: "ed-rpg---sistema-de-fichas.firebaseapp.com",
+        databaseURL: "https://ed-rpg---sistema-de-fichas-default-rtdb.firebaseio.com",
+        projectId: "ed-rpg---sistema-de-fichas",
+        storageBucket: "ed-rpg---sistema-de-fichas.firebasestorage.app",
+        messagingSenderId: "350999444010",
+        appId: "1:350999444010:web:d89f31d13e449b8fbfa153"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    let currentTab = 'vantagens';
+    let dbData = {};
+
+    window.setTab = (tab) => {
+        currentTab = tab;
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        event.target.classList.add('active');
+        loadData();
+    };
+
+    function loadData() {
+        const listRef = ref(db, `biblioteca_habilidades/${currentTab}`);
+        onValue(listRef, (snapshot) => {
+            dbData = snapshot.val() || {};
+            renderList();
+        });
+    }
+
+    window.addItem = () => {
+        const name = document.getElementById('inp_name').value;
+        const cost = document.getElementById('inp_cost').value;
+        const desc = document.getElementById('inp_desc').value;
+
+        if(!name) return alert("Digite um nome!");
+
+        push(ref(db, `biblioteca_habilidades/${currentTab}`), {
+            nome: name,
+            custo: cost,
+            desc: desc
+        });
+
+        // Limpa campos
+        document.getElementById('inp_name').value = "";
+        document.getElementById('inp_cost').value = "";
+        document.getElementById('inp_desc').value = "";
+    };
+
+    window.deleteItem = (id) => {
+        if(confirm("Excluir este item da biblioteca?")) {
+            remove(ref(db, `biblioteca_habilidades/${currentTab}/${id}`));
+        }
+    };
+
+    window.renderList = () => {
+        const container = document.getElementById('list-container');
+        container.innerHTML = "";
+        const term = document.getElementById('search').value.toLowerCase();
+
+        const items = [];
+        for(let id in dbData) {
+            items.push({ id, ...dbData[id] });
+        }
+
+        // Ordenar alfabético
+        items.sort((a,b) => a.nome.localeCompare(b.nome));
+
+        items.forEach(item => {
+            if(item.nome.toLowerCase().includes(term)) {
+                const div = document.createElement('div');
+                div.className = 'item-card';
+                div.innerHTML = `
+                    <div class="item-header">
+                        <span class="item-title">${item.nome}</span>
+                        <span class="item-cost">${item.custo}</span>
+                    </div>
+                    <div class="item-desc">${item.desc}</div>
+                    <button class="btn-delete" onclick="deleteItem('${item.id}')">🗑️</button>
+                `;
+                container.appendChild(div);
+            }
+        });
+    };
+
+    // Inicializa
+    loadData();
+
+</script>
+</body>
+</html>
