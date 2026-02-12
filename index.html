@@ -96,6 +96,16 @@
         
         .btn-edit { background: transparent; border: none; cursor: pointer; font-size: 16px; margin-right: 5px; opacity: 0.7; transition: 0.2s; color: var(--theme-light); }
         .btn-edit:hover { opacity: 1; transform: scale(1.1); color: white; }
+        
+        /* ESTILOS ESPECÍFICOS PARA TÉCNICAS E ARTEFATOS */
+        .tech-info { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; padding: 0 8px 8px 8px; font-size: 11px; color: #aaa; }
+        .tech-info span { background: rgba(0,0,0,0.3); padding: 2px 5px; border-radius: 4px; text-align: center; }
+        
+        .art-cost { width: 60px !important; text-align: center; font-weight: bold; }
+        .art-cost.positive { color: #ff5555; }
+        .art-cost.negative { color: #55ff55; }
+        .btn-check { width: 25px; height: 25px; border-radius: 4px; border: 1px solid #555; background: #222; color: transparent; cursor: pointer; display: flex; justify-content: center; align-items: center; margin-right: 5px; }
+        .btn-check.checked { background: var(--theme-main); color: white; border-color: var(--theme-light); }
 
         .marker-section { margin-bottom: 20px; text-align: center; }
         .marker-controls { display: flex; justify-content: center; align-items: center; gap: 15px; margin-bottom: 10px; background: rgba(0,0,0,0.3); padding: 5px; border-radius: 15px; }
@@ -117,39 +127,11 @@
         .skull { opacity: 0.2; transition: 0.3s; cursor: pointer; font-size: 30px; margin: 0 5px; }
         .skull.active { opacity: 1; filter: drop-shadow(0 0 5px red); }
 
-        /* --- ESTILO DAS PERÍCIAS (NOVO GRID 3 COLUNAS) --- */
-        #pericias-list {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr); /* 3 Colunas */
-            gap: 5px;
-            margin-top: 10px;
-        }
-        .pericia-row { 
-            display: flex; 
-            flex-direction: column; /* Vertical */
-            justify-content: center; 
-            align-items: center; 
-            background: rgba(0,0,0,0.3); 
-            padding: 8px 4px; 
-            border-radius: 10px; 
-            border: 1px solid var(--theme-border); 
-        }
-        .pericia-row span:first-child {
-            font-size: 10px;
-            font-weight: bold;
-            color: #ccc;
-            margin-bottom: 4px;
-            text-transform: uppercase;
-        }
-        .pericia-controls { 
-            display: flex; 
-            align-items: center; 
-            gap: 2px; 
-            background: transparent; 
-            padding: 0;
-            width: 100%;
-            justify-content: center;
-        }
+        /* --- ESTILO DAS PERÍCIAS (GRID 3 COLUNAS) --- */
+        #pericias-list { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; margin-top: 10px; }
+        .pericia-row { display: flex; flex-direction: column; justify-content: center; align-items: center; background: rgba(0,0,0,0.3); padding: 8px 4px; border-radius: 10px; border: 1px solid var(--theme-border); }
+        .pericia-row span:first-child { font-size: 10px; font-weight: bold; color: #ccc; margin-bottom: 4px; text-transform: uppercase; }
+        .pericia-controls { display: flex; align-items: center; gap: 2px; background: transparent; padding: 0; width: 100%; justify-content: center; }
         .btn-p { background: transparent; border: none; color: var(--theme-light); font-weight: bold; font-size: 16px; cursor: pointer; width: 20px; display: flex; justify-content: center; }
         .btn-p:hover { color: white; text-shadow: 0 0 5px white; }
         .pericia-val { font-weight: bold; color: white; font-size: 18px; min-width: 22px; text-align: center; }
@@ -243,17 +225,35 @@
             <label>Geral <button class="btn-add" onclick="openAddMenu('geral')">+</button></label>
             <div id="list_geral" style="margin-top:5px;"></div>
             
-            <label style="margin-top:10px;">Vantagens <button class="btn-add" onclick="openAddMenu('vantagens')">+</button></label>
+            <label style="margin-top:10px;">Vantagens / Desvantagens <button class="btn-add" onclick="openAddMenu('vantagens')">+</button></label>
             <div id="list_vantagens" style="margin-top:5px;"></div>
             
-            <label style="margin-top:10px;">Arquétipo <button class="btn-add" onclick="openAddMenu('arquetipo_hab')">+</button></label>
-            <div id="list_arquetipo_hab" style="margin-top:5px;"></div>
+            <label style="margin-top:10px;">Arquétipo <button class="btn-add" onclick="openAddMenu('arquetipo')">+</button></label>
+            <div id="list_arquetipo" style="margin-top:5px;"></div>
             
-            <label style="margin-top:10px;">Artefatos <button class="btn-add" onclick="openAddMenu('artefatos')">+</button></label>
-            <div id="list_artefatos" style="margin-top:5px;"></div>
+            <label style="margin-top:10px;">Artefatos (Arma Personalizada) <button class="btn-add" onclick="openAddMenu('artefatos_mods')">+</button></label>
+            <div style="background: rgba(0,0,0,0.2); padding:10px; border-radius:8px; border:1px solid #444; margin-bottom:10px;">
+                <input type="text" id="art_name" placeholder="Nome da Arma / Artefato" style="font-weight:bold; color:cyan; text-align:center;">
+                <input type="text" id="art_weight" placeholder="Peso Total" style="text-align:center;">
+                <label style="margin-left:0; text-align:center; color:#aaa; margin-top:5px;">MODIFICADORES / EFEITOS</label>
+                <div id="list_artefatos_mods" style="margin-top:5px;"></div>
+                <div style="text-align:center; margin-top:10px; font-weight:bold; color:#ffeb3b; font-size:14px; border-top:1px dashed #555; padding-top:5px;">
+                    CUSTO TOTAL: <span id="art_total_cost">0</span>
+                </div>
+            </div>
             
-            <label style="margin-top:10px;">Técnicas <button class="btn-add" onclick="openAddMenu('tecnicas')">+</button></label>
-            <div id="list_tecnicas" style="margin-top:5px;"></div>
+            <div class="header-label" style="margin-top:10px;">Técnicas</div>
+            
+            <label>Truques</label>
+            <div id="list_tecnicas_truque" style="margin-top:5px;"></div>
+            
+            <label style="margin-top:10px;">Técnicas Comuns</label>
+            <div id="list_tecnicas_comum" style="margin-top:5px;"></div>
+            
+            <label style="margin-top:10px;">Técnicas Lendárias</label>
+            <div id="list_tecnicas_lendaria" style="margin-top:5px;"></div>
+            
+            <button class="btn-add" onclick="openAddMenu('tecnicas')" style="width:100%; border-radius:8px; margin-top:10px;">+ Adicionar Técnica</button>
         </div>
     </div>
 
@@ -343,7 +343,7 @@
     // LISTA DE PERÍCIAS ATUALIZADA (Nomes Encurtados para Grid)
     const periciasList = [ {id: 'p_animais', nome: 'ANIMAIS'}, {id: 'p_arte', nome: 'ARTE'}, {id: 'p_esporte', nome: 'ESPORTE'}, {id: 'p_influencia', nome: 'INFLU.'}, {id: 'p_luta', nome: 'LUTA'}, {id: 'p_manha', nome: 'MANHA'}, {id: 'p_maquinas', nome: 'MÁQUINAS'}, {id: 'p_medicina', nome: 'MEDICINA'}, {id: 'p_mistica', nome: 'MÍSTICA'}, {id: 'p_percepcao', nome: 'PERCEP.'}, {id: 'p_saber', nome: 'SABER'}, {id: 'p_sobrevivencia', nome: 'SOBREVIV.'} ];
     
-    const camposParaSalvar = [ 'char_name', 'idade', 'florins', 'arquetipo', 'hp_at', 'mp_at', 'pa_at', 'poder', 'habilidade', 'resistencia', 'xp_total', 'xp_pontos', 'color_theme', ...periciasList.map(p => p.id) ];
+    const camposParaSalvar = [ 'char_name', 'idade', 'florins', 'arquetipo', 'hp_at', 'mp_at', 'pa_at', 'poder', 'habilidade', 'resistencia', 'xp_total', 'xp_pontos', 'color_theme', 'art_name', 'art_weight', ...periciasList.map(p => p.id) ];
     const pContainer = document.getElementById('pericias-list'); periciasList.forEach(p => { pContainer.innerHTML += `<div class="pericia-row"><span>${p.nome}</span><div class="pericia-controls"><button class="btn-p" onclick="updatePericia('${p.id}', -1)">-</button><span id="disp_${p.id}" class="pericia-val">+0</span><span class="dice-icon">🎲</span><input type="hidden" id="${p.id}" value="0"><button class="btn-p" onclick="updatePericia('${p.id}', 1)">+</button></div></div>`; });
 
     onValue(ref(db, 'world_time'), (snapshot) => { globalWorldTime = snapshot.val() || {}; refreshDisplayValues(); });
@@ -539,8 +539,15 @@
 
         if (dados.char_img) document.getElementById('avatar_display').style.backgroundImage = `url(${dados.char_img})`;
         ['skull1', 'skull2', 'skull3'].forEach(sid => { document.getElementById(sid).classList.toggle('active', dados[sid] === "active"); });
-        ['geral', 'vantagens', 'arquetipo_hab', 'artefatos', 'tecnicas'].forEach(cat => renderHabs(cat, dados.habilidades?.[cat]));
+        
+        // RENDERIZAR LISTAS GENERICAS
+        ['geral', 'vantagens', 'arquetipo'].forEach(cat => renderHabs(cat, dados.habilidades?.[cat]));
+        
+        // RENDERIZAR ESPECIAS
+        renderHabs('tecnicas', dados.habilidades?.['tecnicas']);
+        renderHabs('artefatos_mods', dados.habilidades?.['artefatos_mods']);
         renderInventory(dados.habilidades?.['inventario']);
+        
         renderMarkers('ações', dados.marcadores?.['ações']?.total, dados.marcadores?.['ações']?.pontos);
         refreshDisplayValues();
     });
@@ -572,17 +579,20 @@
         document.getElementById(id).classList.remove('open');
     };
 
-    // 1. Criar Manual: Nasce destravado (locked: false)
+    // 1. Criar Manual
     window.createManual = () => {
         closeModal('modal-choice');
-        const data = currentCategory === 'inventario' 
-            ? { titulo: "", peso: 0, desc: "", locked: false } 
-            : { titulo: "", teste: "", desc: "", locked: false }; 
+        let data = { titulo: "", desc: "", locked: false };
+        
+        if (currentCategory === 'inventario') { data.peso = 0; }
+        else if (currentCategory === 'artefatos_mods') { data.custo = 0; data.variavel = false; }
+        else { data.teste = ""; } // Para Vantagens/Geral é texto
+        
         const newItemRef = push(ref(db, `fichas/${fichaID}/habilidades/${currentCategory}`)); 
         set(newItemRef, data);
     };
 
-    // 2. Escolher da Lista: Nasce travado (locked: true)
+    // 2. Escolher da Lista
     window.selectFromLibrary = () => {
         closeModal('modal-choice');
         const modalLib = document.getElementById('modal-library');
@@ -618,8 +628,25 @@
                 div.className = 'lib-item';
                 div.innerHTML = `<h4>${item.nome}</h4><span>${item.custo || ''}</span>`;
                 div.onclick = () => {
-                    const data = { titulo: item.nome, teste: item.custo, desc: item.desc, locked: true };
-                    if(currentCategory === 'inventario') data.peso = 0; 
+                    let data = { titulo: item.nome, desc: item.desc, locked: true };
+                    
+                    if (currentCategory === 'tecnicas') {
+                        data.exigencia = item.exigencia;
+                        data.alcance = item.alcance;
+                        data.duracao = item.duracao;
+                        data.tipo = item.tipo;
+                        data.teste = item.custo; // Campo visual na ficha
+                    }
+                    else if (currentCategory === 'artefatos_mods') {
+                        data.custo = item.custo; // Numérico
+                        data.variavel = item.variavel;
+                    }
+                    else if (currentCategory === 'inventario') {
+                        data.peso = 0;
+                    } 
+                    else {
+                         data.teste = item.custo; // Texto
+                    }
                     
                     push(ref(db, `fichas/${fichaID}/habilidades/${currentCategory}`), data);
                     closeModal('modal-library');
@@ -629,11 +656,14 @@
         });
     };
 
-    // 3. Função Destravar (Botão Lápis)
     window.unlockItem = (category, id) => {
         if(confirm("Editar esta habilidade? Ela ficará marcada como personalizada.")) {
             update(ref(db, `fichas/${fichaID}/habilidades/${category}/${id}`), { locked: false });
         }
+    };
+    
+    window.toggleModActive = (id, currentVal) => {
+        update(ref(db, `fichas/${fichaID}/habilidades/artefatos_mods/${id}`), { active_mod: !currentVal });
     };
 
     window.removeItem = (category, id) => { if(confirm("Apagar?")) remove(ref(db, `fichas/${fichaID}/habilidades/${category}/${id}`)); };
@@ -641,43 +671,132 @@
     window.saveHab = (cat, id, field, val) => { update(ref(db, `fichas/${fichaID}/habilidades/${cat}/${id}`), { [field]: val }).then(() => { if(cat === 'inventario') updateWeight(); }); };
     
     function renderHabs(category, data) { 
-        const container = document.getElementById('list_' + category); 
+        // Containers específicos
+        let container = document.getElementById('list_' + category); 
+        
+        // Se for TÉCNICAS, precisamos distribuir
+        if (category === 'tecnicas') {
+            document.getElementById('list_tecnicas_truque').innerHTML = "";
+            document.getElementById('list_tecnicas_comum').innerHTML = "";
+            document.getElementById('list_tecnicas_lendaria').innerHTML = "";
+            if(!data) return;
+            
+            Object.keys(data).forEach(id => {
+                const item = data[id];
+                const type = item.tipo || 'comum';
+                const targetId = `list_tecnicas_${type}`;
+                const targetContainer = document.getElementById(targetId) || document.getElementById('list_tecnicas_comum');
+                
+                const isLocked = item.locked === true;
+                const readOnlyAttr = isLocked ? 'readonly' : '';
+                const modClass = !isLocked ? 'modified' : '';
+                const editBtn = isLocked ? `<button class="btn-edit" onclick="unlockItem('${category}','${id}')" title="Editar">✏️</button>` : '';
+
+                const div = document.createElement('div');
+                div.className = 'hab-item';
+                div.innerHTML = `
+                    <div class="hab-header">
+                        <span class="hab-toggle" onclick="toggleHab('${id}')">▼</span>
+                        <input type="text" class="hab-title ${modClass}" value="${item.titulo || ''}" onchange="saveHab('${category}','${id}','titulo',this.value)" placeholder="Nome" ${readOnlyAttr}>
+                        ${editBtn}
+                        <input type="text" class="hab-dice" value="${item.teste || ''}" onchange="saveHab('${category}','${id}','teste',this.value)" placeholder="Custo" ${readOnlyAttr}>
+                        <button class="btn-del" onclick="removeItem('${category}','${id}')">✖</button>
+                    </div>
+                    <div class="hab-body" id="body_${id}">
+                        <div class="tech-info">
+                             <span>Req: ${item.exigencia || '-'}</span>
+                             <span>Alc: ${item.alcance || '-'}</span>
+                             <span>Dur: ${item.duracao || '-'}</span>
+                        </div>
+                        <textarea onchange="saveHab('${category}','${id}','desc',this.value)" placeholder="Descrição..." ${readOnlyAttr}>${item.desc || ''}</textarea>
+                    </div>`;
+                targetContainer.appendChild(div);
+            });
+            return;
+        }
+        
+        // Se for ARTEFATOS (Modificadores)
+        if (category === 'artefatos_mods') {
+            container.innerHTML = "";
+            let totalCost = 0;
+            
+            if(data) {
+                Object.keys(data).forEach(id => {
+                    const item = data[id];
+                    
+                    const isLocked = item.locked === true;
+                    const readOnlyAttr = isLocked ? 'readonly' : '';
+                    const modClass = !isLocked ? 'modified' : '';
+                    const editBtn = isLocked ? `<button class="btn-edit" onclick="unlockItem('${category}','${id}')" title="Editar">✏️</button>` : '';
+                    
+                    // Cálculo do custo
+                    let displayCostClass = "neutral";
+                    let val = parseFloat(item.custo) || 0;
+                    
+                    // Lógica especial para Checkbox de Variável
+                    let costInputHtml = "";
+                    if (item.variavel) {
+                        // Se é variável, precisa de um Checkbox para ativar/desativar o cálculo se quiser (opcional)
+                        // Mas o pedido foi: "jogador escolhe e adiciona". Então o input deve ser editável.
+                        costInputHtml = `<input type="number" class="hab-dice art-cost" value="${item.custo}" onchange="saveHab('${category}','${id}','custo',this.value)" placeholder="Var.">`;
+                    } else {
+                        // Se não é variável, é readonly se estiver travado
+                        let rOnly = isLocked ? 'readonly' : '';
+                        if(val > 0) displayCostClass = "positive";
+                        if(val < 0) displayCostClass = "negative";
+                        costInputHtml = `<input type="number" class="hab-dice art-cost ${displayCostClass}" value="${item.custo}" onchange="saveHab('${category}','${id}','custo',this.value)" ${rOnly}>`;
+                    }
+                    
+                    // Botão de Ativar (Check) para somar
+                    const isActive = item.active_mod !== false; // Padrão true
+                    if(isActive) totalCost += val;
+                    const checkBtn = `<button class="btn-check ${isActive ? 'checked' : ''}" onclick="toggleModActive('${id}', ${isActive})">✔</button>`;
+
+                    const div = document.createElement('div');
+                    div.className = 'hab-item';
+                    div.innerHTML = `
+                        <div class="hab-header">
+                            <span class="hab-toggle" onclick="toggleHab('${id}')">▼</span>
+                            ${checkBtn}
+                            <input type="text" class="hab-title ${modClass}" value="${item.titulo || ''}" onchange="saveHab('${category}','${id}','titulo',this.value)" placeholder="Modificador" ${readOnlyAttr}>
+                            ${editBtn}
+                            ${costInputHtml}
+                            <button class="btn-del" onclick="removeItem('${category}','${id}')">✖</button>
+                        </div>
+                        <div class="hab-body" id="body_${id}">
+                            <textarea onchange="saveHab('${category}','${id}','desc',this.value)" placeholder="Efeito..." ${readOnlyAttr}>${item.desc || ''}</textarea>
+                        </div>`;
+                    container.appendChild(div);
+                });
+            }
+            document.getElementById('art_total_cost').innerText = totalCost;
+            return;
+        }
+
+        // PADRÃO (Geral, Vantagens, Arquetipo)
         if(!container) return; 
         container.innerHTML = ""; 
         if(!data) return; 
         
         Object.keys(data).forEach(id => { 
             const item = data[id]; 
-            
-            // LÓGICA DE TRAVAMENTO
             const isLocked = item.locked === true;
             const readOnlyAttr = isLocked ? 'readonly' : '';
             const modClass = !isLocked ? 'modified' : '';
-            const editBtn = isLocked 
-                ? `<button class="btn-edit" onclick="unlockItem('${category}','${id}')" title="Editar">✏️</button>` 
-                : '';
+            const editBtn = isLocked ? `<button class="btn-edit" onclick="unlockItem('${category}','${id}')" title="Editar">✏️</button>` : '';
 
             const div = document.createElement('div'); 
             div.className = 'hab-item'; 
             div.innerHTML = `
                 <div class="hab-header">
                     <span class="hab-toggle" onclick="toggleHab('${id}')">▼</span>
-                    
-                    <input type="text" class="hab-title ${modClass}" value="${item.titulo || ''}" 
-                        onchange="saveHab('${category}','${id}','titulo',this.value)" 
-                        placeholder="Nome" ${readOnlyAttr}>
-                    
+                    <input type="text" class="hab-title ${modClass}" value="${item.titulo || ''}" onchange="saveHab('${category}','${id}','titulo',this.value)" placeholder="Nome" ${readOnlyAttr}>
                     ${editBtn}
-
-                    <input type="text" class="hab-dice" value="${item.teste || ''}" 
-                        onchange="saveHab('${category}','${id}','teste',this.value)" 
-                        placeholder="Teste" ${readOnlyAttr}>
-                        
+                    <input type="text" class="hab-dice" value="${item.teste || ''}" onchange="saveHab('${category}','${id}','teste',this.value)" placeholder="Custo" ${readOnlyAttr}>
                     <button class="btn-del" onclick="removeItem('${category}','${id}')">✖</button>
                 </div>
                 <div class="hab-body" id="body_${id}">
-                    <textarea onchange="saveHab('${category}','${id}','desc',this.value)" 
-                        placeholder="Descrição..." ${readOnlyAttr}>${item.desc || ''}</textarea>
+                    <textarea onchange="saveHab('${category}','${id}','desc',this.value)" placeholder="Descrição..." ${readOnlyAttr}>${item.desc || ''}</textarea>
                 </div>`; 
             container.appendChild(div); 
         }); 
@@ -691,35 +810,23 @@
         
         Object.keys(data).forEach(id => { 
             const item = data[id]; 
-            
             const isLocked = item.locked === true;
             const readOnlyAttr = isLocked ? 'readonly' : '';
             const modClass = !isLocked ? 'modified' : '';
-            const editBtn = isLocked 
-                ? `<button class="btn-edit" onclick="unlockItem('inventario','${id}')" title="Editar">✏️</button>` 
-                : '';
+            const editBtn = isLocked ? `<button class="btn-edit" onclick="unlockItem('inventario','${id}')" title="Editar">✏️</button>` : '';
 
             const div = document.createElement('div'); 
             div.className = 'hab-item'; 
             div.innerHTML = `
                 <div class="hab-header">
                     <span class="hab-toggle" onclick="toggleHab('${id}')">▼</span>
-                    
-                    <input type="text" class="hab-title ${modClass}" value="${item.titulo || ''}" 
-                        onchange="saveHab('inventario','${id}','titulo',this.value)" 
-                        placeholder="Item" ${readOnlyAttr}>
-                    
+                    <input type="text" class="hab-title ${modClass}" value="${item.titulo || ''}" onchange="saveHab('inventario','${id}','titulo',this.value)" placeholder="Item" ${readOnlyAttr}>
                     ${editBtn}
-
-                    <input type="number" step="0.1" class="hab-dice" value="${item.peso || 0}" 
-                        onchange="saveHab('inventario','${id}','peso',this.value)" 
-                        placeholder="Peso" ${readOnlyAttr}>
-                        
+                    <input type="number" step="0.1" class="hab-dice" value="${item.peso || 0}" onchange="saveHab('inventario','${id}','peso',this.value)" placeholder="Peso" ${readOnlyAttr}>
                     <button class="btn-del" onclick="removeItem('inventario','${id}')">✖</button>
                 </div>
                 <div class="hab-body" id="body_${id}">
-                    <textarea onchange="saveHab('inventario','${id}','desc',this.value)" 
-                        placeholder="Detalhes..." ${readOnlyAttr}>${item.desc || ''}</textarea>
+                    <textarea onchange="saveHab('inventario','${id}','desc',this.value)" placeholder="Detalhes..." ${readOnlyAttr}>${item.desc || ''}</textarea>
                 </div>`; 
             container.appendChild(div); 
         }); 
