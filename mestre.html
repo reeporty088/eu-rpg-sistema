@@ -214,6 +214,10 @@
              ondragenter="this.classList.add('drag-over')" 
              ondragleave="this.classList.remove('drag-over')"></div>
         <div class="combat-controls">
+            <label style="display:flex; align-items:center; justify-content:center; gap:5px; font-size:12px; color:#ff5555; cursor:pointer; background:#222; padding:5px; border-radius:5px; margin-bottom: 5px; border: 1px solid #5a1a1f;">
+                <input type="checkbox" id="chk_letal"> ☠️ COMBATE LETAL
+            </label>
+
             <button id="btn-regen-toggle" class="btn-combat" style="border: 1px solid #4488ff; color: #4488ff;" onclick="toggleAutoRegen()">💧 Regen Auto: ON</button>
             <button class="btn-combat btn-roll" onclick="calculateInitiative()">🎲 Calcular Iniciativa</button>
             <div style="display:flex; gap:5px;">
@@ -538,7 +542,34 @@
         parts.forEach(p => { const div = document.createElement('div'); div.className = `combat-item ${p.active ? 'active' : ''}`; div.innerHTML = `<div class="combat-avatar" style="background-image: url('${p.img}')"></div><div class="combat-name">${p.name}</div><div class="combat-init-bubble">${p.init_val > 0 ? p.init_val : '-'}</div><button class="combat-btn-remove" onclick="removeCombatant('${p.key}')">×</button>`; list.appendChild(div); });
     });
 
-    window.calculateInitiative = () => { onValue(ref(db, 'combate/participantes'), (snap) => { const parts = snap.val(); if(!parts) return; const updates = {}; Object.keys(parts).forEach(key => { const p = parts[key]; const d6 = Math.floor(Math.random() * 6) + 1; const total = d6 + p.hab; updates[key + '/init_val'] = total; updates[key + '/tie_breaker'] = Math.random(); updates[key + '/active'] = false; }); update(ref(db, 'combate/participantes'), updates); }, { onlyOnce: true }); };
+    // --- FUNÇÃO ATUALIZADA PARA O NOVO OVERLAY ---
+    window.calculateInitiative = () => { 
+        const isLetal = document.getElementById('chk_letal').checked;
+        
+        onValue(ref(db, 'combate/participantes'), (snap) => { 
+            const parts = snap.val(); 
+            if(!parts) return; 
+            
+            const updates = {}; 
+            
+            // Define o início do combate e o modo (para o overlay ler)
+            updates['combate/started_at'] = Date.now();
+            updates['combate/mode'] = isLetal ? 'letal' : 'normal';
+
+            // Reseta e rola dados dos participantes
+            Object.keys(parts).forEach(key => { 
+                const p = parts[key]; 
+                const d6 = Math.floor(Math.random() * 6) + 1; 
+                const total = d6 + parseInt(p.hab || 0); // Garante que é numero
+                updates['combate/participantes/' + key + '/init_val'] = total; 
+                updates['combate/participantes/' + key + '/tie_breaker'] = Math.random(); 
+                updates['combate/participantes/' + key + '/active'] = false; 
+            }); 
+            
+            update(ref(db), updates); 
+        }, { onlyOnce: true }); 
+    };
+
     window.removeCombatant = (key) => { remove(ref(db, `combate/participantes/${key}`)); };
     window.endCombat = () => { if(confirm("Encerrar o combate e limpar a lista?")) { remove(ref(db, 'combate')); } };
 
