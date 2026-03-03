@@ -333,7 +333,15 @@
                 const item = createRosterItem(id, f, 'players');
                 document.getElementById('roster_list_players').appendChild(item);
             } else {
-                const cat = (f.category && (f.category === 'default' || globalDivisions.players?.[f.category])) ? f.category : 'default';
+                let cat = 'default';
+
+if (f.category && (f.category === 'default' || globalDivisions.players?.[f.category])) {
+    cat = f.category;
+} else if (f.category && f.category !== 'default') {
+    // Categoria não existe mais → mover para hidden_roster
+    update(ref(db, `fichas/${id}`), { category: 'hidden_roster' });
+    return;
+}
                 const container = document.getElementById(`grid_players_${cat}`); 
                 if(container) container.appendChild(createPlayerCard(id, f));
             }
@@ -345,7 +353,14 @@
                 const item = createRosterItem(id, n, 'npcs');
                 document.getElementById('roster_list_npcs').appendChild(item);
             } else {
-                const cat = (n.category && (n.category === 'default' || globalDivisions.npcs?.[n.category])) ? n.category : 'default';
+                let cat = 'default';
+
+if (n.category && (n.category === 'default' || globalDivisions.npcs?.[n.category])) {
+    cat = n.category;
+} else if (n.category && n.category !== 'default') {
+    update(ref(db, `npcs/${id}`), { category: 'hidden_roster' });
+    return;
+}
                 const container = document.getElementById(`grid_npcs_${cat}`); 
                 if(container) container.appendChild(createNpcCard(id, n));
             }
@@ -487,7 +502,34 @@
 
     window.addCategory = (type) => { const newRef = push(ref(db, `divisoes/${type}`)); set(newRef, { name: "Nova Divisória" }); };
     window.renameCategory = (type, catId, oldName) => { const newName = prompt("Nome da divisória:", oldName); if (newName && newName !== oldName) update(ref(db, `divisoes/${type}/${catId}`), { name: newName }); };
-    window.deleteCategory = (type, catId) => { if(confirm("Excluir divisória?")) remove(ref(db, `divisoes/${type}/${catId}`)); };
+    window.deleteCategory = async (type, catId) => {
+
+    if (!confirm("Excluir divisória? As fichas serão movidas para Arquivados.")) return;
+
+    const updates = {};
+
+    if (type === 'players') {
+        Object.keys(globalPlayers).forEach(id => {
+            if (globalPlayers[id].category === catId) {
+                updates[`fichas/${id}/category`] = 'hidden_roster';
+            }
+        });
+    }
+
+    if (type === 'npcs') {
+        Object.keys(globalNpcs).forEach(id => {
+            if (globalNpcs[id].category === catId) {
+                updates[`npcs/${id}/category`] = 'hidden_roster';
+            }
+        });
+    }
+
+    if (Object.keys(updates).length > 0) {
+        await update(ref(db), updates);
+    }
+
+    await remove(ref(db, `divisoes/${type}/${catId}`));
+};
 
     // --- LÓGICA DA SIDEBAR ESQUERDA ---
     window.toggleRosterSidebar = () => {
@@ -632,4 +674,5 @@
 </script>
 </body>
 </html>
+
 
