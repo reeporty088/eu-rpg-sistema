@@ -328,14 +328,18 @@
 
         Object.keys(globalPlayers).forEach(id => {
             const f = globalPlayers[id]; 
-            // Se estiver "hidden_roster", vai para a sidebar, senão vai para o main
             if (f.category === 'hidden_roster') {
                 const item = createRosterItem(id, f, 'players');
                 document.getElementById('roster_list_players').appendChild(item);
             } else {
-                const cat = (f.category && (f.category === 'default' || globalDivisions.players?.[f.category])) ? f.category : 'default';
-                const container = document.getElementById(`grid_players_${cat}`); 
-                if(container) container.appendChild(createPlayerCard(id, f));
+                const catExists = !f.category || f.category === 'default' || (globalDivisions.players && globalDivisions.players[f.category]);
+                if (!catExists) {
+                    update(ref(db, `fichas/${id}`), { category: 'hidden_roster' });
+                } else {
+                    const cat = f.category || 'default';
+                    const container = document.getElementById(`grid_players_${cat}`); 
+                    if(container) container.appendChild(createPlayerCard(id, f));
+                }
             }
         });
 
@@ -345,9 +349,14 @@
                 const item = createRosterItem(id, n, 'npcs');
                 document.getElementById('roster_list_npcs').appendChild(item);
             } else {
-                const cat = (n.category && (n.category === 'default' || globalDivisions.npcs?.[n.category])) ? n.category : 'default';
-                const container = document.getElementById(`grid_npcs_${cat}`); 
-                if(container) container.appendChild(createNpcCard(id, n));
+                const catExists = !n.category || n.category === 'default' || (globalDivisions.npcs && globalDivisions.npcs[n.category]);
+                if (!catExists) {
+                    update(ref(db, `npcs/${id}`), { category: 'hidden_roster' });
+                } else {
+                    const cat = n.category || 'default';
+                    const container = document.getElementById(`grid_npcs_${cat}`); 
+                    if(container) container.appendChild(createNpcCard(id, n));
+                }
             }
         });
     }
@@ -487,7 +496,7 @@
 
     window.addCategory = (type) => { const newRef = push(ref(db, `divisoes/${type}`)); set(newRef, { name: "Nova Divisória" }); };
     window.renameCategory = (type, catId, oldName) => { const newName = prompt("Nome da divisória:", oldName); if (newName && newName !== oldName) update(ref(db, `divisoes/${type}/${catId}`), { name: newName }); };
-    window.deleteCategory = (type, catId) => { if(confirm("Excluir divisória?")) remove(ref(db, `divisoes/${type}/${catId}`)); };
+    window.deleteCategory = (type, catId) => { if(confirm("Ao excluir a divisória, todas as fichas dentro dela irão para o Estoque. Confirmar?")) { const updates = {}; if (type === 'players') { Object.keys(globalPlayers).forEach(id => { if (globalPlayers[id].category === catId) updates[`fichas/${id}/category`] = 'hidden_roster'; }); } else { Object.keys(globalNpcs).forEach(id => { if (globalNpcs[id].category === catId) updates[`npcs/${id}/category`] = 'hidden_roster'; }); } updates[`divisoes/${type}/${catId}`] = null; update(ref(db), updates); } };
 
     // --- LÓGICA DA SIDEBAR ESQUERDA ---
     window.toggleRosterSidebar = () => {
