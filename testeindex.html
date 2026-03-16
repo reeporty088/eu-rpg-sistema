@@ -814,45 +814,27 @@ label.field-label {
       </div>
     </div>
 
-    <!-- Traços (6 atributos) -->
+    <!-- Traços (3 atributos) -->
     <div class="card">
       <div class="card-title">Traços</div>
       <div class="traits-grid">
-        <div class="trait-box" id="trait-box-agility">
-          <span class="trait-val" id="tv-agility" onclick="startEditTrait('agility')">+0</span>
-          <input type="number" class="trait-val-input" id="ti-agility" min="-4" max="5"
-                 onblur="stopEditTrait('agility')" onkeydown="traitKey(event,'agility')">
-          <span class="trait-name">Agilidade</span>
+        <div class="trait-box" id="trait-box-power">
+          <span class="trait-val" id="tv-power" onclick="startEditTrait('power')">+0</span>
+          <input type="number" class="trait-val-input" id="ti-power" min="-4" max="5"
+                 onblur="stopEditTrait('power')" onkeydown="traitKey(event,'power')">
+          <span class="trait-name">PODER</span>
         </div>
-        <div class="trait-box" id="trait-box-strength">
-          <span class="trait-val" id="tv-strength" onclick="startEditTrait('strength')">+0</span>
-          <input type="number" class="trait-val-input" id="ti-strength" min="-4" max="5"
-                 onblur="stopEditTrait('strength')" onkeydown="traitKey(event,'strength')">
-          <span class="trait-name">Força</span>
+        <div class="trait-box" id="trait-box-skill">
+          <span class="trait-val" id="tv-skill" onclick="startEditTrait('skill')">+0</span>
+          <input type="number" class="trait-val-input" id="ti-skill" min="-4" max="5"
+                 onblur="stopEditTrait('skill')" onkeydown="traitKey(event,'skill')">
+          <span class="trait-name">HABILIDADE</span>
         </div>
-        <div class="trait-box" id="trait-box-finesse">
-          <span class="trait-val" id="tv-finesse" onclick="startEditTrait('finesse')">+0</span>
-          <input type="number" class="trait-val-input" id="ti-finesse" min="-4" max="5"
-                 onblur="stopEditTrait('finesse')" onkeydown="traitKey(event,'finesse')">
-          <span class="trait-name">Finesse</span>
-        </div>
-        <div class="trait-box" id="trait-box-instinct">
-          <span class="trait-val" id="tv-instinct" onclick="startEditTrait('instinct')">+0</span>
-          <input type="number" class="trait-val-input" id="ti-instinct" min="-4" max="5"
-                 onblur="stopEditTrait('instinct')" onkeydown="traitKey(event,'instinct')">
-          <span class="trait-name">Instinto</span>
-        </div>
-        <div class="trait-box" id="trait-box-presence">
-          <span class="trait-val" id="tv-presence" onclick="startEditTrait('presence')">+0</span>
-          <input type="number" class="trait-val-input" id="ti-presence" min="-4" max="5"
-                 onblur="stopEditTrait('presence')" onkeydown="traitKey(event,'presence')">
-          <span class="trait-name">Presença</span>
-        </div>
-        <div class="trait-box" id="trait-box-knowledge">
-          <span class="trait-val" id="tv-knowledge" onclick="startEditTrait('knowledge')">+0</span>
-          <input type="number" class="trait-val-input" id="ti-knowledge" min="-4" max="5"
-                 onblur="stopEditTrait('knowledge')" onkeydown="traitKey(event,'knowledge')">
-          <span class="trait-name">Conhecimento</span>
+        <div class="trait-box" id="trait-box-resilience">
+          <span class="trait-val" id="tv-resilience" onclick="startEditTrait('resilience')">+0</span>
+          <input type="number" class="trait-val-input" id="ti-resilience" min="-4" max="5"
+                 onblur="stopEditTrait('resilience')" onkeydown="traitKey(event,'resilience')">
+          <span class="trait-name">RESISTÊNCIA</span>
         </div>
       </div>
 
@@ -877,8 +859,8 @@ label.field-label {
         <div class="resource-header">
           <span class="r-label" style="color:var(--hp-col);">Pontos de Vida</span>
           <div style="display:flex;gap:4px;align-items:center;">
-            <button class="btn-sm" onclick="addSlot('hp')">+</button>
             <button class="btn-sm" onclick="removeSlot('hp')">−</button>
+            <button class="btn-sm" onclick="addSlot('hp')">+</button>
           </div>
         </div>
         <div class="slots-row" id="hp-slots"></div>
@@ -889,8 +871,8 @@ label.field-label {
         <div class="resource-header">
           <span class="r-label" style="color:var(--stress-col);">Stress</span>
           <div style="display:flex;gap:4px;align-items:center;">
-            <button class="btn-sm" onclick="addSlot('stress')">+</button>
             <button class="btn-sm" onclick="removeSlot('stress')">−</button>
+            <button class="btn-sm" onclick="addSlot('stress')">+</button>
           </div>
         </div>
         <div class="slots-row" id="stress-slots"></div>
@@ -903,8 +885,8 @@ label.field-label {
         <div class="resource-header">
           <span class="r-label" style="color:var(--armor-col);">Armadura</span>
           <div style="display:flex;gap:4px;align-items:center;">
-            <button class="btn-sm" onclick="addSlot('armor')">+</button>
             <button class="btn-sm" onclick="removeSlot('armor')">−</button>
+            <button class="btn-sm" onclick="addSlot('armor')">+</button>
           </div>
         </div>
         <div class="slots-row" id="armor-slots"></div>
@@ -966,12 +948,9 @@ label.field-label {
       <div class="trait-select-row">
         <label>Traço</label>
         <select id="roll-trait">
-          <option value="agility">Agilidade</option>
-          <option value="strength">Força</option>
-          <option value="finesse">Finesse</option>
-          <option value="instinct">Instinto</option>
-          <option value="presence">Presença</option>
-          <option value="knowledge">Conhecimento</option>
+          <option value="power">PODER</option>
+          <option value="skill">HABILIDADE</option>
+          <option value="resilience">RESISTÊNCIA</option>
         </select>
         <label>Bônus</label>
         <input type="number" class="bonus-input" id="roll-bonus" value="0">
@@ -1133,7 +1112,7 @@ window.switchCol = (idx) => {
 };
 
 // ── TRAITS ───────────────────────────────────────────────
-const TRAITS = ['agility','strength','finesse','instinct','presence','knowledge'];
+const TRAITS = ['power','skill','resilience'];
 window.startEditTrait = (t) => {
   const raw = parseInt(G['trait_' + t]) || 0;
   el('tv-' + t).style.display = 'none';
