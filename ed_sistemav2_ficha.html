@@ -19,19 +19,29 @@
         .container { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; max-width: 1400px; width: 100%; }
         .col { display: flex; flex-direction: column; gap: 15px; }
         
-        /* --- MODO ASCENSÃO (Veias Escurecidas e Aura) --- */
-        body.ascensao-mode { --theme-main: #0a0a0a; --theme-light: #00e5ff; --theme-card: #050505; --theme-border: #005566; }
-        body.ascensao-mode .attr-box input, body.ascensao-mode #char_name, body.ascensao-mode #asc-btn { color: #00e5ff !important; text-shadow: 0 0 10px #00e5ff; }
-        body.ascensao-mode .attr-box { box-shadow: 0 0 15px rgba(0, 229, 255, 0.2); border-color: #00e5ff; }
-        body.ascensao-mode .avatar-circle { box-shadow: 0 0 30px rgba(0, 229, 255, 0.4); border-color: #000; }
+        /* --- EFEITOS NEON DAS LINHAGENS (Ativados pelo Jogador) --- */
+        body.forma-demon { --theme-main: #110000; --theme-light: #ff0000; --theme-card: #050000; --theme-border: #660000; }
+        body.forma-demon .attr-box input, body.forma-demon #char_name { color: #ff0000 !important; text-shadow: 0 0 10px #ff0000; }
+        body.forma-demon .attr-box { box-shadow: 0 0 15px rgba(255, 0, 0, 0.2); border-color: #ff0000; }
+        body.forma-demon .avatar-circle { box-shadow: 0 0 30px rgba(255, 0, 0, 0.6); border-color: #ff0000; }
 
-        /* --- MODO ANCESTRAL (Despertar/Chamado do Inferno) --- */
-        body.ancestral-mode { --theme-main: #aa0000; --theme-light: #ff4444; }
-        body.ancestral-mode .avatar-circle { border-color: #ff0000; box-shadow: 0 0 20px #ff0000; }
-        body.ancestral-mode #ancestral-btn { color: #ff0000 !important; text-shadow: 0 0 10px #ff0000; border-color: #ff0000; }
+        body.forma-beast { --theme-main: #001100; --theme-light: #00ff00; --theme-card: #000500; --theme-border: #006600; }
+        body.forma-beast .attr-box input, body.forma-beast #char_name { color: #00ff00 !important; text-shadow: 0 0 10px #00ff00; }
+        body.forma-beast .attr-box { box-shadow: 0 0 15px rgba(0, 255, 0, 0.2); border-color: #00ff00; }
+        body.forma-beast .avatar-circle { box-shadow: 0 0 30px rgba(0, 255, 0, 0.6); border-color: #00ff00; }
+
+        body.forma-divine { --theme-main: #00111a; --theme-light: #00e5ff; --theme-card: #00050a; --theme-border: #005566; }
+        body.forma-divine .attr-box input, body.forma-divine #char_name { color: #00e5ff !important; text-shadow: 0 0 10px #00e5ff; }
+        body.forma-divine .attr-box { box-shadow: 0 0 15px rgba(0, 229, 255, 0.2); border-color: #00e5ff; }
+        body.forma-divine .avatar-circle { box-shadow: 0 0 30px rgba(0, 229, 255, 0.6); border-color: #00e5ff; }
+
+        /* Botões de Transformação */
+        .btn-forma { background: rgba(0,0,0,0.5); border: 1px solid var(--theme-light); color: var(--theme-light); padding: 6px 15px; border-radius: 20px; font-weight: bold; cursor: pointer; transition: 0.3s; text-transform: uppercase; font-size: 11px; box-shadow: 0 0 10px rgba(0,0,0,0.5); }
+        .btn-forma:hover { background: rgba(255,255,255,0.1); }
+        .btn-forma.active { background: var(--theme-light); color: #000 !important; box-shadow: 0 0 15px var(--theme-light); text-shadow: none !important; border-color: white; }
 
         .card { background: var(--theme-card); border-radius: 12px; padding: 15px; border: 1px solid var(--theme-border); box-shadow: 0 4px 10px rgba(0,0,0,0.5); position: relative; }
-        .header-label { background: var(--theme-main); text-align: center; border-radius: 20px; padding: 5px; margin-bottom: 15px; font-weight: bold; text-transform: uppercase; display: flex; justify-content: center; align-items: center; gap: 10px; border: 1px solid var(--theme-light); }
+        .header-label { background: var(--theme-main); text-align: center; border-radius: 20px; padding: 5px; margin-bottom: 15px; font-weight: bold; text-transform: uppercase; display: flex; justify-content: center; align-items: center; gap: 10px; border: 1px solid var(--theme-light); transition: 0.3s; }
         
         input, textarea, select { background: var(--theme-input); border: 1px solid #555; color: white; padding: 8px; border-radius: 20px; width: 100%; box-sizing: border-box; margin-bottom: 5px; font-family: inherit;}
         input[readonly] { background: rgba(0,0,0,0.3); color: #aaa; border: 1px dashed #444; cursor: not-allowed; }
@@ -45,8 +55,6 @@
         .top-btn { position: absolute; background: #111; border: 2px solid #555; color: #555; border-radius: 50%; width: 35px; height: 35px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; z-index: 20; transition: 0.3s; }
         .top-btn:hover { border-color: white; color: white; }
         #theme-btn { top: 0; right: 20px; font-size: 16px; border-color: var(--theme-light); color: var(--theme-light); }
-        #asc-btn { top: 45px; right: 20px; } 
-        #ancestral-btn { top: 90px; right: 20px; }
 
         .color-picker { display: none; position: absolute; top: 40px; right: 0; background: #222; border: 1px solid #555; padding: 10px; border-radius: 10px; grid-template-columns: repeat(4, 1fr); gap: 8px; z-index: 30; box-shadow: 0 5px 15px rgba(0,0,0,0.8); }
         .color-picker.open { display: grid; }
@@ -71,7 +79,7 @@
         /* ATRIBUTOS */
         .attr-container { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin: 15px 0; }
         .attr-box { background: rgba(255,255,255,0.05); border: 1px solid var(--theme-border); border-radius: 12px; padding: 10px 2px; text-align: center; transition: 0.5s; }
-        .attr-box input { font-size: 32px; font-weight: bold; text-align: center; border: none; background: transparent; color: white; margin: 0; padding: 0; }
+        .attr-box input { font-size: 32px; font-weight: bold; text-align: center; border: none; background: transparent; color: white; margin: 0; padding: 0; transition: 0.3s; }
         .attr-box div { font-size: 12px; font-weight: bold; color: var(--theme-light); letter-spacing: 1px; }
 
         /* DEFESA E ARMADURA */
@@ -121,7 +129,10 @@
                 <div class="avatar-circle" id="avatar_display"><input type="file" id="img_upload" accept="image/*"></div>
                 <button class="top-btn" id="theme-btn" onclick="toggleColorPicker()">🎨</button>
                 <div id="colorPicker" class="color-picker"></div>
+                
                 <input type="text" id="char_name" style="background:transparent; border:none; text-align:center; font-size:20px; font-weight:bold; margin-top:10px; color:white;" placeholder="NOME DO PERSONAGEM">
+                
+                <div id="linhagem_btn_container" style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-top:5px;"></div>
             </div>
             
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px;">
@@ -270,7 +281,6 @@
     const urlParams = new URLSearchParams(window.location.search);
     const fichaID = urlParams.get('p') || "personagem_padrao_v2";
     
-    // ATENÇÃO: Mudamos a rota para fichas_v2 para não corromper os dados antigos!
     const dbPath = `fichas_v2/${fichaID}`; 
 
     let globalCharData = {};
@@ -302,19 +312,12 @@
 
     const camposParaSalvar = [ 'char_name', 'nivel', 'florins', 'classe', 'ancestralidade', 'hp_at', 'hp_max', 'stress_at', 'stress_max', 'hope_at', 'hope_max', 'asc_at', 'poder', 'habilidade', 'resistencia', 'xp_total', 'anotacoes'];
 
-    // Calculo Matemático Automático
     function calculateDerivedStats() {
         const res = parseInt(document.getElementById('resistencia').value) || 0;
         const hab = parseInt(document.getElementById('habilidade').value) || 0;
-        const nivel = parseInt(document.getElementById('nivel').value) || 1;
 
-        // Evasão = 8 + Habilidade
         document.getElementById('evasao_val').innerText = 8 + hab;
         
-        // Exibir Barra de Ascensão apenas se Nivel >= 5
-        document.getElementById('asc_container').style.display = (nivel >= 5) ? 'block' : 'none';
-        
-        // Sugestão visual de HP máximo = 5 + Res (Mas não força para não apagar upgrades manuais do jogador)
         const suggestedHp = 5 + res;
         const hpMaxInput = document.getElementById('hp_max');
         if(parseInt(hpMaxInput.value) < suggestedHp) {
@@ -323,27 +326,46 @@
         }
     }
 
-    // Controle de Botões de Habilidades Visuais
-    window.toggleAbility = (abilityName) => {
-        const isActive = globalCharData.toggles && globalCharData.toggles[abilityName];
-        update(ref(db, `${dbPath}/toggles`), { [abilityName]: !isActive });
+    // BOTÃO DO JOGADOR PARA ATIVAR A FORMA
+    window.toggleForma = (formaType) => {
+        const current = globalCharData.toggles?.forma_ativa;
+        // Se clicar na que já está ativa, ele desliga. Se não, ele liga a nova.
+        const newForm = (current === formaType) ? null : formaType;
+        update(ref(db, `${dbPath}/toggles`), { forma_ativa: newForm });
     };
 
     function updateVisualModes() {
         const tg = globalCharData.toggles || {};
         
-        // Verifica se o Mestre liberou alguma Linhagem no painel dele
-        const temLinhagemAtiva = (tg.linhagem_1 || tg.linhagem_2 || tg.linhagem_3);
-        
-        // Se a Ascensão Arcana for liberada, mostra as bordas ciano
-        document.body.classList.toggle('ascensao-mode', !!tg.asc_unlocked);
-        // Se alguma Linhagem for ativada, mostra as bordas vermelhas
-        document.body.classList.toggle('ancestral-mode', !!temLinhagemAtiva);
-
-        // Controla se a barra da Ascensão aparece ou não (agora ignorando o nível)
+        // 1. Mostrar barra de ascensão (só a barra, sem neon no corpo inteiro)
         const ascContainer = document.getElementById('asc_container');
         if(ascContainer) {
             ascContainer.style.display = tg.asc_unlocked ? 'block' : 'none';
+        }
+
+        // 2. Controlar o EFEITO NEON da ficha com base na forma ativa
+        document.body.classList.remove('forma-demon', 'forma-beast', 'forma-divine');
+        if(tg.forma_ativa) {
+            document.body.classList.add(`forma-${tg.forma_ativa}`);
+        }
+
+        // 3. Renderizar botões de Linhagem se o Mestre liberou no Painel
+        const btnContainer = document.getElementById('linhagem_btn_container');
+        if(btnContainer) {
+            btnContainer.innerHTML = ""; // limpa
+            
+            if(tg.linhagem_1) {
+                const isActive = tg.forma_ativa === 'demon';
+                btnContainer.innerHTML += `<button class="btn-forma ${isActive ? 'active' : ''}" style="--theme-light: #ff5555; color: ${isActive ? '#000' : '#ff5555'};" onclick="toggleForma('demon')">😈 Forma Demoníaca</button>`;
+            }
+            if(tg.linhagem_2) {
+                const isActive = tg.forma_ativa === 'beast';
+                btnContainer.innerHTML += `<button class="btn-forma ${isActive ? 'active' : ''}" style="--theme-light: #55ff55; color: ${isActive ? '#000' : '#55ff55'};" onclick="toggleForma('beast')">🐺 Forma Bestial</button>`;
+            }
+            if(tg.linhagem_3) {
+                const isActive = tg.forma_ativa === 'divine';
+                btnContainer.innerHTML += `<button class="btn-forma ${isActive ? 'active' : ''}" style="--theme-light: #00e5ff; color: ${isActive ? '#000' : '#00e5ff'};" onclick="toggleForma('divine')">👼 Forma Divina / Lunar</button>`;
+            }
         }
     }
 
@@ -399,7 +421,6 @@
     onValue(ref(db, dbPath), (snapshot) => {
         const dados = snapshot.val(); 
         if (!dados) {
-            // Setup inicial se ficha nova
             set(ref(db, dbPath), { hp_at: 5, hp_max: 5, stress_at: 0, stress_max: 5, hope_at: 0, hope_max: 5, asc_at: 0, asc_max: 10, armor_max: 0 });
             return;
         }
@@ -414,7 +435,6 @@
             } 
         }
 
-        // Atualizando Campos de Texto e Números
         camposParaSalvar.forEach(id => {
             if (dados[id] !== undefined) {
                 if (id === 'xp_total') document.getElementById('display_xp_total').innerText = dados[id];
@@ -427,13 +447,11 @@
 
         if (dados.char_img) document.getElementById('avatar_display').style.backgroundImage = `url(${dados.char_img})`;
 
-        // Atualizando Barras Visuais
         updateBarVisual('hp', dados.hp_at, dados.hp_max);
         updateBarVisual('stress', dados.stress_at, dados.stress_max);
         updateBarVisual('hope', dados.hope_at, dados.hope_max);
         updateBarVisual('asc', dados.asc_at, 10);
 
-        // Listas
         ['passivas', 'loadout', 'cofre', 'armas', 'inventario'].forEach(cat => renderHabs(cat, dados.habilidades?.[cat]));
         
         renderArmorSlots();
