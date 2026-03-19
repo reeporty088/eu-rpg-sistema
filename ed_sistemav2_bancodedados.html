@@ -42,7 +42,7 @@
         .item-desc { padding: 15px; font-size: 13px; color: #ccc; display: none; border-top: 1px solid var(--theme-border); white-space: pre-wrap; line-height: 1.5; }
         .item-desc.open { display: block; }
 
-        /* --- VISUAL DOS CARDS (Domínio, Classes e Raças) --- */
+        /* --- VISUAL DOS CARDS --- */
         .filter-bar { display: flex; gap: 10px; margin-bottom: 15px; align-items: center; background: rgba(0,0,0,0.5); padding: 10px; border-radius: 8px; border: 1px solid #444; }
         .filter-bar select { width: auto; flex-grow: 1; margin: 0; }
         
@@ -86,6 +86,7 @@
     <button class="tab-btn" onclick="switchTab('passivas', this)">🛡️ Vantagens Passivas</button>
     <button class="tab-btn" onclick="switchTab('classes', this)">⚔️ Classes</button>
     <button class="tab-btn" onclick="switchTab('racas', this)">🧬 Raças</button>
+    <button class="tab-btn" onclick="switchTab('equipamentos', this)">🎒 Equipamentos</button>
 </div>
 
 <div class="container">
@@ -139,6 +140,23 @@
             <button class="btn-add" style="background: #226622; border-color: #55cc55;" onclick="openRacaForm()">+ Criar Raça</button>
         </div>
         <div class="cards-grid" id="list_racas"></div>
+    </div>
+
+    <div class="card" id="sec_equipamentos" style="display: none;">
+        <div class="header-label" style="background: #331a00; border-color: #996633;">
+            <span style="color: #ffcc88;">Equipamentos e Arsenal</span>
+            <button class="btn-add" style="background: #663300; border-color: #cc8844;" onclick="openEquipForm()">+ Criar Equipamento</button>
+        </div>
+        <div class="filter-bar">
+            <label style="margin:0;">Filtrar Categoria:</label>
+            <select id="filter_equip" onchange="applyEquipFilter()">
+                <option value="Todos">Todos</option>
+                <option value="Arma">Armas Físicas e Arcanas</option>
+                <option value="Armadura">Armaduras e Escudos</option>
+                <option value="Exótico">Itens Exóticos</option>
+            </select>
+        </div>
+        <div class="cards-grid" id="list_equipamentos"></div>
     </div>
 
 </div>
@@ -285,6 +303,61 @@
     </div>
 </div>
 
+<div class="modal-overlay" id="modal-equip">
+    <div class="modal-box">
+        <h3 id="form_equip_title" style="margin-top:0; color:#ffcc88; border-bottom:1px solid #996633; padding-bottom:10px;">CRIAR EQUIPAMENTO</h3>
+        <input type="hidden" id="equip_id">
+        
+        <div class="form-row">
+            <div>
+                <label>Nome do Item</label>
+                <input type="text" id="equip_titulo" placeholder="Ex: Montante Gigante">
+            </div>
+            <div>
+                <label>Categoria principal</label>
+                <select id="equip_categoria">
+                    <option value="Arma">Arma</option>
+                    <option value="Armadura">Armadura / Escudo</option>
+                    <option value="Exótico">Exótico / Relíquia</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div>
+                <label>Atributo / Classificação</label>
+                <input type="text" id="equip_atributo" placeholder="Ex: Poder, Hab, Leve, Pesada...">
+            </div>
+            <div>
+                <label>Dano ou Slots Abs.</label>
+                <input type="text" id="equip_dano_slots" placeholder="Ex: 1d10, ou 2 Slots...">
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div>
+                <label>Tipo de Dano / Defesa</label>
+                <input type="text" id="equip_tipo_dano" placeholder="Ex: Corte, Impacto...">
+            </div>
+            <div>
+                <label>Alcance</label>
+                <input type="text" id="equip_alcance" placeholder="Ex: Corpo a Corpo, Perto...">
+            </div>
+        </div>
+
+        <label>Custo (Em Florins)</label>
+        <input type="text" id="equip_custo" placeholder="Ex: 500">
+
+        <label>Propriedade Especial / Efeito</label>
+        <textarea id="equip_desc" rows="3" placeholder="Detalhes adicionais, quebras, passivas do item..."></textarea>
+        
+        <div class="form-buttons">
+            <button class="btn-cancel" onclick="document.getElementById('modal-equip').classList.remove('open')">Cancelar</button>
+            <button class="btn-save" onclick="saveEquip()">Salvar no Banco</button>
+        </div>
+    </div>
+</div>
+
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getDatabase, ref, onValue, update, push, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
@@ -303,8 +376,9 @@
     const db = getDatabase(app);
     const dbPath = `banco_dados_v2`;
 
-    let globalData = { passivas: {}, cartas: {}, classes: {}, racas: {} };
+    let globalData = { passivas: {}, cartas: {}, classes: {}, racas: {}, equipamentos: {} };
     let currentFilter = "Todos";
+    let currentFilterEquip = "Todos";
 
     // --- FUNÇÃO PARA TROCAR ABAS ---
     window.switchTab = (tabId, btnElement) => {
@@ -312,6 +386,7 @@
         document.getElementById('sec_passivas').style.display = 'none';
         document.getElementById('sec_classes').style.display = 'none';
         document.getElementById('sec_racas').style.display = 'none';
+        document.getElementById('sec_equipamentos').style.display = 'none';
         
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         
@@ -501,6 +576,44 @@
     ];
 
     // ==========================================
+    // DADOS PARA AUTO-POVOAMENTO DE EQUIPAMENTOS
+    // ==========================================
+    const equipamentosPadrao = [
+        // ARMAS
+        { titulo: "Espada Longa", categoria: "Arma", atributo: "Poder", alcance: "Corpo a Corpo", dano_slots: "1d10", tipo_dano: "Corte", custo: "500", desc: "Padrão e confiável." },
+        { titulo: "Machado de Batalha", categoria: "Arma", atributo: "Poder", alcance: "Corpo a Corpo", dano_slots: "1d10", tipo_dano: "Corte / Impacto", custo: "550", desc: "Versátil contra armaduras." },
+        { titulo: "Montante Gigante", categoria: "Arma", atributo: "Poder", alcance: "Corpo a Corpo", dano_slots: "1d12", tipo_dano: "Corte", custo: "800", desc: "Duas Mãos. Pesada, causa danos massivos." },
+        { titulo: "Martelo de Forja", categoria: "Arma", atributo: "Poder", alcance: "Corpo a Corpo", dano_slots: "1d10", tipo_dano: "Impacto", custo: "500", desc: "Pode causar Atordoamento." },
+        { titulo: "Adaga de Aço", categoria: "Arma", atributo: "Habilidade", alcance: "Corpo a Corpo", dano_slots: "1d8", tipo_dano: "Perfurante", custo: "400", desc: "Facilmente ocultável." },
+        { titulo: "Florete de Duelo", categoria: "Arma", atributo: "Habilidade", alcance: "Corpo a Corpo", dano_slots: "1d8", tipo_dano: "Perfurante / Corte", custo: "600", desc: "Focada em precisão." },
+        { titulo: "Chicote de Couro", categoria: "Arma", atributo: "Habilidade", alcance: "Perto (9m)", dano_slots: "1d8", tipo_dano: "Corte", custo: "450", desc: "Acerta alvos a uma curta distância." },
+        { titulo: "Arco Curto", categoria: "Arma", atributo: "Distância", alcance: "Médio (18m)", dano_slots: "1d8", tipo_dano: "Perfurante", custo: "500", desc: "Leve e rápido de sacar." },
+        { titulo: "Arco Longo", categoria: "Arma", atributo: "Distância", alcance: "Longe (30m)", dano_slots: "1d8", tipo_dano: "Perfurante", custo: "750", desc: "Duas Mãos. Excelente alcance." },
+        { titulo: "Besta Pesada", categoria: "Arma", atributo: "Distância", alcance: "Longe (30m)", dano_slots: "1d10", tipo_dano: "Perfurante", custo: "900", desc: "Duas Mãos. Requer uma Ação extra para recarregar após atirar." },
+        { titulo: "Pistola Primitiva", categoria: "Arma", atributo: "Distância", alcance: "Médio (18m)", dano_slots: "1d8", tipo_dano: "Perfurante / Fogo", custo: "1.200", desc: "Barulhenta. Quebra furtividade." },
+        { titulo: "Cajado de Carvalho", categoria: "Arma", atributo: "Arcano", alcance: "Perto (9m)", dano_slots: "1d6", tipo_dano: "Impacto / Mágico", custo: "500", desc: "Pode ser usado como arma corpo a corpo em emergências." },
+        { titulo: "Orbe de Cristal", categoria: "Arma", atributo: "Arcano", alcance: "Médio (18m)", dano_slots: "1d6", tipo_dano: "Luz / Mágico", custo: "800", desc: "Amplifica magias de iluminação." },
+        { titulo: "Grimório de Aprendiz", categoria: "Arma", atributo: "Arcano", alcance: "Médio (18m)", dano_slots: "1d6", tipo_dano: "Nulo / Mágico", custo: "600", desc: "Focado em conjuração pura." },
+        
+        // ARMADURAS E ESCUDOS
+        { titulo: "Trajes de Couro", categoria: "Armadura", atributo: "Leve", alcance: "-", dano_slots: "2 Slots", tipo_dano: "-", custo: "500", desc: "Nenhuma penalidade. Perfeita para furtividade e agilidade." },
+        { titulo: "Veste Arcana", categoria: "Armadura", atributo: "Leve", alcance: "-", dano_slots: "2 Slots", tipo_dano: "-", custo: "800", desc: "Concede Ganho para resistir a um tipo de dano mágico específico (escolhido na compra)." },
+        { titulo: "Cota de Malha", categoria: "Armadura", atributo: "Média", alcance: "-", dano_slots: "3 Slots", tipo_dano: "-", custo: "1.000", desc: "Armadura intermediária clássica." },
+        { titulo: "Couro Batido Reforçado", categoria: "Armadura", atributo: "Média", alcance: "-", dano_slots: "3 Slots", tipo_dano: "-", custo: "950", desc: "Mais leve que a cota de malha, mas com a mesma proteção." },
+        { titulo: "Placas de Aço", categoria: "Armadura", atributo: "Pesada", alcance: "-", dano_slots: "4 Slots", tipo_dano: "-", custo: "2.000", desc: "Impõe Perda automática em testes de Furtividade e Acrobacia." },
+        { titulo: "Carapaça de Monstro", categoria: "Armadura", atributo: "Pesada", alcance: "-", dano_slots: "4 Slots", tipo_dano: "-", custo: "2.500", desc: "Impõe Perda em Furtividade, mas absorve danos de Veneno sem quebrar o Slot em Sucessos Críticos da defesa." },
+        { titulo: "Broquel (Escudo Leve)", categoria: "Armadura", atributo: "Escudo", alcance: "-", dano_slots: "+1 Slot", tipo_dano: "-", custo: "300", desc: "Deixa a mão livre para interagir com pequenos objetos." },
+        { titulo: "Escudo de Batalha", categoria: "Armadura", atributo: "Escudo", alcance: "-", dano_slots: "+2 Slots", tipo_dano: "-", custo: "800", desc: "Ocupa uma mão inteira. Pode ser usado para dar dano de Impacto (1d4)." },
+        
+        // EXÓTICOS
+        { titulo: "Lâmina de Eco", categoria: "Exótico", atributo: "Habilidade", alcance: "Corpo a Corpo", dano_slots: "1d8", tipo_dano: "Corte", custo: "5.000+", desc: "Toda vez que o usuário tira um Sucesso Crítico no ataque, a lâmina ressoa com a alma do alvo, recuperando 1 Ponto de Esperança." },
+        { titulo: "Manopla a Vapor Pesada", categoria: "Exótico", atributo: "Poder", alcance: "Corpo a Corpo", dano_slots: "1d12", tipo_dano: "Impacto + 1d4 Fogo", custo: "8.000+", desc: "Luva mecânica brutal. Se errar tirando '1', o mecanismo superaquece causando 1 Dano Menor no usuário." },
+        { titulo: "Grimório do Sangue Fervente", categoria: "Exótico", atributo: "Arcano", alcance: "Médio", dano_slots: "1d6", tipo_dano: "Sangue", custo: "6.500+", desc: "Pode escolher sofrer 1 Dano Menor para adicionar Ganho na sua próxima rolagem de feitiço de ataque." },
+        { titulo: "Manto do Vazio", categoria: "Exótico", atributo: "Arm. Leve", alcance: "-", dano_slots: "3 Slots", tipo_dano: "-", custo: "7.500+", desc: "Ignora totalmente a condição Assombrado, mas recebe dano dobrado se for atingido por Luz." },
+        { titulo: "Bacamarte de Caçador", categoria: "Exótico", atributo: "Distância", alcance: "Médio", dano_slots: "1d10", tipo_dano: "Perfurante", custo: "10.000+", desc: "Ao disparar, atinge o alvo e espalha estilhaços. Qualquer inimigo Corpo a Corpo do alvo principal sofre 1 Dano Leve automático." }
+    ];
+
+    // ==========================================
     // LÓGICA PRINCIPAL DO FIREBASE
     // ==========================================
     onValue(ref(db, dbPath), (snapshot) => {
@@ -540,18 +653,27 @@
             needsUpdate = true;
         }
 
+        // Auto-povoar Equipamentos
+        if (!dados || !dados.equipamentos) {
+            equipamentosPadrao.forEach((item, index) => {
+                updates[`${dbPath}/equipamentos/equip_base_${index}`] = item;
+            });
+            needsUpdate = true;
+        }
+
         if (needsUpdate) {
             update(ref(db), updates);
             return; 
         }
 
-        // Adicionando a leitura de classes e raças ao globalData
-        globalData = dados || { passivas: {}, cartas: {}, classes: {}, racas: {} };
+        // Adicionando a leitura de classes, raças, equipamentos etc ao globalData
+        globalData = dados || { passivas: {}, cartas: {}, classes: {}, racas: {}, equipamentos: {} };
         
         renderPassivas(globalData.passivas);
         renderClasses(globalData.classes);
         renderRacas(globalData.racas);
         applyFilter(); 
+        applyEquipFilter();
     });
 
     // --- RENDER PASSIVAS ---
@@ -696,6 +818,58 @@
                 <div class="card-actions">
                     <button class="btn-edit" onclick="openCartaForm('${item.id}')">✏️ Editar</button>
                     <button class="btn-del" onclick="deleteItem('cartas', '${item.id}')">🗑️ Apagar</button>
+                </div>
+            `;
+            container.appendChild(div);
+        });
+    }
+
+    // --- RENDER EQUIPAMENTOS ---
+    window.applyEquipFilter = () => {
+        const filterEl = document.getElementById('filter_equip');
+        currentFilterEquip = filterEl ? filterEl.value : "Todos";
+        
+        const container = document.getElementById('list_equipamentos');
+        container.innerHTML = "";
+        
+        const dataObj = globalData.equipamentos;
+        if (!dataObj) {
+            container.innerHTML = "<div style='grid-column: 1 / -1; text-align:center;'>Nenhum equipamento cadastrado.</div>";
+            return;
+        }
+
+        let itensArray = Object.keys(dataObj).map(key => ({ id: key, ...dataObj[key] }));
+        
+        if (currentFilterEquip !== "Todos") {
+            itensArray = itensArray.filter(i => i.categoria === currentFilterEquip);
+        }
+
+        itensArray.sort((a, b) => a.titulo.localeCompare(b.titulo));
+
+        itensArray.forEach(item => {
+            let colorTheme = item.categoria === 'Arma' ? '#cc4444' : (item.categoria === 'Armadura' ? '#4488cc' : '#d4a017');
+            
+            const div = document.createElement('div');
+            div.className = 'skill-card';
+            div.style.borderTop = `3px solid ${colorTheme}`;
+            div.innerHTML = `
+                <div class="card-badges">
+                    <span class="badge-domain" style="background:rgba(0,0,0,0.5); border-color:${colorTheme};">${item.categoria}</span>
+                    <span class="badge-level" style="background: transparent; color: #ffd700; border: 1px solid #ffd700;">$ ${item.custo}</span>
+                </div>
+                <div class="card-title">${item.titulo}</div>
+                <div class="card-meta">
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:5px;">
+                        <div><strong>Atributo/Classe:</strong> ${item.atributo || '-'}</div>
+                        <div><strong>Dano/Slots:</strong> <span style="color:#fff;">${item.dano_slots || '-'}</span></div>
+                        <div><strong>Alcance:</strong> ${item.alcance || '-'}</div>
+                        <div><strong>Tipo:</strong> ${item.tipo_dano || '-'}</div>
+                    </div>
+                </div>
+                <div class="card-desc"><strong>Efeito / Propriedade:</strong><br>${item.desc || 'Nenhum.'}</div>
+                <div class="card-actions">
+                    <button class="btn-edit" onclick="openEquipForm('${item.id}')">✏️ Editar</button>
+                    <button class="btn-del" onclick="deleteItem('equipamentos', '${item.id}')">🗑️ Apagar</button>
                 </div>
             `;
             container.appendChild(div);
@@ -859,6 +1033,54 @@
 
         if (id) update(ref(db, `${dbPath}/racas/${id}`), data).then(() => document.getElementById('modal-raca').classList.remove('open'));
         else push(ref(db, `${dbPath}/racas`), data).then(() => document.getElementById('modal-raca').classList.remove('open'));
+    };
+
+    // Modais Equipamento
+    window.openEquipForm = (id = null) => {
+        document.getElementById('equip_id').value = id || "";
+        if (id && globalData.equipamentos && globalData.equipamentos[id]) {
+            const e = globalData.equipamentos[id];
+            document.getElementById('form_equip_title').innerText = "EDITAR EQUIPAMENTO";
+            document.getElementById('equip_titulo').value = e.titulo || "";
+            document.getElementById('equip_categoria').value = e.categoria || "Arma";
+            document.getElementById('equip_atributo').value = e.atributo || "";
+            document.getElementById('equip_dano_slots').value = e.dano_slots || "";
+            document.getElementById('equip_tipo_dano').value = e.tipo_dano || "";
+            document.getElementById('equip_alcance').value = e.alcance || "";
+            document.getElementById('equip_custo').value = e.custo || "";
+            document.getElementById('equip_desc').value = e.desc || "";
+        } else {
+            document.getElementById('form_equip_title').innerText = "CRIAR EQUIPAMENTO";
+            document.getElementById('equip_titulo').value = "";
+            document.getElementById('equip_categoria').value = "Arma";
+            document.getElementById('equip_atributo').value = "";
+            document.getElementById('equip_dano_slots').value = "";
+            document.getElementById('equip_tipo_dano').value = "";
+            document.getElementById('equip_alcance').value = "";
+            document.getElementById('equip_custo').value = "";
+            document.getElementById('equip_desc').value = "";
+        }
+        document.getElementById('modal-equip').classList.add('open');
+    };
+
+    window.saveEquip = () => {
+        const id = document.getElementById('equip_id').value;
+        const titulo = document.getElementById('equip_titulo').value.trim();
+        if (!titulo) return alert("Preencha o nome do equipamento!");
+
+        const data = {
+            titulo,
+            categoria: document.getElementById('equip_categoria').value,
+            atributo: document.getElementById('equip_atributo').value,
+            dano_slots: document.getElementById('equip_dano_slots').value,
+            tipo_dano: document.getElementById('equip_tipo_dano').value,
+            alcance: document.getElementById('equip_alcance').value,
+            custo: document.getElementById('equip_custo').value,
+            desc: document.getElementById('equip_desc').value
+        };
+
+        if (id) update(ref(db, `${dbPath}/equipamentos/${id}`), data).then(() => document.getElementById('modal-equip').classList.remove('open'));
+        else push(ref(db, `${dbPath}/equipamentos`), data).then(() => document.getElementById('modal-equip').classList.remove('open'));
     };
 
     // Deletar Geral
