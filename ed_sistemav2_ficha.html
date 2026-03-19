@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ficha V2 - Escória de Deus</title>
+    <style>
+        :root { 
+            --bg: #111111; 
+            --text: #ffffff;
+            --theme-main: #800000;
+            --theme-card: #2a0b10;
+            --theme-border: #5a1a1f;
+            --theme-input: #1a0508;
+            --theme-light: #ffaaaa;
+        }
+
+        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; padding: 20px; margin: 0; padding-bottom: 80px; transition: 0.5s; }
+        .container { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; max-width: 1400px; width: 100%; }
+        .col { display: flex; flex-direction: column; gap: 15px; }
+        
+        /* --- MODO ASCENSÃO (Veias Escurecidas e Aura) --- */
+        body.ascensao-mode { --theme-main: #0a0a0a; --theme-light: #00e5ff; --theme-card: #050505; --theme-border: #005566; }
+        body.ascensao-mode .attr-box input, body.ascensao-mode #char_name, body.ascensao-mode #asc-btn { color: #00e5ff !important; text-shadow: 0 0 10px #00e5ff; }
+        body.ascensao-mode .attr-box { box-shadow: 0 0 15px rgba(0, 229, 255, 0.2); border-color: #00e5ff; }
+        body.ascensao-mode .avatar-circle { box-shadow: 0 0 30px rgba(0, 229, 255, 0.4); border-color: #000; }
+
+        /* --- MODO ANCESTRAL (Despertar/Chamado do Inferno) --- */
+        body.ancestral-mode { --theme-main: #aa0000; --theme-light: #ff4444; }
+        body.ancestral-mode .avatar-circle { border-color: #ff0000; box-shadow: 0 0 20px #ff0000; }
+        body.ancestral-mode #ancestral-btn { color: #ff0000 !important; text-shadow: 0 0 10px #ff0000; border-color: #ff0000; }
+
+        .card { background: var(--theme-card); border-radius: 12px; padding: 15px; border: 1px solid var(--theme-border); box-shadow: 0 4px 10px rgba(0,0,0,0.5); position: relative; }
+        .header-label { background: var(--theme-main); text-align: center; border-radius: 20px; padding: 5px; margin-bottom: 15px; font-weight: bold; text-transform: uppercase; display: flex; justify-content: center; align-items: center; gap: 10px; border: 1px solid var(--theme-light); }
+        
+        input, textarea, select { background: var(--theme-input); border: 1px solid #555; color: white; padding: 8px; border-radius: 20px; width: 100%; box-sizing: border-box; margin-bottom: 5px; font-family: inherit;}
+        input[readonly] { background: rgba(0,0,0,0.3); color: #aaa; border: 1px dashed #444; cursor: not-allowed; }
+        
+        label { font-size: 10px; color: var(--theme-light); font-weight: bold; margin-left: 10px; text-transform: uppercase; display: block; }
+        
+        .avatar-container { display: flex; flex-direction: column; align-items: center; margin-bottom: 10px; position: relative; }
+        .avatar-circle { width: 140px; height: 140px; border-radius: 50%; border: 4px solid var(--theme-main); background: #222; overflow: hidden; display: flex; align-items: center; justify-content: center; cursor: pointer; background-size: cover; background-position: center; position: relative; transition: 0.3s; }
+        .avatar-circle input[type="file"] { opacity: 0; position: absolute; width: 100%; height: 100%; cursor: pointer; }
+        
+        .top-btn { position: absolute; background: #111; border: 2px solid #555; color: #555; border-radius: 50%; width: 35px; height: 35px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; z-index: 20; transition: 0.3s; }
+        .top-btn:hover { border-color: white; color: white; }
+        #theme-btn { top: 0; right: 20px; font-size: 16px; border-color: var(--theme-light); color: var(--theme-light); }
+        #asc-btn { top: 45px; right: 20px; } 
+        #ancestral-btn { top: 90px; right: 20px; }
+
+        .color-picker { display: none; position: absolute; top: 40px; right: 0; background: #222; border: 1px solid #555; padding: 10px; border-radius: 10px; grid-template-columns: repeat(4, 1fr); gap: 8px; z-index: 30; box-shadow: 0 5px 15px rgba(0,0,0,0.8); }
+        .color-picker.open { display: grid; }
+        .color-swatch { width: 25px; height: 25px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; transition: 0.2s; }
+        .color-swatch:hover { transform: scale(1.2); border-color: white; }
+
+        /* BARRAS DE STATUS */
+        .bar-container { margin-bottom: 12px; }
+        .bar-label { margin-left: 5px; margin-bottom: 3px; color: var(--theme-light); font-size: 11px; font-weight: bold; text-transform: uppercase; display: block; }
+        .bar-controls { display: flex; align-items: center; gap: 5px; background: rgba(0,0,0,0.5); border-radius: 25px; padding: 4px 8px; }
+        .btn-math { background: transparent; border: none; color: white; cursor: pointer; font-size: 18px; font-weight: bold; width: 30px; z-index: 10; }
+        .bar-bg { flex-grow: 1; height: 28px; background: #1a1a1a; border-radius: 15px; position: relative; overflow: hidden; border: 1px solid #444; display: flex; align-items: center; }
+        .bar-fill { position: absolute; left: 0; top: 0; height: 100%; transition: width 0.3s ease; z-index: 1; width: 100%; }
+        .hp-fill { background: #d32f2f; } 
+        .stress-fill { background: #7b1fa2; } 
+        .hope-fill { background: #fbc02d; }
+        .asc-fill { background: #111; border-right: 2px solid #00e5ff; box-shadow: inset 0 0 10px #00e5ff; }
+        
+        .bar-values { position: relative; z-index: 5; width: 100%; display: flex; justify-content: center; align-items: center; pointer-events: none; }
+        .bar-values input { pointer-events: auto; width: 45px; background: transparent; border: none; text-align: center; font-size: 14px; font-weight: bold; color: white; text-shadow: 1px 1px 2px #000; margin: 0; padding: 0; }
+        
+        /* ATRIBUTOS */
+        .attr-container { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin: 15px 0; }
+        .attr-box { background: rgba(255,255,255,0.05); border: 1px solid var(--theme-border); border-radius: 12px; padding: 10px 2px; text-align: center; transition: 0.5s; }
+        .attr-box input { font-size: 32px; font-weight: bold; text-align: center; border: none; background: transparent; color: white; margin: 0; padding: 0; }
+        .attr-box div { font-size: 12px; font-weight: bold; color: var(--theme-light); letter-spacing: 1px; }
+
+        /* DEFESA E ARMADURA */
+        .defense-box { display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.4); padding: 10px; border-radius: 12px; border: 1px solid var(--theme-border); margin-bottom: 15px; }
+        .evasao-display { text-align: center; border-right: 1px solid #555; padding-right: 15px; }
+        .evasao-val { font-size: 28px; font-weight: bold; color: #4fc3f7; line-height: 1; }
+        .armor-section { flex-grow: 1; padding-left: 15px; display: flex; flex-direction: column; align-items: center; }
+        .armor-slots { display: flex; gap: 5px; margin-top: 5px; flex-wrap: wrap; justify-content: center; }
+        .armor-slot { width: 22px; height: 22px; border: 2px solid #aaa; border-radius: 4px; background: #222; cursor: pointer; transition: 0.2s; }
+        .armor-slot.used { background: #ff4444; border-color: #ff0000; box-shadow: inset 0 0 5px #000; }
+        .armor-controls { display: flex; gap: 10px; margin-top: 5px; }
+
+        /* HABILIDADES & CARTAS */
+        .hab-item { background: rgba(0,0,0,0.3); border: 1px solid var(--theme-border); border-radius: 10px; margin-bottom: 8px; overflow: hidden; }
+        .hab-header { display: flex; align-items: center; padding: 8px; gap: 5px; }
+        .hab-title { flex-grow: 1; font-weight: bold; border-radius: 10px !important; margin: 0 !important; font-size: 13px; }
+        .hab-dice { width: 70px !important; text-align: center; border-radius: 10px !important; margin: 0 !important; font-size: 12px; }
+        .hab-toggle { cursor: pointer; color: var(--theme-light); font-size: 12px; padding: 0 5px; }
+        .hab-body { padding: 8px; display: none; border-top: 1px solid var(--theme-border); }
+        .hab-body.open { display: block; }
+        .hab-body textarea { min-height: 80px; resize: vertical; line-height: 1.4; font-size: 13px; }
+        
+        .btn-add { background: #22aa22; color: white; border: none; border-radius: 50%; width: 24px; height: 24px; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; }
+        .btn-del { color: #ff4444; background: transparent; border: none; cursor: pointer; font-weight: bold; font-size: 16px; }
+
+        .xp-container { display: flex; align-items: center; justify-content: space-between; background: rgba(0,0,0,0.3); border-radius: 15px; padding: 10px; border: 1px solid var(--theme-border); margin-bottom: 10px; }
+        .xp-display { text-align: center; }
+        .xp-number { font-size: 28px; font-weight: bold; color: #ffd700; display: block; line-height: 1; }
+        .btn-xp { background: var(--theme-main); border: 1px solid var(--theme-light); color: white; font-size: 10px; padding: 5px 10px; border-radius: 8px; cursor: pointer; text-transform: uppercase; font-weight: bold; }
+
+        /* MODAIS */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 2000; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
+        .modal-overlay.open { display: flex; }
+        .modal-choice { background: var(--theme-card); padding: 20px; border-radius: 15px; border: 2px solid var(--theme-main); width: 300px; text-align: center; }
+        .btn-choice { width: 100%; padding: 15px; margin: 8px 0; background: rgba(0,0,0,0.3); border: 1px solid var(--theme-light); color: white; cursor: pointer; border-radius: 8px; font-weight: bold; text-transform: uppercase; }
+
+        @media (max-width: 768px) { .container { display: block; } .col { display: none; width: 100%; } .col.active { display: flex; } }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="col active" id="col-0">
+        <div class="card">
+            <div class="header-label">Personagem</div>
+            <div class="avatar-container">
+                <div class="avatar-circle" id="avatar_display"><input type="file" id="img_upload" accept="image/*"></div>
+                <button class="top-btn" id="theme-btn" onclick="toggleColorPicker()">🎨</button>
+                <button class="top-btn" id="asc-btn" onclick="toggleAbility('ascensao')" title="Ascensão Arcana">🌌</button>
+                <button class="top-btn" id="ancestral-btn" onclick="toggleAbility('ancestral')" title="Poder Ancestral">🔥</button>
+                <div id="colorPicker" class="color-picker"></div>
+                <input type="text" id="char_name" style="background:transparent; border:none; text-align:center; font-size:20px; font-weight:bold; margin-top:10px; color:white;" placeholder="NOME DO PERSONAGEM">
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px;">
+                <div><label>NÍVEL</label><input type="number" id="nivel" value="1" min="1" max="10"></div>
+                <div><label>FLORINS</label><input type="text" id="florins" value="0"></div>
+            </div>
+            <label>CLASSE</label><input type="text" id="classe" placeholder="Ex: Vanguarda, Teurgo...">
+            <label>ANCESTRALIDADE</label><input type="text" id="ancestralidade" placeholder="Ex: Sanguinário Carmesim...">
+
+            <div class="header-label" style="margin-top:15px;">Atributos Básicos</div>
+            <div class="attr-container">
+                <div class="attr-box"><input type="number" id="poder" value="0" min="0" max="5"><div>PODER</div></div>
+                <div class="attr-box"><input type="number" id="habilidade" value="0" min="0" max="5"><div>HABILIDADE</div></div>
+                <div class="attr-box"><input type="number" id="resistencia" value="0" min="0" max="5"><div>RESISTÊNCIA</div></div>
+            </div>
+
+            <div class="header-label">Status Vital</div>
+            
+            <div class="bar-container">
+                <label class="bar-label">PONTOS DE VIDA (Base: 5 + Res)</label>
+                <div class="bar-controls">
+                    <button class="btn-math" onclick="changeVal('hp', -1)">-</button>
+                    <div class="bar-bg"><div id="bar_hp" class="bar-fill hp-fill"></div>
+                    <div class="bar-values"><input type="number" id="hp_at" value="5"> / <input type="number" id="hp_max" value="5"></div></div>
+                    <button class="btn-math" onclick="changeVal('hp', 1)">+</button>
+                </div>
+            </div>
+
+            <div class="bar-container">
+                <label class="bar-label">ESTRESSE (Dano Mental / Magia)</label>
+                <div class="bar-controls">
+                    <button class="btn-math" onclick="changeVal('stress', -1)">-</button>
+                    <div class="bar-bg"><div id="bar_stress" class="bar-fill stress-fill"></div>
+                    <div class="bar-values"><input type="number" id="stress_at" value="0"> / <input type="number" id="stress_max" value="5"></div></div>
+                    <button class="btn-math" onclick="changeVal('stress', 1)">+</button>
+                </div>
+            </div>
+
+            <div class="bar-container">
+                <label class="bar-label">ESPERANÇA (Moeda Narrativa)</label>
+                <div class="bar-controls">
+                    <button class="btn-math" onclick="changeVal('hope', -1)">-</button>
+                    <div class="bar-bg"><div id="bar_hope" class="bar-fill hope-fill"></div>
+                    <div class="bar-values"><input type="number" id="hope_at" value="0"> / <input type="number" id="hope_max" value="5"></div></div>
+                    <button class="btn-math" onclick="changeVal('hope', 1)">+</button>
+                </div>
+            </div>
+
+            <div class="bar-container" id="asc_container" style="display:none;">
+                <label class="bar-label" style="color:#00e5ff;">PONTOS DE ASCENSÃO (PA)</label>
+                <div class="bar-controls">
+                    <button class="btn-math" onclick="changeVal('asc', -1)">-</button>
+                    <div class="bar-bg"><div id="bar_asc" class="bar-fill asc-fill"></div>
+                    <div class="bar-values"><input type="number" id="asc_at" value="0"> / <input type="number" id="asc_max" value="10" readonly></div></div>
+                    <button class="btn-math" onclick="changeVal('asc', 1)">+</button>
+                </div>
+            </div>
+
+            <div class="defense-box">
+                <div class="evasao-display">
+                    <label style="margin:0 0 5px 0; text-align:center;">EVASÃO</label>
+                    <div class="evasao-val" id="evasao_val">8</div>
+                </div>
+                <div class="armor-section">
+                    <label style="margin:0;">SLOTS DE ARMADURA</label>
+                    <div class="armor-slots" id="armor_slots_container"></div>
+                    <div class="armor-controls">
+                        <button class="btn-add" style="width:20px; height:20px; font-size:12px;" onclick="addArmorSlot(-1)">-</button>
+                        <button class="btn-add" style="width:20px; height:20px; font-size:12px;" onclick="addArmorSlot(1)">+</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col" id="col-1">
+        <div class="card">
+            <div class="header-label">O Arsenal</div>
+            
+            <label>Vantagens Passivas <button class="btn-add" onclick="openAddMenu('passivas')">+</button></label>
+            <div id="list_passivas" style="margin-top:5px; margin-bottom: 15px;"></div>
+            
+            <div class="header-label" style="background:#550000; border-color:#ff5555;">Loadout (Equipadas - Max 5)</div>
+            <div id="list_loadout" style="margin-top:5px; margin-bottom: 15px;"></div>
+            <button class="btn-add" onclick="openAddMenu('loadout')" style="width:100%; border-radius:8px; margin-bottom:15px; background:#880000;">+ Equipar Carta de Domínio</button>
+
+            <div class="header-label" style="background:#222; border-color:#555; color:#aaa;">O Cofre (Cartas Guardadas)</div>
+            <div id="list_cofre" style="margin-top:5px;"></div>
+            <button class="btn-add" onclick="openAddMenu('cofre')" style="width:100%; border-radius:8px; margin-top:10px; background:#444;">+ Guardar Carta no Cofre</button>
+        </div>
+    </div>
+
+    <div class="col" id="col-2">
+        <div class="card">
+            <div class="header-label">Armas e Equipamentos</div>
+            <label>Armas (Ataque) <button class="btn-add" onclick="openAddMenu('armas')">+</button></label>
+            <div id="list_armas" style="margin-top:5px; margin-bottom:15px;"></div>
+
+            <label>Inventário Geral <button class="btn-add" onclick="openAddMenu('inventario')">+</button></label>
+            <div id="list_inventario" style="margin-top:5px;"></div>
+            
+            <hr style="border:0; border-top:1px solid #5a1a1f; margin: 20px 0;">
+            
+            <div class="header-label">Progressão</div>
+            <div class="xp-container">
+                <div class="xp-display">
+                    <span class="xp-label">PONTOS DE DESPERTAR / XP</span>
+                    <span id="display_xp_total" class="xp-number">0</span>
+                </div>
+                <div>
+                    <button class="btn-xp" onclick="changeValXP(-1)" style="background:#444;">- Remover</button>
+                    <button class="btn-xp" onclick="changeValXP(1)">+ Adicionar</button>
+                </div>
+            </div>
+            
+            <div class="header-label" style="margin-top:20px;">Anotações Rápidas</div>
+            <textarea id="anotacoes" style="min-height: 150px; border-radius: 10px;" placeholder="Use este espaço para ferimentos persistentes, missões ou lore..."></textarea>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="modal-choice" onclick="closeModal('modal-choice')">
+    <div class="modal-choice" onclick="event.stopPropagation()">
+        <h3 style="margin-top:0; color:var(--theme-light);">ADICIONAR ITEM</h3>
+        <button class="btn-choice" onclick="createManual()">✏️ Criar Manualmente</button>
+        <button class="btn-choice" style="background:#444;" onclick="closeModal('modal-choice')">Cancelar</button>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getDatabase, ref, update, onValue, remove, push, set } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyCvxxwfsonP5a45nbcz34cxYhXaWBZVhwQ",
+        authDomain: "ed-rpg---sistema-de-fichas.firebaseapp.com",
+        databaseURL: "https://ed-rpg---sistema-de-fichas-default-rtdb.firebaseio.com",
+        projectId: "ed-rpg---sistema-de-fichas",
+        storageBucket: "ed-rpg---sistema-de-fichas.firebasestorage.app",
+        messagingSenderId: "350999444010",
+        appId: "1:350999444010:web:d89f31d13e449b8fbfa153"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const urlParams = new URLSearchParams(window.location.search);
+    const fichaID = urlParams.get('p') || "personagem_padrao_v2";
+    
+    // ATENÇÃO: Mudamos a rota para fichas_v2 para não corromper os dados antigos!
+    const dbPath = `fichas_v2/${fichaID}`; 
+
+    let globalCharData = {};
+    let currentCategory = ""; 
+
+    // Temas de Cor
+    const themes = { 
+        sangue: { main: '#800000', card: '#2a0b10', border: '#5a1a1f', input: '#1a0508', light: '#ffaaaa' }, 
+        oceano: { main: '#0d47a1', card: '#0a192f', border: '#1565c0', input: '#0d2345', light: '#82b1ff' }, 
+        floresta: { main: '#1b5e20', card: '#0f2913', border: '#2e7d32', input: '#0a210f', light: '#a5d6a7' }, 
+        ametista: { main: '#4a148c', card: '#240a33', border: '#7b1fa2', input: '#210530', light: '#e1bee7' }, 
+        sombra: { main: '#424242', card: '#111111', border: '#616161', input: '#000000', light: '#bdbdbd' } 
+    };
+
+    window.toggleColorPicker = () => { document.getElementById('colorPicker').classList.toggle('open'); };
+    window.setTheme = (themeName) => { 
+        const t = themes[themeName]; if(!t) return; 
+        const r = document.documentElement.style; 
+        r.setProperty('--theme-main', t.main); r.setProperty('--theme-card', t.card); r.setProperty('--theme-border', t.border); r.setProperty('--theme-input', t.input); r.setProperty('--theme-light', t.light); 
+        update(ref(db, dbPath), { color_theme: themeName }); 
+        document.getElementById('colorPicker').classList.remove('open'); 
+    };
+
+    const picker = document.getElementById('colorPicker'); 
+    Object.keys(themes).forEach(key => { 
+        const div = document.createElement('div'); div.className = 'color-swatch'; div.style.backgroundColor = themes[key].main; 
+        div.onclick = () => setTheme(key); picker.appendChild(div); 
+    });
+
+    const camposParaSalvar = [ 'char_name', 'nivel', 'florins', 'classe', 'ancestralidade', 'hp_at', 'hp_max', 'stress_at', 'stress_max', 'hope_at', 'hope_max', 'asc_at', 'poder', 'habilidade', 'resistencia', 'xp_total', 'anotacoes'];
+
+    // Calculo Matemático Automático
+    function calculateDerivedStats() {
+        const res = parseInt(document.getElementById('resistencia').value) || 0;
+        const hab = parseInt(document.getElementById('habilidade').value) || 0;
+        const nivel = parseInt(document.getElementById('nivel').value) || 1;
+
+        // Evasão = 8 + Habilidade
+        document.getElementById('evasao_val').innerText = 8 + hab;
+        
+        // Exibir Barra de Ascensão apenas se Nivel >= 5
+        document.getElementById('asc_container').style.display = (nivel >= 5) ? 'block' : 'none';
+        
+        // Sugestão visual de HP máximo = 5 + Res (Mas não força para não apagar upgrades manuais do jogador)
+        const suggestedHp = 5 + res;
+        const hpMaxInput = document.getElementById('hp_max');
+        if(parseInt(hpMaxInput.value) < suggestedHp) {
+            hpMaxInput.value = suggestedHp;
+            update(ref(db, dbPath), { hp_max: suggestedHp });
+        }
+    }
+
+    // Controle de Botões de Habilidades Visuais
+    window.toggleAbility = (abilityName) => {
+        const isActive = globalCharData.toggles && globalCharData.toggles[abilityName];
+        update(ref(db, `${dbPath}/toggles`), { [abilityName]: !isActive });
+    };
+
+    function updateVisualModes() {
+        const tg = globalCharData.toggles || {};
+        document.body.classList.toggle('ascensao-mode', !!tg.ascensao);
+        document.body.classList.toggle('ancestral-mode', !!tg.ancestral);
+    }
+
+    // Modificando Barras
+    window.changeVal = (type, mod) => {
+        let current = parseInt(globalCharData[`${type}_at`]) || 0;
+        let max = parseInt(globalCharData[`${type}_max`]) || (type === 'asc' ? 10 : 5);
+        let newVal = current + mod;
+        if (newVal < 0) newVal = 0;
+        if (newVal > max) newVal = max;
+        update(ref(db, dbPath), { [`${type}_at`]: newVal });
+    };
+
+    window.changeValXP = (mod) => {
+        let xp = parseInt(globalCharData.xp_total) || 0;
+        let newXp = xp + mod; if(newXp < 0) newXp = 0;
+        update(ref(db, dbPath), { xp_total: newXp });
+    };
+
+    // --- SLOTS DE ARMADURA ---
+    window.addArmorSlot = (mod) => {
+        let max = globalCharData.armor_max || 0;
+        let newMax = max + mod; if(newMax < 0) newMax = 0;
+        update(ref(db, dbPath), { armor_max: newMax });
+    };
+
+    window.toggleArmorSlot = (index) => {
+        let used = globalCharData.armor_used || {};
+        let isUsed = used[`slot_${index}`] === true;
+        update(ref(db, `${dbPath}/armor_used`), { [`slot_${index}`]: !isUsed });
+    };
+
+    function renderArmorSlots() {
+        const container = document.getElementById('armor_slots_container');
+        container.innerHTML = "";
+        let max = globalCharData.armor_max || 0;
+        let used = globalCharData.armor_used || {};
+        for(let i=0; i < max; i++) {
+            let isUsed = used[`slot_${i}`] === true;
+            container.innerHTML += `<div class="armor-slot ${isUsed ? 'used' : ''}" onclick="toggleArmorSlot(${i})"></div>`;
+        }
+    }
+
+    // Listeners de Input
+    document.addEventListener('input', (e) => {
+        const target = e.target;
+        if (camposParaSalvar.includes(target.id)) {
+            update(ref(db, dbPath), { [target.id]: target.value }).then(() => calculateDerivedStats());
+        }
+    });
+
+    // Recebendo Dados
+    onValue(ref(db, dbPath), (snapshot) => {
+        const dados = snapshot.val(); 
+        if (!dados) {
+            // Setup inicial se ficha nova
+            set(ref(db, dbPath), { hp_at: 5, hp_max: 5, stress_at: 0, stress_max: 5, hope_at: 0, hope_max: 5, asc_at: 0, asc_max: 10, armor_max: 0 });
+            return;
+        }
+        globalCharData = dados;
+
+        // Tema
+        if (dados.color_theme) { 
+            const t = themes[dados.color_theme]; 
+            if (t) { 
+                const r = document.documentElement.style; 
+                r.setProperty('--theme-main', t.main); r.setProperty('--theme-card', t.card); r.setProperty('--theme-border', t.border); r.setProperty('--theme-input', t.input); r.setProperty('--theme-light', t.light); 
+            } 
+        }
+
+        // Atualizando Campos de Texto e Números
+        camposParaSalvar.forEach(id => {
+            if (dados[id] !== undefined) {
+                if (id === 'xp_total') document.getElementById('display_xp_total').innerText = dados[id];
+                else {
+                    const el = document.getElementById(id);
+                    if (el && document.activeElement !== el) { el.value = dados[id]; }
+                }
+            }
+        });
+
+        if (dados.char_img) document.getElementById('avatar_display').style.backgroundImage = `url(${dados.char_img})`;
+
+        // Atualizando Barras Visuais
+        updateBarVisual('hp', dados.hp_at, dados.hp_max);
+        updateBarVisual('stress', dados.stress_at, dados.stress_max);
+        updateBarVisual('hope', dados.hope_at, dados.hope_max);
+        updateBarVisual('asc', dados.asc_at, 10);
+
+        // Listas
+        ['passivas', 'loadout', 'cofre', 'armas', 'inventario'].forEach(cat => renderHabs(cat, dados.habilidades?.[cat]));
+        
+        renderArmorSlots();
+        calculateDerivedStats();
+        updateVisualModes();
+    });
+
+    function updateBarVisual(type, current, max) {
+        current = parseInt(current) || 0; max = parseInt(max) || 1;
+        const percent = Math.min(Math.max((current / max) * 100, 0), 100);
+        const el = document.getElementById('bar_' + type); if (el) el.style.width = percent + '%';
+    }
+
+    // --- MODAIS E LISTAS ---
+    window.openAddMenu = (category) => {
+        currentCategory = category;
+        document.getElementById('modal-choice').classList.add('open');
+    };
+
+    window.closeModal = (id) => { document.getElementById(id).classList.remove('open'); };
+
+    window.createManual = () => {
+        closeModal('modal-choice');
+        let data = { titulo: "", desc: "" };
+        if (currentCategory === 'armas' || currentCategory === 'loadout' || currentCategory === 'cofre') { data.teste = ""; } 
+        push(ref(db, `${dbPath}/habilidades/${currentCategory}`), data);
+    };
+
+    window.removeItem = (category, id) => { if(confirm("Apagar item?")) remove(ref(db, `${dbPath}/habilidades/${category}/${id}`)); };
+    window.toggleHab = (id) => { document.getElementById('body_' + id).classList.toggle('open'); };
+    window.saveHab = (cat, id, field, val) => { update(ref(db, `${dbPath}/habilidades/${cat}/${id}`), { [field]: val }); };
+
+    function renderHabs(category, data) { 
+        let container = document.getElementById('list_' + category); 
+        if(!container) return; container.innerHTML = ""; 
+        if(!data) return; 
+        
+        Object.keys(data).forEach(id => { 
+            const item = data[id]; 
+            const placeholderCusto = (category === 'loadout' || category === 'cofre') ? 'Custo/Dano' : (category === 'armas' ? 'Dano (ex: 1d10)' : 'Valor');
+            const showDiceInput = (category !== 'passivas' && category !== 'inventario');
+
+            const div = document.createElement('div'); 
+            div.className = 'hab-item'; 
+            div.innerHTML = `
+                <div class="hab-header">
+                    <span class="hab-toggle" onclick="toggleHab('${id}')">▼</span>
+                    <input type="text" class="hab-title" value="${item.titulo || ''}" onchange="saveHab('${category}','${id}','titulo',this.value)" placeholder="Nome">
+                    ${showDiceInput ? `<input type="text" class="hab-dice" value="${item.teste || ''}" onchange="saveHab('${category}','${id}','teste',this.value)" placeholder="${placeholderCusto}">` : ''}
+                    <button class="btn-del" onclick="removeItem('${category}','${id}')">✖</button>
+                </div>
+                <div class="hab-body" id="body_${id}">
+                    <textarea onchange="saveHab('${category}','${id}','desc',this.value)" placeholder="Descrição e Regras...">${item.desc || ''}</textarea>
+                </div>`; 
+            container.appendChild(div); 
+        }); 
+    }
+
+    // Upload de Imagem
+    document.getElementById('img_upload').addEventListener('change', (e) => { const file = e.target.files[0]; const reader = new FileReader(); reader.onload = (readerEvent) => { const image = new Image(); image.onload = () => { const canvas = document.createElement('canvas'); const maxSize = 300; let width = image.width; let height = image.height; if (width > height) { if (width > maxSize) { height *= maxSize / width; width = maxSize; } } else { if (height > maxSize) { width *= maxSize / height; height = maxSize; } } canvas.width = width; canvas.height = height; const ctx = canvas.getContext('2d'); ctx.drawImage(image, 0, 0, width, height); const dataUrl = canvas.toDataURL('image/jpeg', 0.7); document.getElementById('avatar_display').style.backgroundImage = `url(${dataUrl})`; update(ref(db, dbPath), { char_img: dataUrl }); }; image.src = readerEvent.target.result; }; reader.readAsDataURL(file); });
+</script>
+</body>
+</html>
