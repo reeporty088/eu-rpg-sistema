@@ -88,9 +88,19 @@
         .evasao-val { font-size: 28px; font-weight: bold; color: #4fc3f7; line-height: 1; }
         .armor-section { flex-grow: 1; padding-left: 15px; display: flex; flex-direction: column; align-items: center; }
         .armor-slots { display: flex; gap: 5px; margin-top: 5px; flex-wrap: wrap; justify-content: center; }
+        
         .armor-slot { width: 22px; height: 22px; border: 2px solid #aaa; border-radius: 4px; background: #222; cursor: pointer; transition: 0.2s; }
         .armor-slot.used { background: #ff4444; border-color: #ff0000; box-shadow: inset 0 0 5px #000; }
-        .armor-controls { display: flex; gap: 10px; margin-top: 5px; }
+        
+        /* Estilo do Slot Temporário */
+        .armor-slot.temp { border-color: #ffd700; background: rgba(255, 215, 0, 0.1); }
+        .armor-slot.temp:hover { box-shadow: 0 0 8px #ffd700; }
+
+        .armor-controls { display: flex; gap: 5px; margin-top: 8px; flex-wrap: wrap; justify-content: center; }
+        .btn-armor-ctrl { background: #222; border: 1px solid #555; color: white; border-radius: 4px; padding: 4px 8px; font-size: 10px; cursor: pointer; text-transform: uppercase; font-weight: bold; transition: 0.2s; }
+        .btn-armor-ctrl:hover { background: #444; border-color: white; }
+        .btn-armor-temp { border-color: #ffd700; color: #ffd700; }
+        .btn-armor-temp:hover { background: rgba(255, 215, 0, 0.2); }
 
         .threshold-container { display: flex; gap: 5px; text-align: center; margin-bottom: 15px; }
         .thresh-box { flex: 1; background: rgba(0,0,0,0.5); border: 1px solid #444; border-radius: 8px; padding: 5px; }
@@ -214,8 +224,9 @@
                     <label style="margin:0;">SLOTS DE ARMADURA</label>
                     <div class="armor-slots" id="armor_slots_container"></div>
                     <div class="armor-controls">
-                        <button class="btn-add" style="width:20px; height:20px; font-size:12px;" onclick="addArmorSlot(-1)">-</button>
-                        <button class="btn-add" style="width:20px; height:20px; font-size:12px;" onclick="addArmorSlot(1)">+</button>
+                        <button class="btn-armor-ctrl" onclick="addArmorSlot(-1)">Remover Slot</button>
+                        <button class="btn-armor-ctrl" onclick="addArmorSlot(1)">Add Slot</button>
+                        <button class="btn-armor-ctrl btn-armor-temp" onclick="addArmorTemp()">Add Temporário</button>
                     </div>
                 </div>
             </div>
@@ -333,7 +344,7 @@
         if (currentCol >= totalCols) currentCol = 0;
         document.getElementById(`col-${currentCol}`).classList.add('active');
         document.getElementById('mobile-page-indicator').innerText = (currentCol + 1) + ' / ' + totalCols;
-        window.scrollTo(0, 0); // Sobe pro topo da tela ao mudar a aba
+        window.scrollTo(0, 0); 
     };
 
     // Temas de Cor
@@ -366,10 +377,8 @@
         const res = parseInt(document.getElementById('resistencia').value) || 0;
         const hab = parseInt(document.getElementById('habilidade').value) || 0;
 
-        // Evasão
         document.getElementById('evasao_val').innerText = 8 + hab;
         
-        // Limiares de Dano (Regra Base: 1, 5 + (Res x 2), 10 + (Res x 3). Altere aqui se o sistema for diferente)
         document.getElementById('limiar_leve').innerText = "1";
         document.getElementById('limiar_grave').innerText = 5 + (res * 2);
         document.getElementById('limiar_massivo').innerText = 10 + (res * 3);
@@ -382,7 +391,6 @@
         }
     }
 
-    // BOTÃO DO JOGADOR PARA ATIVAR A FORMA E COBRAR CUSTOS
     window.toggleForma = (formaType) => {
         const current = globalCharData.toggles?.forma_ativa;
         
@@ -466,10 +474,16 @@
         update(ref(db, dbPath), { xp_total: newXp });
     };
 
+    // --- NOVA LÓGICA DE ARMADURA ---
     window.addArmorSlot = (mod) => {
         let max = globalCharData.armor_max || 0;
         let newMax = max + mod; if(newMax < 0) newMax = 0;
         update(ref(db, dbPath), { armor_max: newMax });
+    };
+
+    window.addArmorTemp = () => {
+        let tempMax = globalCharData.armor_temp || 0;
+        update(ref(db, dbPath), { armor_temp: tempMax + 1 });
     };
 
     window.toggleArmorSlot = (index) => {
@@ -478,14 +492,30 @@
         update(ref(db, `${dbPath}/armor_used`), { [`slot_${index}`]: !isUsed });
     };
 
+    window.consumeArmorTemp = (tempId) => {
+        let tempMax = globalCharData.armor_temp || 0;
+        if (tempMax > 0) {
+            update(ref(db, dbPath), { armor_temp: tempMax - 1 });
+        }
+    };
+
     function renderArmorSlots() {
         const container = document.getElementById('armor_slots_container');
         container.innerHTML = "";
+        
         let max = globalCharData.armor_max || 0;
         let used = globalCharData.armor_used || {};
+        let temps = globalCharData.armor_temp || 0;
+
+        // Renderiza Slots Permanentes
         for(let i=0; i < max; i++) {
             let isUsed = used[`slot_${i}`] === true;
-            container.innerHTML += `<div class="armor-slot ${isUsed ? 'used' : ''}" onclick="toggleArmorSlot(${i})"></div>`;
+            container.innerHTML += `<div class="armor-slot ${isUsed ? 'used' : ''}" onclick="toggleArmorSlot(${i})" title="Slot Permanente"></div>`;
+        }
+        
+        // Renderiza Slots Temporários (sempre no final)
+        for(let j=0; j < temps; j++) {
+            container.innerHTML += `<div class="armor-slot temp" onclick="consumeArmorTemp(${j})" title="Slot Temporário (Some ao gastar)"></div>`;
         }
     }
 
@@ -499,7 +529,7 @@
     onValue(ref(db, dbPath), (snapshot) => {
         const dados = snapshot.val(); 
         if (!dados) {
-            set(ref(db, dbPath), { hp_at: 5, hp_max: 5, stress_at: 0, stress_max: 5, hope_at: 0, hope_max: 5, asc_at: 0, asc_max: 10, armor_max: 0 });
+            set(ref(db, dbPath), { hp_at: 5, hp_max: 5, stress_at: 0, stress_max: 5, hope_at: 0, hope_max: 5, asc_at: 0, asc_max: 10, armor_max: 0, armor_temp: 0 });
             return;
         }
         globalCharData = dados;
