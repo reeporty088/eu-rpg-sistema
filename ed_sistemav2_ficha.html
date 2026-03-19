@@ -82,7 +82,7 @@
         .attr-box input { font-size: 32px; font-weight: bold; text-align: center; border: none; background: transparent; color: white; margin: 0; padding: 0; transition: 0.3s; }
         .attr-box div { font-size: 12px; font-weight: bold; color: var(--theme-light); letter-spacing: 1px; }
 
-        /* DEFESA E ARMADURA */
+        /* DEFESA, ARMADURA E LIMIARES */
         .defense-box { display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.4); padding: 10px; border-radius: 12px; border: 1px solid var(--theme-border); margin-bottom: 15px; }
         .evasao-display { text-align: center; border-right: 1px solid #555; padding-right: 15px; }
         .evasao-val { font-size: 28px; font-weight: bold; color: #4fc3f7; line-height: 1; }
@@ -91,6 +91,11 @@
         .armor-slot { width: 22px; height: 22px; border: 2px solid #aaa; border-radius: 4px; background: #222; cursor: pointer; transition: 0.2s; }
         .armor-slot.used { background: #ff4444; border-color: #ff0000; box-shadow: inset 0 0 5px #000; }
         .armor-controls { display: flex; gap: 10px; margin-top: 5px; }
+
+        .threshold-container { display: flex; gap: 5px; text-align: center; margin-bottom: 15px; }
+        .thresh-box { flex: 1; background: rgba(0,0,0,0.5); border: 1px solid #444; border-radius: 8px; padding: 5px; }
+        .thresh-box div:first-child { font-size: 9px; font-weight: bold; letter-spacing: 1px; }
+        .thresh-val { font-size: 18px; font-weight: bold; }
 
         /* HABILIDADES & CARTAS */
         .hab-item { background: rgba(0,0,0,0.3); border: 1px solid var(--theme-border); border-radius: 10px; margin-bottom: 8px; overflow: hidden; }
@@ -110,13 +115,22 @@
         .xp-number { font-size: 28px; font-weight: bold; color: #ffd700; display: block; line-height: 1; }
         .btn-xp { background: var(--theme-main); border: 1px solid var(--theme-light); color: white; font-size: 10px; padding: 5px 10px; border-radius: 8px; cursor: pointer; text-transform: uppercase; font-weight: bold; }
 
-        /* MODAIS */
+        /* MODAIS E NAVEGAÇÃO MOBILE */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 2000; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
         .modal-overlay.open { display: flex; }
         .modal-choice { background: var(--theme-card); padding: 20px; border-radius: 15px; border: 2px solid var(--theme-main); width: 300px; text-align: center; }
         .btn-choice { width: 100%; padding: 15px; margin: 8px 0; background: rgba(0,0,0,0.3); border: 1px solid var(--theme-light); color: white; cursor: pointer; border-radius: 8px; font-weight: bold; text-transform: uppercase; }
 
-        @media (max-width: 768px) { .container { display: block; } .col { display: none; width: 100%; } .col.active { display: flex; } }
+        .mobile-nav { display: none; position: fixed; bottom: 0; left: 0; width: 100%; background: #0a0a0a; padding: 10px 20px; box-sizing: border-box; justify-content: space-between; align-items: center; border-top: 2px solid var(--theme-border); z-index: 1000; box-shadow: 0 -2px 10px rgba(0,0,0,0.8); }
+        .mobile-nav button { background: var(--theme-main); color: white; border: 1px solid var(--theme-light); border-radius: 8px; padding: 10px 20px; font-weight: bold; font-size: 14px; cursor: pointer; text-transform: uppercase; }
+        .mobile-nav span { color: var(--theme-light); font-weight: bold; font-size: 14px; }
+
+        @media (max-width: 768px) { 
+            .container { display: block; } 
+            .col { display: none; width: 100%; } 
+            .col.active { display: flex; } 
+            .mobile-nav { display: flex; }
+        }
     </style>
 </head>
 <body>
@@ -205,6 +219,23 @@
                     </div>
                 </div>
             </div>
+
+            <div class="header-label" style="margin-top:5px; background: rgba(0,0,0,0.5); border-color: #555; color: #ccc;">Limiares de Dano</div>
+            <div class="threshold-container">
+                <div class="thresh-box" style="border-color: #aaaaaa;">
+                    <div style="color: #aaaaaa;">LEVE (-1 PV)</div>
+                    <div class="thresh-val" id="limiar_leve" style="color: white;">1</div>
+                </div>
+                <div class="thresh-box" style="border-color: #ffaa00;">
+                    <div style="color: #ffaa00;">GRAVE (-2 PV)</div>
+                    <div class="thresh-val" id="limiar_grave" style="color: #ffaa00;">5</div>
+                </div>
+                <div class="thresh-box" style="border-color: #ff4444;">
+                    <div style="color: #ff4444;">MASSIVO (-3 PV)</div>
+                    <div class="thresh-val" id="limiar_massivo" style="color: #ff4444;">10</div>
+                </div>
+            </div>
+
         </div>
     </div>
 
@@ -254,6 +285,12 @@
     </div>
 </div>
 
+<div class="mobile-nav">
+    <button onclick="changeCol(-1)">◀ Voltar</button>
+    <span id="mobile-page-indicator">1 / 3</span>
+    <button onclick="changeCol(1)">Avançar ▶</button>
+</div>
+
 <div class="modal-overlay" id="modal-choice" onclick="closeModal('modal-choice')">
     <div class="modal-choice" onclick="event.stopPropagation()">
         <h3 style="margin-top:0; color:var(--theme-light);">ADICIONAR ITEM</h3>
@@ -285,6 +322,19 @@
 
     let globalCharData = {};
     let currentCategory = ""; 
+    
+    // Controle da visualização mobile
+    let currentCol = 0;
+    const totalCols = 3;
+    window.changeCol = (dir) => {
+        document.getElementById(`col-${currentCol}`).classList.remove('active');
+        currentCol += dir;
+        if (currentCol < 0) currentCol = totalCols - 1;
+        if (currentCol >= totalCols) currentCol = 0;
+        document.getElementById(`col-${currentCol}`).classList.add('active');
+        document.getElementById('mobile-page-indicator').innerText = (currentCol + 1) + ' / ' + totalCols;
+        window.scrollTo(0, 0); // Sobe pro topo da tela ao mudar a aba
+    };
 
     // Temas de Cor
     const themes = { 
@@ -316,8 +366,14 @@
         const res = parseInt(document.getElementById('resistencia').value) || 0;
         const hab = parseInt(document.getElementById('habilidade').value) || 0;
 
+        // Evasão
         document.getElementById('evasao_val').innerText = 8 + hab;
         
+        // Limiares de Dano (Regra Base: 1, 5 + (Res x 2), 10 + (Res x 3). Altere aqui se o sistema for diferente)
+        document.getElementById('limiar_leve').innerText = "1";
+        document.getElementById('limiar_grave').innerText = 5 + (res * 2);
+        document.getElementById('limiar_massivo').innerText = 10 + (res * 3);
+
         const suggestedHp = 5 + res;
         const hpMaxInput = document.getElementById('hp_max');
         if(parseInt(hpMaxInput.value) < suggestedHp) {
@@ -331,19 +387,14 @@
         const current = globalCharData.toggles?.forma_ativa;
         
         if (current === formaType) {
-            // DESLIGANDO A FORMA ATUAL
             let updates = { 'toggles/forma_ativa': null };
-            
-            // Punição da Sacra ao desativar
             if (current === 'sacra') {
                 let hpAtual = parseInt(globalCharData.hp_at) || 0;
-                updates['hp_at'] = Math.max(0, hpAtual - 1); // Tira 1 PV
+                updates['hp_at'] = Math.max(0, hpAtual - 1); 
                 alert("Vislumbre da Evolução encerrado!\n\nO seu corpo rejeita a mutação drástica e você sofre 1 Dano Menor (-1 PV).");
             }
-            
             update(ref(db, `${dbPath}`), updates);
         } else {
-            // LIGANDO A NOVA FORMA
             let custoEstresse = 0;
             let nomeHabilidade = "";
             if (formaType === 'demon') { custoEstresse = 3; nomeHabilidade = "O Chamado do Inferno"; }
@@ -354,15 +405,13 @@
             let stressMax = parseInt(globalCharData.stress_max) || 5;
             let novoStress = stressAtual + custoEstresse;
 
-            // Checa se o jogador vai estourar o limite de estresse
             if (novoStress > stressMax) {
                 if(!confirm(`Ativar "${nomeHabilidade}" custa ${custoEstresse} Pontos de Estresse, mas você não tem limite suficiente para aguentar isso com segurança.\n\nDeseja forçar a habilidade mesmo assim (e maximizar seu Estresse)?`)) {
-                    return; // Cancela a ativação se ele tiver medo
+                    return; 
                 }
-                novoStress = stressMax; // Se aceitar, o estresse bate no teto
+                novoStress = stressMax; 
             }
 
-            // Atualiza o banco ligando a forma e cobrando o estresse
             update(ref(db, `${dbPath}`), { 
                 'toggles/forma_ativa': formaType,
                 'stress_at': novoStress
