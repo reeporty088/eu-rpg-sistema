@@ -187,8 +187,18 @@
                 <div><label>NÍVEL</label><input type="number" id="nivel" value="1" min="1" max="10"></div>
                 <div><label>FLORINS</label><input type="text" id="florins" value="0"></div>
             </div>
-            <label>CLASSE</label><input type="text" id="classe" placeholder="Ex: Vanguarda, Teurgo...">
-            <label>ANCESTRALIDADE</label><input type="text" id="ancestralidade" placeholder="Ex: Sanguinário Carmesim...">
+
+            <div class="section-header" style="margin-top: 15px;">
+                <label>CLASSE</label>
+                <button class="btn-armor-ctrl" onclick="openDirectDB('classe_hab')" style="background: var(--theme-main); border-color: var(--theme-light);">📚 Escolher Classe</button>
+            </div>
+            <input type="text" id="classe" placeholder="Selecione no botão acima..." readonly style="cursor: pointer;" onclick="openDirectDB('classe_hab')">
+
+            <div class="section-header" style="margin-top: 10px;">
+                <label>ANCESTRALIDADE / RAÇA</label>
+                <button class="btn-armor-ctrl" onclick="openDirectDB('raca_hab')" style="background: var(--theme-main); border-color: var(--theme-light);">📚 Escolher Raça</button>
+            </div>
+            <input type="text" id="ancestralidade" placeholder="Selecione no botão acima..." readonly style="cursor: pointer;" onclick="openDirectDB('raca_hab')">
 
             <div class="header-label" style="margin-top:15px;">Atributos Básicos</div>
             <div class="attr-container">
@@ -296,13 +306,11 @@
 
             <div class="section-header">
                 <label style="color: #aaa;">Habilidades de Classe</label>
-                <button class="btn-add" style="background: #444;" onclick="openAddMenu('classe_hab')">+ Add</button>
             </div>
             <div id="list_classe_hab" style="margin-bottom: 15px;"></div>
 
             <div class="section-header">
                 <label style="color: #aaa;">Habilidades de Raça / Ancestralidade</label>
-                <button class="btn-add" style="background: #444;" onclick="openAddMenu('raca_hab')">+ Add</button>
             </div>
             <div id="list_raca_hab" style="margin-bottom: 15px;"></div>
 
@@ -448,7 +456,7 @@
         div.onclick = () => setTheme(key); picker.appendChild(div); 
     });
 
-    const camposParaSalvar = [ 'char_name', 'nivel', 'florins', 'classe', 'ancestralidade', 'hp_at', 'hp_max', 'stress_at', 'stress_max', 'hope_at', 'hope_max', 'asc_at', 'poder', 'habilidade', 'resistencia', 'xp_total', 'anotacoes'];
+    const camposParaSalvar = [ 'char_name', 'nivel', 'florins', 'hp_at', 'hp_max', 'stress_at', 'stress_max', 'hope_at', 'hope_max', 'asc_at', 'poder', 'habilidade', 'resistencia', 'xp_total', 'anotacoes'];
 
     function calculateDerivedStats() {
         const res = parseInt(document.getElementById('resistencia').value) || 0;
@@ -615,7 +623,8 @@
             } 
         }
 
-        camposParaSalvar.forEach(id => {
+        // Atualiza campos de texto (incluindo Classe e Raça)
+        camposParaSalvar.concat(['classe', 'ancestralidade']).forEach(id => {
             if (dados[id] !== undefined) {
                 if (id === 'xp_total') document.getElementById('display_xp_total').innerText = dados[id];
                 else {
@@ -650,13 +659,19 @@
         currentCategory = category;
         const dbBtn = document.getElementById('btn-db-add');
         
-        if (['passivas', 'loadout', 'cofre', 'classe_hab', 'raca_hab'].includes(category)) {
+        if (['passivas', 'loadout', 'cofre'].includes(category)) {
             dbBtn.style.display = 'block';
         } else {
             dbBtn.style.display = 'none';
         }
         
         document.getElementById('modal-choice').classList.add('open');
+    };
+
+    // Abre direto o banco de dados para Classes e Raças (vindo da Coluna 1)
+    window.openDirectDB = (category) => {
+        currentCategory = category;
+        openDBModal();
     };
 
     window.closeModal = (id) => { document.getElementById(id).classList.remove('open'); };
@@ -671,7 +686,6 @@
     // --- LÓGICA DO COMPÊNDIO COM CARDS E BUSCA ---
     window.openDBModal = () => {
         closeModal('modal-choice');
-        
         document.getElementById('db-search').value = "";
         
         let dataObj = {};
@@ -742,7 +756,7 @@
                         <div style="background:rgba(0,0,0,0.4); padding:6px; border-radius:6px; border-left:2px solid #336699;">
                             <strong style="color:#88ccff; font-size:11px;">${item.hab_nome || 'Base'}</strong>
                         </div>
-                        <div style="margin-top:auto; font-size:10px; color:var(--theme-light); text-align:right; font-weight:bold; padding-top: 10px;">CLIQUE PARA ADICIONAR CLASSE</div>
+                        <div style="margin-top:auto; font-size:10px; color:var(--theme-light); text-align:right; font-weight:bold; padding-top: 10px;">CLIQUE PARA ESCOLHER CLASSE</div>
                     </div>
                 `;
             } else if (currentCategory === 'raca_hab') {
@@ -751,7 +765,7 @@
                         <div class="card-badges"><span class="badge-domain">${item.linhagem || 'Animalesco'}</span></div>
                         <div class="card-title">${item.titulo}</div>
                         <div class="card-desc">${item.desc || ''}</div>
-                        <div style="margin-top:auto; font-size:10px; color:var(--theme-light); text-align:right; font-weight:bold; padding-top: 10px;">CLIQUE PARA ADICIONAR RAÇA</div>
+                        <div style="margin-top:auto; font-size:10px; color:var(--theme-light); text-align:right; font-weight:bold; padding-top: 10px;">CLIQUE PARA ESCOLHER RAÇA</div>
                     </div>
                 `;
             } else {
@@ -777,12 +791,28 @@
 
         if (currentCategory === 'classe_hab') {
             update(ref(db, dbPath), { classe: item.titulo });
-            if (item.hab_nome) push(ref(db, `${dbPath}/habilidades/classe_hab`), { titulo: item.hab_nome, desc: item.hab_desc });
+            
+            // Cria o pacote de habilidades fixas para a classe, substituindo as antigas (usando "set")
+            let pacoteClasse = {};
+            pacoteClasse['desc_geral'] = { titulo: `Sobre: ${item.titulo}`, desc: item.desc || "Sem descrição." };
+            if (item.hab_nome) pacoteClasse['hab_1'] = { titulo: item.hab_nome, desc: item.hab_desc || "" };
+            if (item.hab2_nome) pacoteClasse['hab_2'] = { titulo: item.hab2_nome, desc: item.hab2_desc || "" };
+            if (item.hab3_nome) pacoteClasse['hab_3'] = { titulo: item.hab3_nome, desc: item.hab3_desc || "" };
+            
+            set(ref(db, `${dbPath}/habilidades/classe_hab`), pacoteClasse);
+            
         } else if (currentCategory === 'raca_hab') {
             update(ref(db, dbPath), { ancestralidade: item.titulo });
-            if (item.hab1_nome) push(ref(db, `${dbPath}/habilidades/raca_hab`), { titulo: item.hab1_nome, desc: item.hab1_desc });
-            if (item.hab2_nome) push(ref(db, `${dbPath}/habilidades/raca_hab`), { titulo: item.hab2_nome, desc: item.hab2_desc });
-            if (item.hab3_nome) push(ref(db, `${dbPath}/habilidades/raca_hab`), { titulo: item.hab3_nome, desc: item.hab3_desc });
+            
+            // Cria o pacote de habilidades fixas para a raça, substituindo as antigas (usando "set")
+            let pacoteRaca = {};
+            pacoteRaca['desc_geral'] = { titulo: `Sobre: ${item.titulo}`, desc: item.desc || "Sem descrição." };
+            if (item.hab1_nome) pacoteRaca['hab_1'] = { titulo: item.hab1_nome, desc: item.hab1_desc || "" };
+            if (item.hab2_nome) pacoteRaca['hab_2'] = { titulo: item.hab2_nome, desc: item.hab2_desc || "" };
+            if (item.hab3_nome) pacoteRaca['hab_3'] = { titulo: item.hab3_nome, desc: item.hab3_desc || "" };
+            
+            set(ref(db, `${dbPath}/habilidades/raca_hab`), pacoteRaca);
+            
         } else {
             let desc = item.desc;
             let data = { titulo: item.titulo, desc: desc };
@@ -799,30 +829,56 @@
 
     // --- MANIPULAÇÃO DE ITENS DA FICHA ---
     window.removeItem = (category, id) => { if(confirm("Apagar item?")) remove(ref(db, `${dbPath}/habilidades/${category}/${id}`)); };
-    window.toggleHab = (id) => { document.getElementById('body_' + id).classList.toggle('open'); };
+    window.toggleHab = (elementId) => { document.getElementById('body_' + elementId).classList.toggle('open'); };
     window.saveHab = (cat, id, field, val) => { update(ref(db, `${dbPath}/habilidades/${cat}/${id}`), { [field]: val }); };
 
     function renderHabs(category, data) { 
         let container = document.getElementById('list_' + category); 
-        if(!container) return; container.innerHTML = ""; 
-        if(!data) return; 
+        if(!container) return; 
+        container.innerHTML = ""; 
+        
+        if(!data) {
+            if (category === 'classe_hab') container.innerHTML = "<p style='font-size:11px; color:#555; text-align:center;'>Nenhuma classe selecionada. Escolha na aba 'Personagem'.</p>";
+            if (category === 'raca_hab') container.innerHTML = "<p style='font-size:11px; color:#555; text-align:center;'>Nenhuma raça selecionada. Escolha na aba 'Personagem'.</p>";
+            return; 
+        }
         
         Object.keys(data).forEach(id => { 
             const item = data[id]; 
+            const isFixed = (category === 'classe_hab' || category === 'raca_hab');
             const placeholderCusto = (category === 'loadout' || category === 'cofre') ? 'Custo/Dano' : (category === 'armas' ? 'Dano (ex: 1d10)' : 'Valor');
-            const showDiceInput = (category !== 'passivas' && category !== 'inventario' && category !== 'classe_hab' && category !== 'raca_hab');
+            const showDiceInput = (!isFixed && category !== 'passivas' && category !== 'inventario');
 
             const div = document.createElement('div'); 
             div.className = 'hab-item'; 
+            
+            // Se for fixo, exibe apenas como texto. Se for editável, exibe o input padrão.
+            let titleHTML = isFixed 
+                ? `<div class="hab-title" style="color:var(--theme-light); padding: 5px; cursor:pointer;" onclick="toggleHab('${category}_${id}')">${item.titulo || ''}</div>`
+                : `<input type="text" class="hab-title" value="${item.titulo || ''}" onchange="saveHab('${category}','${id}','titulo',this.value)" placeholder="Nome">`;
+                
+            let diceHTML = showDiceInput 
+                ? `<input type="text" class="hab-dice" value="${item.teste || ''}" onchange="saveHab('${category}','${id}','teste',this.value)" placeholder="${placeholderCusto}">` 
+                : '';
+                
+            let delBtnHTML = isFixed ? '' : `<button class="btn-del" onclick="removeItem('${category}','${id}')">✖</button>`;
+
+            let bodyContent = isFixed
+                ? `<div style="font-size:12px; color:#ccc; line-height:1.4; white-space:pre-wrap; padding: 5px;">${item.desc || ''}</div>`
+                : `<textarea onchange="saveHab('${category}','${id}','desc',this.value)" placeholder="Descrição e Regras...">${item.desc || ''}</textarea>`;
+
+            // Deixa a descrição principal sempre aberta por padrão
+            let isBodyOpen = (isFixed && id === 'desc_geral') ? 'open' : '';
+
             div.innerHTML = `
                 <div class="hab-header">
-                    <span class="hab-toggle" onclick="toggleHab('${id}')">▼</span>
-                    <input type="text" class="hab-title" value="${item.titulo || ''}" onchange="saveHab('${category}','${id}','titulo',this.value)" placeholder="Nome">
-                    ${showDiceInput ? `<input type="text" class="hab-dice" value="${item.teste || ''}" onchange="saveHab('${category}','${id}','teste',this.value)" placeholder="${placeholderCusto}">` : ''}
-                    <button class="btn-del" onclick="removeItem('${category}','${id}')">✖</button>
+                    <span class="hab-toggle" onclick="toggleHab('${category}_${id}')">▼</span>
+                    ${titleHTML}
+                    ${diceHTML}
+                    ${delBtnHTML}
                 </div>
-                <div class="hab-body" id="body_${id}">
-                    <textarea onchange="saveHab('${category}','${id}','desc',this.value)" placeholder="Descrição e Regras...">${item.desc || ''}</textarea>
+                <div class="hab-body ${isBodyOpen}" id="body_${category}_${id}">
+                    ${bodyContent}
                 </div>`; 
             container.appendChild(div); 
         }); 
