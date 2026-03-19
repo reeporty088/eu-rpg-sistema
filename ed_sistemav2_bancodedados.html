@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Banco de Dados V2 - Escória de Deus</title>
+    <style>
+        :root { 
+            --bg: #111111; 
+            --text: #ffffff;
+            --theme-main: #800000;
+            --theme-card: #2a0b10;
+            --theme-border: #5a1a1f;
+            --theme-input: #1a0508;
+            --theme-light: #ffaaaa;
+        }
+
+        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; padding: 20px; margin: 0; }
+        h1 { text-align: center; color: var(--theme-light); text-transform: uppercase; letter-spacing: 2px; text-shadow: 0 0 10px rgba(255,170,170,0.3); border-bottom: 2px solid var(--theme-main); padding-bottom: 10px; }
+        
+        .container { max-width: 1000px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+        
+        .card { background: var(--theme-card); border-radius: 12px; padding: 20px; border: 1px solid var(--theme-border); box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+        .header-label { background: var(--theme-main); text-align: center; border-radius: 8px; padding: 10px; margin-bottom: 15px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; border: 1px solid var(--theme-light); display: flex; justify-content: space-between; align-items: center; }
+        
+        .btn-add { background: #22aa22; color: white; border: 1px solid #55ff55; padding: 5px 15px; border-radius: 5px; font-weight: bold; cursor: pointer; transition: 0.3s; text-transform: uppercase; font-size: 12px; }
+        .btn-add:hover { background: #2ebd2e; box-shadow: 0 0 10px #55ff55; }
+        
+        /* Lista de Itens */
+        .item-row { display: flex; flex-direction: column; background: rgba(0,0,0,0.4); border: 1px solid var(--theme-border); border-radius: 8px; margin-bottom: 10px; overflow: hidden; }
+        .item-header { display: flex; justify-content: space-between; align-items: center; padding: 10px; background: rgba(255,255,255,0.05); cursor: pointer; }
+        .item-title { font-weight: bold; font-size: 16px; color: var(--theme-light); }
+        .item-controls { display: flex; gap: 10px; }
+        .btn-edit { background: #d4a017; color: #000; border: none; padding: 5px 10px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 11px; }
+        .btn-del { background: #c62828; color: #fff; border: none; padding: 5px 10px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 11px; }
+        .item-desc { padding: 15px; font-size: 13px; color: #ccc; display: none; border-top: 1px solid var(--theme-border); white-space: pre-wrap; line-height: 1.5; }
+        .item-desc.open { display: block; }
+
+        /* Modal Formulário */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 2000; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
+        .modal-overlay.open { display: flex; }
+        .modal-box { background: var(--theme-card); padding: 20px; border-radius: 12px; border: 2px solid var(--theme-main); width: 500px; max-width: 90%; }
+        
+        input, textarea { width: 100%; background: var(--theme-input); border: 1px solid #555; color: white; padding: 10px; border-radius: 8px; box-sizing: border-box; margin-bottom: 15px; font-family: inherit; }
+        label { font-size: 11px; color: var(--theme-light); font-weight: bold; text-transform: uppercase; display: block; margin-bottom: 5px; }
+        
+        .form-buttons { display: flex; gap: 10px; justify-content: flex-end; }
+        .btn-save { background: var(--theme-main); color: white; border: 1px solid var(--theme-light); padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; text-transform: uppercase; }
+        .btn-cancel { background: #444; color: white; border: 1px solid #777; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; text-transform: uppercase; }
+    </style>
+</head>
+<body>
+
+<h1>Compêndio do Mestre</h1>
+
+<div class="container">
+    <div class="card">
+        <div class="header-label">
+            <span>Vantagens Passivas</span>
+            <button class="btn-add" onclick="openForm('passivas')">+ Criar Passiva</button>
+        </div>
+        <p style="font-size: 12px; color: #aaa; margin-top: -5px; margin-bottom: 15px;">Itens listados aqui aparecerão automaticamente na lista de escolhas da ficha dos jogadores.</p>
+        
+        <div id="list_passivas">
+            <div style="text-align:center; padding: 20px; color:#666;">Carregando banco de dados...</div>
+        </div>
+    </div>
+    
+    <div class="card" style="opacity: 0.5;">
+        <div class="header-label">
+            <span>Cartas de Domínio (Em Breve)</span>
+        </div>
+        <p style="font-size: 12px; color: #aaa; text-align: center;">Área reservada para a próxima etapa.</p>
+    </div>
+</div>
+
+<div class="modal-overlay" id="modal-form">
+    <div class="modal-box">
+        <h3 id="form_title" style="margin-top:0; color:var(--theme-light); border-bottom:1px solid #555; padding-bottom:10px;">CRIAR VANTAGEM PASSIVA</h3>
+        
+        <input type="hidden" id="item_id">
+        <input type="hidden" id="item_category">
+        
+        <label>Nome da Vantagem</label>
+        <input type="text" id="item_titulo" placeholder="Ex: Acrobata">
+        
+        <label>Descrição e Regras</label>
+        <textarea id="item_desc" rows="6" placeholder="Descreva o que a vantagem faz..."></textarea>
+        
+        <div class="form-buttons">
+            <button class="btn-cancel" onclick="closeForm()">Cancelar</button>
+            <button class="btn-save" onclick="saveItem()">Salvar no Banco</button>
+        </div>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getDatabase, ref, onValue, update, push, remove, set } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyCvxxwfsonP5a45nbcz34cxYhXaWBZVhwQ",
+        authDomain: "ed-rpg---sistema-de-fichas.firebaseapp.com",
+        databaseURL: "https://ed-rpg---sistema-de-fichas-default-rtdb.firebaseio.com",
+        projectId: "ed-rpg---sistema-de-fichas",
+        storageBucket: "ed-rpg---sistema-de-fichas.firebasestorage.app",
+        messagingSenderId: "350999444010",
+        appId: "1:350999444010:web:d89f31d13e449b8fbfa153"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    
+    // Caminho base para o banco de dados geral
+    const dbPath = `banco_dados_v2`;
+
+    // LISTA DE VANTAGENS PADRÃO PARA AUTO-POVOAMENTO
+    const passivasPadrao = [
+        { titulo: "Ágil", desc: "Seus reflexos e coordenação motora são acima da média. Você recebe Ganho em testes de Habilidade envolvendo acrobacias, equilíbrio, fugas e ao rolar sua Iniciativa em combates." },
+        { titulo: "Forte", desc: "Você possui uma força física bruta impressionante. Você recebe Ganho em testes de Poder que envolvam puro esforço físico, como levantar peso, arrombar portas ou segurar estruturas pesadas (não se aplica a testes de ataque)." },
+        { titulo: "Vigoroso", desc: "Seu corpo é uma máquina resistente. Você recebe Ganho em testes de Resistência envolvendo saúde física, como resistir a fadiga extrema, doenças, venenos e asfixia." },
+        { titulo: "Gênio", desc: "Você tem um cérebro notável e uma memória afiada. Você recebe Ganho em testes de Habilidade para resolver problemas lógicos, decifrar códigos, lembrar de informações obscuras ou investigar cenas de crime." },
+        { titulo: "Resoluto", desc: "Sua força de vontade e foco são inabaláveis. Você recebe Ganho em testes de Resistência para perceber fraudes e resistir a ilusões, encantos, controle mental e intimidação." },
+        { titulo: "Carismático", desc: "Você tem um magnetismo natural e facilidade para influenciar pessoas de forma amigável. Você recebe Ganho em testes sociais (usando Habilidade ou Poder, a depender da abordagem) para persuadir, seduzir, negociar ou inspirar NPCs." },
+        { titulo: "Intimidador", desc: "Diferente do Carismático, sua presença impõe medo e respeito. Você recebe Ganho em testes sociais de Poder para assustar, coagir, interrogar ou ameaçar NPCs." },
+        { titulo: "Sentido Aguçado", desc: "Escolha um sentido específico (Visão, Audição, Faro ou Tato). Seu sentido escolhido é quase sobrenatural. Você sempre tem Ganho em testes de Habilidade (Percepção) que dependam exclusivamente desse sentido." },
+        { titulo: "Arena / Terreno Familiar", desc: "Você é um mestre em sobreviver em um tipo de ambiente. Escolha um bioma (ex: Cidades/Ruas, Subterrâneo/Esgotos, Florestas, ou Água). Você recebe Ganho em testes de movimentação, sobrevivência e rastreio enquanto estiver nesse ambiente." },
+        { titulo: "Famoso", desc: "Seu nome e seus feitos (ou os da sua família) precedem você. Quando você interage com um NPC que te reconhece (o Mestre decide se o NPC sabe quem você é), você pode gastar 1 Ponto de Esperança para que ele o trate com total prioridade e hospitalidade, garantindo Ganho no seu próximo teste social com ele." },
+        { titulo: "Ajudante / Mascote", desc: "Você possui um companheiro leal (um animal de estimação, um escudeiro ou um pequeno construto). Ele não rola dados próprios em combate, mas uma vez por cena, se ele te ajudar em uma tarefa que faça sentido narrativo, você pode gastar 1 Ponto de Esperança para receber Ganho no seu teste." },
+        { titulo: "Patrono", desc: "Você serve ou é apadrinhado por uma organização poderosa (uma guilda, uma casa nobre ou um culto). Você tem Ganho em testes sociais ao interagir com membros dessa facção. Além disso, uma vez por aventura, você pode solicitar um favor significativo (abrigo seguro, suprimentos extras ou informações sigilosas) sem custo." },
+        { titulo: "Inimigo Predileto", desc: "Você passou a vida estudando ou caçando um tipo específico de criatura (ex: Cultistas, Demônios Menores, Mortos-Vivos, Aberrações). Você recebe Ganho constante em testes de Habilidade para rastrear, identificar fraquezas ou lembrar de informações sobre esse tipo de inimigo." },
+        { titulo: "Mentor", desc: "Mesmo que seu mestre não esteja mais por perto, os ensinamentos dele ecoam na sua mente. Uma vez por sessão, quando você falhar em um teste crucial relacionado ao seu treinamento, você pode se lembrar de uma lição do passado e rolar novamente um dos seus d12, devendo ficar com o novo resultado." },
+        { titulo: "Inofensivo", desc: "Você não parece ameaçador. Pode ser por conta do seu tamanho, da sua postura ou do seu rosto angelical. Você recebe Ganho em testes de Habilidade para passar despercebido em multidões ou para convencer guardas e NPCs de que você é apenas uma vítima indefesa. Em combate, inimigos burros ou desatentos geralmente focarão nos seus aliados mais ameaçadores primeiro." },
+        { titulo: "Riqueza", desc: "Você vem de berço de ouro ou acumulou uma pequena fortuna. Você nunca precisa se preocupar em pagar por hospedagens comuns, refeições ou propinas baratas. Além disso, uma vez por sessão, você pode gastar 1 Ponto de Esperança para tirar do bolso um item mundano útil (uma corda, uma poção simples, uma chave mestra) dizendo que \"por sorte, eu comprei isso mais cedo\"." },
+        { titulo: "Obstinado", desc: "A sua força de vontade supera os limites do seu corpo físico. Quando você estiver sem Pontos de Esperança e precisar desesperadamente de um sucesso, você pode marcar 2 Pontos de Estresse na sua ficha para gerar imediatamente 1 Ponto de Esperança e usá-lo na sua próxima ação." },
+        { titulo: "Torcida / Exibicionista", desc: "Você adora os holofotes e age melhor quando tem público. Quando você realiza uma ação dramática ou arriscada na frente de outras pessoas (inclusive seus aliados), você pode gastar 1 Ponto de Esperança para inspirar o grupo, concedendo Ganho no próximo teste de um aliado que tenha visto a sua proeza." },
+        { titulo: "Devoto", desc: "Você segue um código de conduta restrito ou uma crença ferrenha. Você recebe Ganho em testes de Resistência para evitar ser forçado (por magia ou intimidação) a quebrar seus votos. Além disso, sempre que você se colocar em grande risco apenas para honrar o seu código, o Mestre deve te recompensar com 1 Ponto de Esperança." },
+        { titulo: "Intuição (Sexto Sentido)", desc: "Você tem um \"faro\" para encrenca e más intenções. Você recebe Ganho automático em testes de Resistência ou Habilidade para detectar mentiras, perceber quando alguém está escondendo as verdadeiras emoções, ou para não ser surpreendido por emboscadas no início de um combate." },
+        { titulo: "Adaptador (Mestre da Improvisação)", desc: "Você sabe usar qualquer coisa como arma e adapta-se facilmente ao caos. Não sofre Perda (Desvantagem) ao lutar com armas improvisadas (cadeiras, garrafas, pedras). Além disso, pode declarar que o seu ataque causará um tipo de dano diferente (passar de Corte para Impacto, por exemplo) para explorar a fraqueza de um inimigo." },
+        { titulo: "Elo Mental", desc: "Você possui uma ligação mística ou empática muito forte com outro personagem do grupo (escolham entre os dois). Vocês podem comunicar-se telepaticamente desde que estejam no mesmo ambiente. Uma vez por cena, se um de vocês estiver em perigo, o outro pode gastar 1 Ponto de Esperança para lhe conceder Ganho num teste de Defesa, mesmo estando distante." },
+        { titulo: "Maestria (Especialista)", desc: "Escolha uma área de conhecimento ou aptidão muito específica (ex: Furtividade, História do Ninho Coagulante, Armadilhas, Medicina). Sempre que fizer um teste de Habilidade ou Poder que se encaixe perfeitamente nessa especialidade, recebe Ganho automático." },
+        { titulo: "Sentido Cego (Radar/Infravisão)", desc: "Você não depende apenas dos seus olhos normais para lutar. Treino ou mutação deram-lhe um \"radar\" especial. Você não sofre Perda ao atacar ou defender no escuro total, contra inimigos invisíveis, ou caso fique afetado pela condição Cegueira." },
+        { titulo: "Instrutor / Tático", desc: "Você sabe liderar e orientar no calor da batalha. Sempre que usar a sua ação para \"Ajudar\" um aliado (gastando 1 Ponto de Esperança para lhe dar Ganho), o seu aliado não só rola com Vantagem, como também pode adicionar +1d4 ao resultado final do teste dele." },
+        { titulo: "Imunidade Condicional", desc: "O seu corpo ou Arcana repulsa um tipo específico de perigo. Escolha um: Frio Extremo, Fogo, Ácidos ou Venenos/Doenças. Você nunca sofre danos passivos ou penalidades mundanas resultantes do ambiente escolhido, e tem Ganho automático para resistir a feitiços e ataques que usem esse elemento." },
+        { titulo: "Sobrevivente Nato (Implacável)", desc: "Você recusa-se a morrer facilmente. Uma vez por aventura, se for atingido por um ataque que o deixaria com 0 Pontos de Vida (Derrotado), pode gastar 3 Pontos de Estresse num grito de determinação. Em vez de cair, você fica com exatamente 1 Ponto de Vida e pode continuar a lutar." },
+        { titulo: "Poliglota Místico", desc: "Você tem uma facilidade absurda com a comunicação. Compreende e consegue falar quase qualquer idioma de Eko, além de ser capaz de ler runas e símbolos arcanos antigos sem precisar de testes difíceis. Recebe Ganho em testes sociais ao lidar com culturas estrangeiras, isoladas ou entidades de outros planos." },
+        { titulo: "Sorte Audaz", desc: "O destino sorri-lhe (ou o Arcana dobra-se à sua vontade). Uma vez por sessão, após rolar os dados (2d12) para um teste de Habilidade, Poder ou Resistência e não gostar do resultado, pode gastar 2 Pontos de Esperança para rolar os dados novamente. Você é obrigado a aceitar o segundo resultado, mesmo que seja pior." },
+        { titulo: "Mente Blindada", desc: "Os seus pensamentos são um cofre trancado. Você é completamente imune a habilidades telepáticas que tentem ler a sua mente sem o seu consentimento. Além disso, recebe Ganho em testes de Resistência contra habilidades que tentem provocar Fúria, Confusão ou roubar as suas memórias." }
+    ];
+
+    let globalData = { passivas: {} };
+
+    // Escuta as alterações no banco de dados
+    onValue(ref(db, dbPath), (snapshot) => {
+        const dados = snapshot.val();
+        
+        // SISTEMA DE AUTO-POVOAMENTO: Se não existir a pasta 'passivas' ou ela estiver vazia, cria todas as 30!
+        if (!dados || !dados.passivas) {
+            console.log("Banco de Passivas vazio. Iniciando Auto-Povoamento...");
+            let updates = {};
+            passivasPadrao.forEach((item, index) => {
+                // Cria um ID único baseado no nome e índice para evitar bugs
+                let newId = `passiva_base_${index}`;
+                updates[`${dbPath}/passivas/${newId}`] = {
+                    titulo: item.titulo,
+                    desc: item.desc
+                };
+            });
+            update(ref(db), updates);
+            return; // Interrompe aqui, pois o update vai acionar o onValue novamente
+        }
+
+        globalData = dados;
+        renderList('passivas', globalData.passivas);
+    });
+
+    function renderList(category, dataObj) {
+        const container = document.getElementById(`list_${category}`);
+        container.innerHTML = "";
+        
+        if (!dataObj || Object.keys(dataObj).length === 0) {
+            container.innerHTML = "<div style='text-align:center; padding: 20px; color:#666;'>Nenhum item cadastrado.</div>";
+            return;
+        }
+
+        // Transforma o objeto em Array e ordena em ordem alfabética pelo Título
+        let itensArray = Object.keys(dataObj).map(key => ({ id: key, ...dataObj[key] }));
+        itensArray.sort((a, b) => a.titulo.localeCompare(b.titulo));
+
+        itensArray.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'item-row';
+            div.innerHTML = `
+                <div class="item-header" onclick="toggleDesc('${item.id}')">
+                    <div class="item-title">${item.titulo}</div>
+                    <div class="item-controls">
+                        <button class="btn-edit" onclick="event.stopPropagation(); editItem('${category}', '${item.id}')">✏️ Editar</button>
+                        <button class="btn-del" onclick="event.stopPropagation(); deleteItem('${category}', '${item.id}')">🗑️</button>
+                    </div>
+                </div>
+                <div class="item-desc" id="desc_${item.id}">${item.desc}</div>
+            `;
+            container.appendChild(div);
+        });
+    }
+
+    // Funções de Interface
+    window.toggleDesc = (id) => {
+        document.getElementById(`desc_${id}`).classList.toggle('open');
+    };
+
+    window.openForm = (category, id = null) => {
+        document.getElementById('item_category').value = category;
+        document.getElementById('item_id').value = id || "";
+        
+        if (id && globalData[category] && globalData[category][id]) {
+            document.getElementById('form_title').innerText = "EDITAR VANTAGEM";
+            document.getElementById('item_titulo').value = globalData[category][id].titulo || "";
+            document.getElementById('item_desc').value = globalData[category][id].desc || "";
+        } else {
+            document.getElementById('form_title').innerText = "CRIAR NOVA VANTAGEM";
+            document.getElementById('item_titulo').value = "";
+            document.getElementById('item_desc').value = "";
+        }
+        
+        document.getElementById('modal-form').classList.add('open');
+    };
+
+    window.closeForm = () => {
+        document.getElementById('modal-form').classList.remove('open');
+    };
+
+    window.saveItem = () => {
+        const category = document.getElementById('item_category').value;
+        const id = document.getElementById('item_id').value;
+        const titulo = document.getElementById('item_titulo').value.trim();
+        const desc = document.getElementById('item_desc').value.trim();
+
+        if (!titulo) { alert("O nome da vantagem não pode ficar em branco."); return; }
+
+        const itemData = { titulo, desc };
+
+        if (id) {
+            // Atualiza existente
+            update(ref(db, `${dbPath}/${category}/${id}`), itemData).then(closeForm);
+        } else {
+            // Cria novo
+            push(ref(db, `${dbPath}/${category}`), itemData).then(closeForm);
+        }
+    };
+
+    window.deleteItem = (category, id) => {
+        if (confirm("Tem certeza que deseja apagar esta Vantagem do Banco de Dados? Ela sumirá das opções dos jogadores.")) {
+            remove(ref(db, `${dbPath}/${category}/${id}`));
+        }
+    };
+</script>
+</body>
+</html>
