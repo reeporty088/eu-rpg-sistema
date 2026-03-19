@@ -16,35 +16,57 @@
         }
 
         body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; padding: 20px; margin: 0; }
-        h1 { text-align: center; color: var(--theme-light); text-transform: uppercase; letter-spacing: 2px; text-shadow: 0 0 10px rgba(255,170,170,0.3); border-bottom: 2px solid var(--theme-main); padding-bottom: 10px; }
+        h1 { text-align: center; color: var(--theme-light); text-transform: uppercase; letter-spacing: 2px; text-shadow: 0 0 10px rgba(255,170,170,0.3); border-bottom: 2px solid var(--theme-main); padding-bottom: 10px; margin-bottom: 30px; }
         
-        .container { max-width: 1000px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; display: flex; flex-direction: column; gap: 30px; }
         
-        .card { background: var(--theme-card); border-radius: 12px; padding: 20px; border: 1px solid var(--theme-border); box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
-        .header-label { background: var(--theme-main); text-align: center; border-radius: 8px; padding: 10px; margin-bottom: 15px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; border: 1px solid var(--theme-light); display: flex; justify-content: space-between; align-items: center; }
+        .card { background: var(--theme-card); border-radius: 12px; padding: 20px; border: 1px solid var(--theme-border); box-shadow: 0 4px 15px rgba(0,0,0,0.6); }
+        .header-label { background: var(--theme-main); text-align: center; border-radius: 8px; padding: 10px 15px; margin-bottom: 15px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; border: 1px solid var(--theme-light); display: flex; justify-content: space-between; align-items: center; }
         
-        .btn-add { background: #22aa22; color: white; border: 1px solid #55ff55; padding: 5px 15px; border-radius: 5px; font-weight: bold; cursor: pointer; transition: 0.3s; text-transform: uppercase; font-size: 12px; }
+        .btn-add { background: #22aa22; color: white; border: 1px solid #55ff55; padding: 8px 15px; border-radius: 5px; font-weight: bold; cursor: pointer; transition: 0.3s; text-transform: uppercase; font-size: 12px; }
         .btn-add:hover { background: #2ebd2e; box-shadow: 0 0 10px #55ff55; }
         
-        /* Lista de Itens */
+        /* --- LISTA DE VANTAGENS PASSIVAS --- */
         .item-row { display: flex; flex-direction: column; background: rgba(0,0,0,0.4); border: 1px solid var(--theme-border); border-radius: 8px; margin-bottom: 10px; overflow: hidden; }
         .item-header { display: flex; justify-content: space-between; align-items: center; padding: 10px; background: rgba(255,255,255,0.05); cursor: pointer; }
         .item-title { font-weight: bold; font-size: 16px; color: var(--theme-light); }
         .item-controls { display: flex; gap: 10px; }
-        .btn-edit { background: #d4a017; color: #000; border: none; padding: 5px 10px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 11px; }
-        .btn-del { background: #c62828; color: #fff; border: none; padding: 5px 10px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 11px; }
+        .btn-edit { background: #d4a017; color: #000; border: none; padding: 5px 10px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 11px; text-transform: uppercase; }
+        .btn-del { background: #c62828; color: #fff; border: none; padding: 5px 10px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 11px; text-transform: uppercase; }
         .item-desc { padding: 15px; font-size: 13px; color: #ccc; display: none; border-top: 1px solid var(--theme-border); white-space: pre-wrap; line-height: 1.5; }
         .item-desc.open { display: block; }
 
-        /* Modal Formulário */
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 2000; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
-        .modal-overlay.open { display: flex; }
-        .modal-box { background: var(--theme-card); padding: 20px; border-radius: 12px; border: 2px solid var(--theme-main); width: 500px; max-width: 90%; }
+        /* --- VISUAL DOS CARDS DE DOMÍNIO --- */
+        .filter-bar { display: flex; gap: 10px; margin-bottom: 15px; align-items: center; background: rgba(0,0,0,0.5); padding: 10px; border-radius: 8px; border: 1px solid #444; }
+        .filter-bar select { width: auto; flex-grow: 1; margin: 0; }
         
-        input, textarea { width: 100%; background: var(--theme-input); border: 1px solid #555; color: white; padding: 10px; border-radius: 8px; box-sizing: border-box; margin-bottom: 15px; font-family: inherit; }
+        .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
+        .skill-card { background: linear-gradient(145deg, #1a0508 0%, #0d0204 100%); border: 1px solid var(--theme-border); border-radius: 10px; padding: 15px; display: flex; flex-direction: column; position: relative; box-shadow: 0 5px 10px rgba(0,0,0,0.5); transition: 0.3s; }
+        .skill-card:hover { border-color: var(--theme-light); transform: translateY(-3px); }
+        
+        .card-badges { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 10px; font-weight: bold; text-transform: uppercase; }
+        .badge-domain { background: var(--theme-main); color: white; padding: 3px 8px; border-radius: 4px; border: 1px solid var(--theme-light); }
+        .badge-level { background: #d4a017; color: black; padding: 3px 8px; border-radius: 4px; }
+        
+        .card-title { font-size: 18px; font-weight: bold; color: var(--theme-light); margin-bottom: 8px; border-bottom: 1px solid #444; padding-bottom: 5px; }
+        
+        .card-meta { font-size: 11px; color: #aaa; margin-bottom: 10px; line-height: 1.6; background: rgba(255,255,255,0.05); padding: 8px; border-radius: 6px; }
+        .card-meta strong { color: #ddd; }
+        
+        .card-desc { font-size: 13px; color: #ccc; line-height: 1.5; flex-grow: 1; white-space: pre-wrap; margin-bottom: 15px; }
+        
+        .card-actions { display: flex; justify-content: flex-end; gap: 5px; border-top: 1px solid #333; padding-top: 10px; }
+
+        /* Modais */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 2000; justify-content: center; align-items: center; backdrop-filter: blur(5px); overflow-y: auto; padding: 20px; box-sizing: border-box; }
+        .modal-overlay.open { display: flex; }
+        .modal-box { background: var(--theme-card); padding: 20px; border-radius: 12px; border: 2px solid var(--theme-main); width: 600px; max-width: 100%; margin: auto; }
+        
+        input, textarea, select { width: 100%; background: var(--theme-input); border: 1px solid #555; color: white; padding: 10px; border-radius: 8px; box-sizing: border-box; margin-bottom: 15px; font-family: inherit; }
         label { font-size: 11px; color: var(--theme-light); font-weight: bold; text-transform: uppercase; display: block; margin-bottom: 5px; }
         
-        .form-buttons { display: flex; gap: 10px; justify-content: flex-end; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .form-buttons { display: flex; gap: 10px; justify-content: flex-end; margin-top: 10px; }
         .btn-save { background: var(--theme-main); color: white; border: 1px solid var(--theme-light); padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; text-transform: uppercase; }
         .btn-cancel { background: #444; color: white; border: 1px solid #777; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; text-transform: uppercase; }
     </style>
@@ -54,49 +76,116 @@
 <h1>Compêndio do Mestre</h1>
 
 <div class="container">
+    
     <div class="card">
         <div class="header-label">
-            <span>Vantagens Passivas</span>
-            <button class="btn-add" onclick="openForm('passivas')">+ Criar Passiva</button>
+            <span>Cartas de Domínio</span>
+            <button class="btn-add" onclick="openCartaForm()">+ Criar Carta</button>
         </div>
-        <p style="font-size: 12px; color: #aaa; margin-top: -5px; margin-bottom: 15px;">Itens listados aqui aparecerão automaticamente na lista de escolhas da ficha dos jogadores.</p>
         
-        <div id="list_passivas">
-            <div style="text-align:center; padding: 20px; color:#666;">Carregando banco de dados...</div>
+        <div class="filter-bar">
+            <label style="margin:0;">Filtrar por Domínio:</label>
+            <select id="filter_dominio" onchange="applyFilter()">
+                <option value="Todos">Todos os Domínios</option>
+                <option value="Domínio Arcano">Domínio Arcano</option>
+                <option value="Domínio da Bravura">Domínio da Bravura</option>
+                <option value="Domínio do Códice">Domínio do Códice</option>
+                <option value="Domínio do Esplendor">Domínio do Esplendor</option>
+                <option value="Domínio da Graça">Domínio da Graça</option>
+                <option value="Domínio da Lâmina">Domínio da Lâmina</option>
+                <option value="Domínio da Meia-Noite">Domínio da Meia-Noite</option>
+                <option value="Domínio do Osso">Domínio do Osso</option>
+                <option value="Domínio do Sábio">Domínio do Sábio</option>
+            </select>
+        </div>
+
+        <div class="cards-grid" id="list_cartas">
+            <div style="grid-column: 1 / -1; text-align:center; padding: 20px; color:#666;">Carregando Cartas do Banco de Dados...</div>
         </div>
     </div>
-    
-    <div class="card" style="opacity: 0.5;">
-        <div class="header-label">
-            <span>Cartas de Domínio (Em Breve)</span>
+
+    <div class="card">
+        <div class="header-label" style="background: #222; border-color: #555;">
+            <span style="color: #ccc;">Vantagens Passivas</span>
+            <button class="btn-add" style="background: #444; border-color: #777;" onclick="openPassivaForm()">+ Criar Passiva</button>
         </div>
-        <p style="font-size: 12px; color: #aaa; text-align: center;">Área reservada para a próxima etapa.</p>
+        <div id="list_passivas"></div>
+    </div>
+
+</div>
+
+<div class="modal-overlay" id="modal-passiva">
+    <div class="modal-box">
+        <h3 id="form_passiva_title" style="margin-top:0; color:var(--theme-light); border-bottom:1px solid #555; padding-bottom:10px;">CRIAR VANTAGEM PASSIVA</h3>
+        <input type="hidden" id="passiva_id">
+        <label>Nome da Vantagem</label>
+        <input type="text" id="passiva_titulo">
+        <label>Descrição e Regras</label>
+        <textarea id="passiva_desc" rows="6"></textarea>
+        <div class="form-buttons">
+            <button class="btn-cancel" onclick="document.getElementById('modal-passiva').classList.remove('open')">Cancelar</button>
+            <button class="btn-save" onclick="savePassiva()">Salvar no Banco</button>
+        </div>
     </div>
 </div>
 
-<div class="modal-overlay" id="modal-form">
+<div class="modal-overlay" id="modal-carta">
     <div class="modal-box">
-        <h3 id="form_title" style="margin-top:0; color:var(--theme-light); border-bottom:1px solid #555; padding-bottom:10px;">CRIAR VANTAGEM PASSIVA</h3>
+        <h3 id="form_carta_title" style="margin-top:0; color:var(--theme-light); border-bottom:1px solid #555; padding-bottom:10px;">CRIAR CARTA DE DOMÍNIO</h3>
+        <input type="hidden" id="carta_id">
         
-        <input type="hidden" id="item_id">
-        <input type="hidden" id="item_category">
+        <label>Nome da Carta / Técnica</label>
+        <input type="text" id="carta_titulo" placeholder="Ex: Bola de Fogo">
         
-        <label>Nome da Vantagem</label>
-        <input type="text" id="item_titulo" placeholder="Ex: Acrobata">
-        
-        <label>Descrição e Regras</label>
-        <textarea id="item_desc" rows="6" placeholder="Descreva o que a vantagem faz..."></textarea>
+        <div class="form-row">
+            <div>
+                <label>Domínio</label>
+                <select id="carta_dominio">
+                    <option value="Domínio Arcano">Domínio Arcano</option>
+                    <option value="Domínio da Bravura">Domínio da Bravura</option>
+                    <option value="Domínio do Códice">Domínio do Códice</option>
+                    <option value="Domínio do Esplendor">Domínio do Esplendor</option>
+                    <option value="Domínio da Graça">Domínio da Graça</option>
+                    <option value="Domínio da Lâmina">Domínio da Lâmina</option>
+                    <option value="Domínio da Meia-Noite">Domínio da Meia-Noite</option>
+                    <option value="Domínio do Osso">Domínio do Osso</option>
+                    <option value="Domínio do Sábio">Domínio do Sábio</option>
+                </select>
+            </div>
+            <div>
+                <label>Nível</label>
+                <select id="carta_nivel">
+                    <option value="1">Nível 1</option><option value="2">Nível 2</option>
+                    <option value="3">Nível 3</option><option value="4">Nível 4</option>
+                    <option value="5">Nível 5</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div>
+                <label>Tipo</label>
+                <input type="text" id="carta_tipo" placeholder="Ex: Magia Destrutiva">
+            </div>
+            <div>
+                <label>Custo</label>
+                <input type="text" id="carta_custo" placeholder="Ex: 2 Pontos de Estresse">
+            </div>
+        </div>
+
+        <label>Efeito (Descrição Completa)</label>
+        <textarea id="carta_desc" rows="5" placeholder="Descreva o que acontece ao usar a carta..."></textarea>
         
         <div class="form-buttons">
-            <button class="btn-cancel" onclick="closeForm()">Cancelar</button>
-            <button class="btn-save" onclick="saveItem()">Salvar no Banco</button>
+            <button class="btn-cancel" onclick="document.getElementById('modal-carta').classList.remove('open')">Cancelar</button>
+            <button class="btn-save" onclick="saveCarta()">Salvar no Banco</button>
         </div>
     </div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getDatabase, ref, onValue, update, push, remove, set } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+    import { getDatabase, ref, onValue, update, push, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyCvxxwfsonP5a45nbcz34cxYhXaWBZVhwQ",
@@ -110,80 +199,189 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
-    
-    // Caminho base para o banco de dados geral
     const dbPath = `banco_dados_v2`;
 
-    // LISTA DE VANTAGENS PADRÃO PARA AUTO-POVOAMENTO
+    let globalData = { passivas: {}, cartas: {} };
+    let currentFilter = "Todos";
+
+    // ==========================================
+    // DADOS PARA AUTO-POVOAMENTO
+    // ==========================================
     const passivasPadrao = [
-        { titulo: "Ágil", desc: "Seus reflexos e coordenação motora são acima da média. Você recebe Ganho em testes de Habilidade envolvendo acrobacias, equilíbrio, fugas e ao rolar sua Iniciativa em combates." },
-        { titulo: "Forte", desc: "Você possui uma força física bruta impressionante. Você recebe Ganho em testes de Poder que envolvam puro esforço físico, como levantar peso, arrombar portas ou segurar estruturas pesadas (não se aplica a testes de ataque)." },
-        { titulo: "Vigoroso", desc: "Seu corpo é uma máquina resistente. Você recebe Ganho em testes de Resistência envolvendo saúde física, como resistir a fadiga extrema, doenças, venenos e asfixia." },
-        { titulo: "Gênio", desc: "Você tem um cérebro notável e uma memória afiada. Você recebe Ganho em testes de Habilidade para resolver problemas lógicos, decifrar códigos, lembrar de informações obscuras ou investigar cenas de crime." },
-        { titulo: "Resoluto", desc: "Sua força de vontade e foco são inabaláveis. Você recebe Ganho em testes de Resistência para perceber fraudes e resistir a ilusões, encantos, controle mental e intimidação." },
-        { titulo: "Carismático", desc: "Você tem um magnetismo natural e facilidade para influenciar pessoas de forma amigável. Você recebe Ganho em testes sociais (usando Habilidade ou Poder, a depender da abordagem) para persuadir, seduzir, negociar ou inspirar NPCs." },
-        { titulo: "Intimidador", desc: "Diferente do Carismático, sua presença impõe medo e respeito. Você recebe Ganho em testes sociais de Poder para assustar, coagir, interrogar ou ameaçar NPCs." },
-        { titulo: "Sentido Aguçado", desc: "Escolha um sentido específico (Visão, Audição, Faro ou Tato). Seu sentido escolhido é quase sobrenatural. Você sempre tem Ganho em testes de Habilidade (Percepção) que dependam exclusivamente desse sentido." },
-        { titulo: "Arena / Terreno Familiar", desc: "Você é um mestre em sobreviver em um tipo de ambiente. Escolha um bioma (ex: Cidades/Ruas, Subterrâneo/Esgotos, Florestas, ou Água). Você recebe Ganho em testes de movimentação, sobrevivência e rastreio enquanto estiver nesse ambiente." },
-        { titulo: "Famoso", desc: "Seu nome e seus feitos (ou os da sua família) precedem você. Quando você interage com um NPC que te reconhece (o Mestre decide se o NPC sabe quem você é), você pode gastar 1 Ponto de Esperança para que ele o trate com total prioridade e hospitalidade, garantindo Ganho no seu próximo teste social com ele." },
-        { titulo: "Ajudante / Mascote", desc: "Você possui um companheiro leal (um animal de estimação, um escudeiro ou um pequeno construto). Ele não rola dados próprios em combate, mas uma vez por cena, se ele te ajudar em uma tarefa que faça sentido narrativo, você pode gastar 1 Ponto de Esperança para receber Ganho no seu teste." },
-        { titulo: "Patrono", desc: "Você serve ou é apadrinhado por uma organização poderosa (uma guilda, uma casa nobre ou um culto). Você tem Ganho em testes sociais ao interagir com membros dessa facção. Além disso, uma vez por aventura, você pode solicitar um favor significativo (abrigo seguro, suprimentos extras ou informações sigilosas) sem custo." },
-        { titulo: "Inimigo Predileto", desc: "Você passou a vida estudando ou caçando um tipo específico de criatura (ex: Cultistas, Demônios Menores, Mortos-Vivos, Aberrações). Você recebe Ganho constante em testes de Habilidade para rastrear, identificar fraquezas ou lembrar de informações sobre esse tipo de inimigo." },
-        { titulo: "Mentor", desc: "Mesmo que seu mestre não esteja mais por perto, os ensinamentos dele ecoam na sua mente. Uma vez por sessão, quando você falhar em um teste crucial relacionado ao seu treinamento, você pode se lembrar de uma lição do passado e rolar novamente um dos seus d12, devendo ficar com o novo resultado." },
-        { titulo: "Inofensivo", desc: "Você não parece ameaçador. Pode ser por conta do seu tamanho, da sua postura ou do seu rosto angelical. Você recebe Ganho em testes de Habilidade para passar despercebido em multidões ou para convencer guardas e NPCs de que você é apenas uma vítima indefesa. Em combate, inimigos burros ou desatentos geralmente focarão nos seus aliados mais ameaçadores primeiro." },
-        { titulo: "Riqueza", desc: "Você vem de berço de ouro ou acumulou uma pequena fortuna. Você nunca precisa se preocupar em pagar por hospedagens comuns, refeições ou propinas baratas. Além disso, uma vez por sessão, você pode gastar 1 Ponto de Esperança para tirar do bolso um item mundano útil (uma corda, uma poção simples, uma chave mestra) dizendo que \"por sorte, eu comprei isso mais cedo\"." },
-        { titulo: "Obstinado", desc: "A sua força de vontade supera os limites do seu corpo físico. Quando você estiver sem Pontos de Esperança e precisar desesperadamente de um sucesso, você pode marcar 2 Pontos de Estresse na sua ficha para gerar imediatamente 1 Ponto de Esperança e usá-lo na sua próxima ação." },
-        { titulo: "Torcida / Exibicionista", desc: "Você adora os holofotes e age melhor quando tem público. Quando você realiza uma ação dramática ou arriscada na frente de outras pessoas (inclusive seus aliados), você pode gastar 1 Ponto de Esperança para inspirar o grupo, concedendo Ganho no próximo teste de um aliado que tenha visto a sua proeza." },
-        { titulo: "Devoto", desc: "Você segue um código de conduta restrito ou uma crença ferrenha. Você recebe Ganho em testes de Resistência para evitar ser forçado (por magia ou intimidação) a quebrar seus votos. Além disso, sempre que você se colocar em grande risco apenas para honrar o seu código, o Mestre deve te recompensar com 1 Ponto de Esperança." },
-        { titulo: "Intuição (Sexto Sentido)", desc: "Você tem um \"faro\" para encrenca e más intenções. Você recebe Ganho automático em testes de Resistência ou Habilidade para detectar mentiras, perceber quando alguém está escondendo as verdadeiras emoções, ou para não ser surpreendido por emboscadas no início de um combate." },
-        { titulo: "Adaptador (Mestre da Improvisação)", desc: "Você sabe usar qualquer coisa como arma e adapta-se facilmente ao caos. Não sofre Perda (Desvantagem) ao lutar com armas improvisadas (cadeiras, garrafas, pedras). Além disso, pode declarar que o seu ataque causará um tipo de dano diferente (passar de Corte para Impacto, por exemplo) para explorar a fraqueza de um inimigo." },
-        { titulo: "Elo Mental", desc: "Você possui uma ligação mística ou empática muito forte com outro personagem do grupo (escolham entre os dois). Vocês podem comunicar-se telepaticamente desde que estejam no mesmo ambiente. Uma vez por cena, se um de vocês estiver em perigo, o outro pode gastar 1 Ponto de Esperança para lhe conceder Ganho num teste de Defesa, mesmo estando distante." },
-        { titulo: "Maestria (Especialista)", desc: "Escolha uma área de conhecimento ou aptidão muito específica (ex: Furtividade, História do Ninho Coagulante, Armadilhas, Medicina). Sempre que fizer um teste de Habilidade ou Poder que se encaixe perfeitamente nessa especialidade, recebe Ganho automático." },
-        { titulo: "Sentido Cego (Radar/Infravisão)", desc: "Você não depende apenas dos seus olhos normais para lutar. Treino ou mutação deram-lhe um \"radar\" especial. Você não sofre Perda ao atacar ou defender no escuro total, contra inimigos invisíveis, ou caso fique afetado pela condição Cegueira." },
-        { titulo: "Instrutor / Tático", desc: "Você sabe liderar e orientar no calor da batalha. Sempre que usar a sua ação para \"Ajudar\" um aliado (gastando 1 Ponto de Esperança para lhe dar Ganho), o seu aliado não só rola com Vantagem, como também pode adicionar +1d4 ao resultado final do teste dele." },
-        { titulo: "Imunidade Condicional", desc: "O seu corpo ou Arcana repulsa um tipo específico de perigo. Escolha um: Frio Extremo, Fogo, Ácidos ou Venenos/Doenças. Você nunca sofre danos passivos ou penalidades mundanas resultantes do ambiente escolhido, e tem Ganho automático para resistir a feitiços e ataques que usem esse elemento." },
-        { titulo: "Sobrevivente Nato (Implacável)", desc: "Você recusa-se a morrer facilmente. Uma vez por aventura, se for atingido por um ataque que o deixaria com 0 Pontos de Vida (Derrotado), pode gastar 3 Pontos de Estresse num grito de determinação. Em vez de cair, você fica com exatamente 1 Ponto de Vida e pode continuar a lutar." },
-        { titulo: "Poliglota Místico", desc: "Você tem uma facilidade absurda com a comunicação. Compreende e consegue falar quase qualquer idioma de Eko, além de ser capaz de ler runas e símbolos arcanos antigos sem precisar de testes difíceis. Recebe Ganho em testes sociais ao lidar com culturas estrangeiras, isoladas ou entidades de outros planos." },
-        { titulo: "Sorte Audaz", desc: "O destino sorri-lhe (ou o Arcana dobra-se à sua vontade). Uma vez por sessão, após rolar os dados (2d12) para um teste de Habilidade, Poder ou Resistência e não gostar do resultado, pode gastar 2 Pontos de Esperança para rolar os dados novamente. Você é obrigado a aceitar o segundo resultado, mesmo que seja pior." },
-        { titulo: "Mente Blindada", desc: "Os seus pensamentos são um cofre trancado. Você é completamente imune a habilidades telepáticas que tentem ler a sua mente sem o seu consentimento. Além disso, recebe Ganho em testes de Resistência contra habilidades que tentem provocar Fúria, Confusão ou roubar as suas memórias." }
+        { titulo: "Ajudante / Mascote", desc: "Você possui um companheiro leal. Ele não rola dados próprios, mas uma vez por cena, se ele te ajudar de forma narrativa, você pode gastar 1 Esperança para receber Ganho." },
+        { titulo: "Adaptador (Mestre da Improvisação)", desc: "Não sofre Perda ao lutar com armas improvisadas. Pode alterar o tipo de dano do seu ataque para explorar fraquezas inimigas." },
+        { titulo: "Arena / Terreno Familiar", desc: "Escolha um bioma. Você recebe Ganho em testes de movimentação, sobrevivência e rastreio nesse ambiente." },
+        { titulo: "Ágil", desc: "Ganho em testes de Habilidade envolvendo acrobacias, equilíbrio, fugas e ao rolar sua Iniciativa." },
+        { titulo: "Carismático", desc: "Ganho em testes sociais para persuadir, seduzir, negociar ou inspirar NPCs de forma amigável." },
+        { titulo: "Devoto", desc: "Ganho em Resistência contra quebra de votos. O Mestre te recompensa com 1 Esperança se você se arriscar para honrar seu código." },
+        { titulo: "Elo Mental", desc: "Comunicação telepática com um aliado escolhido. Se um estiver em perigo, o outro pode gastar 1 Esperança para lhe dar Ganho na Defesa, mesmo distante." },
+        { titulo: "Famoso", desc: "Ao interagir com um NPC que te reconhece, gaste 1 Esperança para que ele o trate com total prioridade, garantindo Ganho no próximo teste social com ele." },
+        { titulo: "Forte", desc: "Ganho em testes de Poder de puro esforço físico, como levantar peso ou arrombar portas (não afeta ataques)." },
+        { titulo: "Gênio", desc: "Ganho em testes de Habilidade para resolver problemas lógicos, decifrar códigos e investigar." },
+        { titulo: "Intimidador", desc: "Ganho em testes sociais de Poder para assustar, coagir, interrogar ou ameaçar NPCs." },
+        { titulo: "Imunidade Condicional", desc: "Escolha um: Frio, Fogo, Ácido ou Veneno. Não sofre dano de ambiente desse elemento e tem Ganho para resistir a magias relacionadas." },
+        { titulo: "Inimigo Predileto", desc: "Escolha um tipo de criatura. Ganho constante em Habilidade para rastrear, identificar fraquezas ou lembrar dados sobre eles." },
+        { titulo: "Inofensivo", desc: "Ganho em Habilidade para passar despercebido em multidões ou convencer guardas de que é inofensivo. Inimigos burros tendem a focar nos seus aliados." },
+        { titulo: "Intuição (Sexto Sentido)", desc: "Ganho em Resistência/Habilidade para detectar mentiras e não ser surpreendido em emboscadas." },
+        { titulo: "Instrutor / Tático", desc: "Sempre que usar a ação Ajudar, seu aliado ganha Vantagem E adiciona +1d4 ao resultado final do teste dele." },
+        { titulo: "Maestria (Especialista)", desc: "Escolha uma área de conhecimento específica. Testes que se encaixem perfeitamente recebem Ganho automático." },
+        { titulo: "Mente Blindada", desc: "Imune a leitura de mente não consentida. Ganho em Resistência contra magias que provoquem Fúria, Confusão ou roubem memórias." },
+        { titulo: "Mentor", desc: "Uma vez por sessão, ao falhar num teste do seu treinamento, role novamente um dos d12 e fique com o novo resultado." },
+        { titulo: "Obstinado", desc: "Quando sem Esperança e precisando de um sucesso, marque 2 Estresse para gerar 1 Esperança imediata." },
+        { titulo: "Patrono", desc: "Ganho social com membros da sua facção. Uma vez por aventura, pode solicitar um favor significativo sem custo." },
+        { titulo: "Poliglota Místico", desc: "Fala quase qualquer idioma e lê runas. Ganho social ao lidar com culturas estrangeiras ou extraplanares." },
+        { titulo: "Resoluto", desc: "Ganho em testes de Resistência para perceber fraudes e resistir a ilusões, controle mental e intimidação." },
+        { titulo: "Riqueza", desc: "Não paga por hospedagem simples. Uma vez por sessão, gaste 1 Esperança para tirar um item mundano útil do bolso." },
+        { titulo: "Sentido Aguçado", desc: "Escolha um sentido. Ganho sempre em Percepção focada exclusivamente nele." },
+        { titulo: "Sentido Cego (Radar/Infravisão)", desc: "Não sofre Perda ao atacar/defender no escuro total, contra invisíveis ou sob condição Cegueira." },
+        { titulo: "Sorte Audaz", desc: "Uma vez por sessão, após rolar um teste, gaste 2 Esperança para rolar de novo. Deve aceitar o segundo resultado." },
+        { titulo: "Sobrevivente Nato (Implacável)", desc: "Uma vez por aventura, ao ser Derrotado (0 PV), gaste 3 Estresse para ficar com 1 PV e continuar lutando." },
+        { titulo: "Torcida / Exibicionista", desc: "Após ação dramática com público, gaste 1 Esperança para dar Ganho no próximo teste de um aliado que viu." },
+        { titulo: "Vigoroso", desc: "Ganho em Resistência envolvendo saúde física (fadiga, doenças, venenos, asfixia)." }
     ];
 
-    let globalData = { passivas: {} };
+    const cartasPadrao = [
+        // ARCANO
+        { dominio:"Domínio Arcano", nivel:1, titulo:"Dobrar Elemento", tipo:"Magia de Utilidade", custo:"1 Ponto de Esperança", desc:"Você tem um controle sutil sobre um elemento ao seu redor (Fogo, Água, Ar, Terra). Use uma ação para manipular quantidades moderadas desse elemento, criando distrações, terreno escorregadio ou movendo pequenos objetos. Se usar essa magia de forma criativa imediatamente antes de um teste, você ganha Ganho nessa rolagem." },
+        { dominio:"Domínio Arcano", nivel:1, titulo:"Raio Místico", tipo:"Magia de Ataque", custo:"1 Ponto de Esperança", desc:"Você concentra energia arcana pura e dispara contra um inimigo Longe. Faça um teste de Habilidade. Se acertar, causa Dano Mágico. Se rolar com Esperança maior, a energia ricocheteia, causando um Dano Menor automático a um segundo inimigo Perto do original." },
+        { dominio:"Domínio Arcano", nivel:2, titulo:"Absorver Arcana", tipo:"Defesa Mística", custo:"1 Ponto de Estresse (Reação)", desc:"Como reação ao sofrer um ataque mágico, faça um teste de Resistência. Com sucesso, você reduz o dano recebido em um Limiar (ex: de Maior para Menor) e recupera 1 Ponto de Esperança." },
+        { dominio:"Domínio Arcano", nivel:2, titulo:"Poeira Glacial", tipo:"Magia de Controle", custo:"2 Pontos de Esperança", desc:"Faça um ataque de Habilidade. Se causar dano, o alvo recebe a condição Lentidão (gasta o dobro de movimentos) e tem Perda na próxima rolagem de ataque que tentar fazer." },
+        { dominio:"Domínio Arcano", nivel:3, titulo:"Bola de Fogo", tipo:"Magia Destrutiva", custo:"2 Pontos de Estresse", desc:"Ataque de Poder em área. Se acertar, causa Dano Mágico Severo ao alvo principal e Dano Maior a todos Perto dele. Atingidos ficam Em Chamas." },
+        { dominio:"Domínio Arcano", nivel:3, titulo:"Passos de Vento", tipo:"Habilidade de Mobilidade", custo:"1 Ponto de Esperança", desc:"Durante o turno, pode correr pelas paredes, saltar flutuando ou andar sobre a água. Ignora terrenos difíceis e não provoca ataques de oportunidade." },
+        { dominio:"Domínio Arcano", nivel:4, titulo:"Arma Elemental", tipo:"Aprimoramento", custo:"2 Pontos de Estresse", desc:"Até o final da cena, ataques físicos causam Dano Mágico elemental e ganham +1d6 extra. Num Sucesso Crítico, o alvo sofre o efeito máximo do elemento (Paralisado, Cego, etc)." },
+        { dominio:"Domínio Arcano", nivel:4, titulo:"Bomba Vital", tipo:"Magia de Área / Ritual", custo:"3 Pontos de Estresse", desc:"Exige duas ações: canalizar e disparar. Na canalização, aliados podem doar 1 Esperança. Ao disparar Longe, causa Dano Severo em área + Dano extra por doação." },
+        { dominio:"Domínio Arcano", nivel:5, titulo:"Invocar Força Primordial", tipo:"Invocação Maior", custo:"3 Pontos de Estresse", desc:"Invoca elemental que age de graça no seu turno, causando Dano Maior em área. Permanece por 3 rodadas atuando como barricada que atrai ataques." },
+        { dominio:"Domínio Arcano", nivel:5, titulo:"Mata-Kaiju", tipo:"Magia Suprema", custo:"5 Pontos de Estresse", desc:"Ataque com dois Ganhos automáticos. O alvo sofre dois Danos Severos simultâneos. Após o uso, você fica Exaurido (Perda em tudo) até Descanso Curto." },
+        // BRAVURA
+        { dominio:"Domínio da Bravura", nivel:1, titulo:"Provocação", tipo:"Controle, Combate", custo:"1 Ponto de Esperança", desc:"Teste social de Poder contra um inimigo. Se vencer, ele é obrigado a focar todos os ataques dele em você no próximo turno." },
+        { dominio:"Domínio da Bravura", nivel:1, titulo:"Bloqueio Perfeito", tipo:"Defesa, Combate", custo:"1 Esperança (Reação)", desc:"Ao ser atacado corpo a corpo, role Defesa com Poder. Se superar o ataque, ignora o dano e empurra o atacante para trás." },
+        { dominio:"Domínio da Bravura", nivel:2, titulo:"Escudo Solidário", tipo:"Defesa, Combate", custo:"1 Esperança (Reação)", desc:"Quando aliado Perto for sofrer dano, você toma o golpe no lugar dele, podendo usar sua própria armadura." },
+        { dominio:"Domínio da Bravura", nivel:2, titulo:"Golpe Atordoante", tipo:"Atordoamento", custo:"1 Ponto de Estresse", desc:"Ataque corpo a corpo. Se acertar, causa Dano Menor e aplica Atordoamento (1 turno sem ações, apenas movimento)." },
+        { dominio:"Domínio da Bravura", nivel:3, titulo:"Reflexão de Combate", tipo:"Contra-Ataque", custo:"2 Esperança (Reação)", desc:"Se rolar Sucesso Crítico na defesa corpo a corpo, anula o dano e devolve Dano Maior imediato." },
+        { dominio:"Domínio da Bravura", nivel:3, titulo:"Corpo Fechado", tipo:"Resistência", custo:"1 Ponto de Estresse", desc:"Até o fim da cena, Ganho em Resistência contra Veneno, Sangramento, Cegueira, e imunidade a ser derrubado." },
+        { dominio:"Domínio da Bravura", nivel:4, titulo:"Pisão do Titã", tipo:"Atordoamento em Área", custo:"2 Pontos de Estresse", desc:"Inimigos Perto fazem teste de Resistência. Falhas tomam Dano Maior e caem no chão." },
+        { dominio:"Domínio da Bravura", nivel:4, titulo:"Postura Implacável", tipo:"Suporte, Combate", custo:"2 Pontos de Esperança", desc:"Até fim da cena, inimigos não dão Acerto Crítico em você. Recebe 1 Slot de Armadura extra que some no fim da batalha." },
+        { dominio:"Domínio da Bravura", nivel:5, titulo:"Defesa Titânica", tipo:"Defesa Suprema", custo:"3 Estresse (Reação)", desc:"Ao receber ataque letal/impossível, ative para ter um Sucesso Crítico Automático Perfeito (0 dano) e inspirar aliados com +1 Esperança." },
+        { dominio:"Domínio da Bravura", nivel:5, titulo:"Muralha Viva", tipo:"Suporte Absoluto", custo:"3 Pontos de Estresse", desc:"Até fim do combate, aliados Perto podem usar sua Evasão. Você pode gastar seus Slots de Armadura para defender o dano deles." },
+        // CÓDICE
+        { dominio:"Domínio do Códice", nivel:1, titulo:"Ilusão Menor", tipo:"Ilusão, Magia", custo:"1 Ponto de Esperança", desc:"Engana os sentidos do alvo (altera sua aparência ou cria imagem tridimensional). Inimigos precisam passar num teste de Percepção para notar." },
+        { dominio:"Domínio do Códice", nivel:1, titulo:"Confusão Mental", tipo:"Atordoamento", custo:"1 Ponto de Esperança", desc:"Ataque de Hab. contra a Res. do inimigo. Se vencer, ele fica Confuso (alvo do próximo ataque dele é escolhido nos dados)." },
+        { dominio:"Domínio do Códice", nivel:2, titulo:"Invasão Telepática", tipo:"Utilitário", custo:"1 Ponto de Estresse", desc:"Em NPC: Ganho social e descobre um segredo. Em Combate (Reação): impõe Perda no ataque que o inimigo fizer contra você." },
+        { dominio:"Domínio do Códice", nivel:2, titulo:"Pés de Chumbo", tipo:"Lentidão", custo:"2 Pontos de Esperança", desc:"Teste de Hab. contra Res. Se vencer, inimigo sofre Lentidão Grave (todas as ações são gastas para realizar um único movimento)." },
+        { dominio:"Domínio do Códice", nivel:3, titulo:"Paralisia Arcana", tipo:"Paralisia", custo:"2 Pontos de Estresse", desc:"Ataque de Habilidade. Se acertar, o alvo fica Paralisado (indefeso e imóvel) até sofrer dano ou passar em teste Difícil de Resistência." },
+        { dominio:"Domínio do Códice", nivel:3, titulo:"Tempestade Mental", tipo:"Dano Espiritual", custo:"2 Pontos de Estresse", desc:"Ataque causa Dano Maior e faz com que todas as habilidades do alvo que custem recursos passem a custar +1 ponto adicional." },
+        { dominio:"Domínio do Códice", nivel:4, titulo:"Ilusão Maior", tipo:"Ilusão", custo:"2 Pontos de Estresse", desc:"Cria ilusões imensas e realistas. Inimigos agirão como se fosse real até tocarem fisicamente." },
+        { dominio:"Domínio do Códice", nivel:4, titulo:"Área de Batalha", tipo:"Alteração", custo:"3 Pontos de Estresse", desc:"Transporta o grupo para dimensão de bolso. Aliados têm Ganho em ataques, inimigos têm Perda em defesa. Fim no fim do combate." },
+        { dominio:"Domínio do Códice", nivel:5, titulo:"Anulação Arcana", tipo:"Controle", custo:"3 Estresse (Reação)", desc:"Cancela imediatamente uma habilidade/magia de um inimigo. Ele gasta os recursos mesmo assim. Se rolar com Esperança, bloqueia a habilidade pro resto da cena." },
+        { dominio:"Domínio do Códice", nivel:5, titulo:"Safe Haven", tipo:"Suporte", custo:"3 Pontos de Estresse", desc:"Cria uma fenda impenetrável onde aliados podem realizar um Descanso Longo (cura total) no meio do território inimigo." },
+        // ESPLENDOR
+        { dominio:"Domínio do Esplendor", nivel:1, titulo:"Toque Curativo", tipo:"Cura", custo:"1 Ponto de Esperança", desc:"Cura 1d4 PV ou limpa 2 de Estresse de um aliado (não você mesmo em combate). Fora de combate cura o máximo." },
+        { dominio:"Domínio do Esplendor", nivel:1, titulo:"Raio Radiante", tipo:"Luz / Radiante", custo:"1 Ponto de Esperança", desc:"Ataque de Habilidade Longe causando Dano Mágico. Se for contra corrompidos/demônios, rola com Ganho automático." },
+        { dominio:"Domínio do Esplendor", nivel:2, titulo:"Luz Reveladora", tipo:"Ofuscante", custo:"1 Ponto de Estresse", desc:"Revela invisíveis e causa Cegueira temporária em quem falhar na Resistência." },
+        { dominio:"Domínio do Esplendor", nivel:2, titulo:"Aura Protetora", tipo:"Barreira", custo:"1 Ponto de Esperança", desc:"Até o final da cena, aliados Perto ganham 1 Slot de Armadura mágica extra (quebra num Dano Menor)." },
+        { dominio:"Domínio do Esplendor", nivel:3, titulo:"Punição Divina", tipo:"Aprimoramento", custo:"2 Pontos de Esperança", desc:"O próximo ataque físico causa Dano Mágico Radiante. Se acertar, o dano base da arma é dobrado contra o alvo." },
+        { dominio:"Domínio do Esplendor", nivel:3, titulo:"Palavras Finais", tipo:"Utilitário", custo:"1 Ponto de Estresse", desc:"Desperta recém-morto para fazer até três perguntas." },
+        { dominio:"Domínio do Esplendor", nivel:4, titulo:"Julgamento de Luz", tipo:"Paralisia", custo:"2 Pontos de Estresse", desc:"Ataque de Hab. Se acertar, causa Dano Maior e Paralisa até ele gastar turno inteiro e passar em teste Difícil." },
+        { dominio:"Domínio do Esplendor", nivel:4, titulo:"Sopro de Vida", tipo:"Ressurreição Menor", custo:"3 Pontos de Estresse", desc:"Revive um aliado Derrotado em até 1 min, levantando-o com 1 PV e 0 Estresse." },
+        { dominio:"Domínio do Esplendor", nivel:5, titulo:"Cântico das Arcas", tipo:"Suporte", custo:"3 Pontos de Estresse", desc:"Mantendo a concentração (-1 Esp/turno), dá Ganho nas rolagens do grupo, cura 1 PV/turno e reduz custos dos aliados em 1." },
+        { dominio:"Domínio do Esplendor", nivel:5, titulo:"Milagre da Restauração", tipo:"Ressurreição Maior", custo:"5 Pontos de Estresse", desc:"Revive mortos antigos ou cura Vida/Estresse de TODO o grupo em combate. Te deixa Exaurido até Descanso Longo." },
+        // GRAÇA
+        { dominio:"Domínio da Graça", nivel:1, titulo:"Esquiva Acrobática", tipo:"Defesa / Mobilidade", custo:"1 Esperança (Reação)", desc:"Rola a Defesa com Ganho. Se o inimigo errar, realiza um movimento extra livre sem provocar reações." },
+        { dominio:"Domínio da Graça", nivel:1, titulo:"Lâmina Oculta", tipo:"Corte", custo:"1 Ponto de Esperança", desc:"Ataque de Habilidade. Se acertar, ignora 1 Slot de Armadura e causa Dano Menor. Crítico causa Maior e Sangramento." },
+        { dominio:"Domínio da Graça", nivel:2, titulo:"Apresentação Cativante", tipo:"Social / Controle", custo:"1 Ponto de Estresse", desc:"Inimigos que te virem e falharem na Res ficam Fascinados: Perda contra todos os alvos (exceto você) e dão Ganho a quem atacá-los." },
+        { dominio:"Domínio da Graça", nivel:2, titulo:"Fio do Titítere", tipo:"Atordoamento", custo:"2 Esperança (Reação)", desc:"Ao aliado ser atacado, impõe Perda no ataque inimigo. Se errar, o inimigo fica Atordoado até o próximo turno." },
+        { dominio:"Domínio da Graça", nivel:3, titulo:"Ponto Cego", tipo:"Precisão", custo:"1 Ponto de Estresse", desc:"Ative antes de atacar alvo distraído/flanqueado. Rola com Ganho e soma +2d6 no dano final." },
+        { dominio:"Domínio da Graça", nivel:3, titulo:"Dança das Lâminas", tipo:"Mobilidade", custo:"2 Pontos de Esperança", desc:"Realiza até 3 movimentos que podem cruzar inimigos. Inimigos cruzados sofrem Dano Menor e não reagem." },
+        { dominio:"Domínio da Graça", nivel:4, titulo:"Rajada de Golpes", tipo:"Múltiplos Ataques", custo:"2 Pontos de Estresse", desc:"Faça 1 teste de Hab e compare com a Evasão de até 3 inimigos. Causa Dano Maior aos atingidos." },
+        { dominio:"Domínio da Graça", nivel:4, titulo:"Casulo de Fios", tipo:"Sangramento / Paralisia", custo:"2 Pontos de Estresse", desc:"Inimigo faz Res Difícil. Se falhar fica Paralisado e suspenso, sofrendo Sangramento em cada turno até usar a ação para escapar." },
+        { dominio:"Domínio da Graça", nivel:5, titulo:"Ato Final", tipo:"Dano Massivo", custo:"3 Pontos de Estresse", desc:"Marque 5 inimigos já feridos. Estale os dedos para dar Dano Severo inevitável e simultâneo em todos." },
+        { dominio:"Domínio da Graça", nivel:5, titulo:"Intocável", tipo:"Defesa Suprema", custo:"3 Estresse (Reação)", desc:"Até o fim da rodada, sua Defesa é Sucesso Crítico Perfeito (0 dano). Cada erro nela te permite contra-atacar livremente (Dano Menor)." },
+        // LÂMINA
+        { dominio:"Domínio da Lâmina", nivel:1, titulo:"Golpe Implacável", tipo:"Corte / Impacto", custo:"1 Ponto de Esperança", desc:"Ataque de Poder com +1d6 dano. Se rolar Com Esperança, empurra o inimigo." },
+        { dominio:"Domínio da Lâmina", nivel:1, titulo:"Quebrar a Guarda", tipo:"Perfurante", custo:"1 Ponto de Esperança", desc:"Ataque ignora 1 Slot de Armadura. Crítico quebra a guarda e causa Sangramento." },
+        { dominio:"Domínio da Lâmina", nivel:2, titulo:"Ritmo de Batalha", tipo:"Aprimoramento", custo:"1 Ponto de Estresse", desc:"Até o fim da cena, cada acerto seguido dá +1d4 de dano (máximo 3d4). Zera ao errar ou não atacar." },
+        { dominio:"Domínio da Lâmina", nivel:2, titulo:"Investida Brutal", tipo:"Impacto", custo:"2 Pontos de Esperança", desc:"Mova-se e ataque numa única ação com Ganho. Acerto causa Dano Menor e derruba o inimigo." },
+        { dominio:"Domínio da Lâmina", nivel:3, titulo:"Combo Letal", tipo:"Múltiplos Ataques", custo:"2 Pontos de Estresse", desc:"Se o 1º ataque do turno acertar, ative para dar um 2º ataque livre. Se acertar de novo, ganha um 3º de graça." },
+        { dominio:"Domínio da Lâmina", nivel:3, titulo:"Mestre das Armas", tipo:"Aprimoramento", custo:"1 Ponto de Estresse", desc:"Ative antes do ataque corpo a corpo. O ataque é Crítico não só nos dados duplos, mas se qualquer d12 cair em 11 ou 12." },
+        { dominio:"Domínio da Lâmina", nivel:4, titulo:"Fúria Cortante", tipo:"Sangramento", custo:"2 Pontos de Estresse", desc:"Ataque contra até 2 inimigos. Atingidos sofrem Dano Maior e Sangramento Grave." },
+        { dominio:"Domínio da Lâmina", nivel:4, titulo:"Golpe de Execução", tipo:"Dano Massivo", custo:"3 Pontos de Esperança", desc:"Ao acertar alvo com Vida < 50% ou Paralisado, o seu dano sobe um Limiar (Maior vira Severo)." },
+        { dominio:"Domínio da Lâmina", nivel:5, titulo:"Ciclone de Aço", tipo:"Dano em Área", custo:"4 Pontos de Estresse", desc:"Ataque de Poder com Ganho contra todos Perto. Causa Dano Maior, joga inimigos para longe, e não gera oportunidade." },
+        { dominio:"Domínio da Lâmina", nivel:5, titulo:"Ataque Titânico", tipo:"Impacto", custo:"4 Pontos de Estresse", desc:"Ataque é Crítico Perfeito. Causa Dano Severo imediato, destrói armaduras/escudos do alvo e transforma a área em Terreno Difícil." },
+        // MEIA-NOITE
+        { dominio:"Domínio da Meia-Noite", nivel:1, titulo:"Manto de Sombras", tipo:"Furtividade", custo:"1 Ponto de Esperança", desc:"Fica invisível na penumbra até o fim da cena (ou ser atacado com luz). Ganho em furtividade e no 1º ataque." },
+        { dominio:"Domínio da Meia-Noite", nivel:1, titulo:"Olhar do Abismo", tipo:"Medo", custo:"1 Ponto de Esperança", desc:"Teste de Poder contra a Res inimiga. Se vencer, ele fica Assombrado (Perda ao atacar você)." },
+        { dominio:"Domínio da Meia-Noite", nivel:2, titulo:"Toque da Podridão", tipo:"Necrótico", custo:"1 Ponto de Estresse", desc:"Ataque Mágico Necrótico. No início do próximo turno do inimigo, ele toma Dano Menor da necrose contínua." },
+        { dominio:"Domínio da Meia-Noite", nivel:2, titulo:"Passo Sombrio", tipo:"Teleporte Menor", custo:"1 Ponto de Esperança", desc:"Com um movimento, teleporta-se para área escura à vista, ignorando paredes ou grades finas." },
+        { dominio:"Domínio da Meia-Noite", nivel:3, titulo:"Servos do Túmulo", tipo:"Invocação", custo:"2 Pontos de Estresse", desc:"Invoca até 2 servos mortos-vivos. Sacrifique-os como reação para absorver Dano Maior ou dar Ganho no ataque." },
+        { dominio:"Domínio da Meia-Noite", nivel:3, titulo:"Prisão de Sombras", tipo:"Paralisia", custo:"2 Pontos de Esperança", desc:"Teste Res do alvo. Se falhar, é Paralisado e Cego pelos tentáculos de sombra até usar a ação para escapar." },
+        { dominio:"Domínio da Meia-Noite", nivel:4, titulo:"Lâmina do Ceifador", tipo:"Cura", custo:"2 Pontos de Estresse", desc:"Até fim do combate, ataques causam Necrótico e ignoram 1 Slot de Armadura. Críticos ou Abates curam 1 PV do usuário." },
+        { dominio:"Domínio da Meia-Noite", nivel:4, titulo:"Névoa Cadavérica", tipo:"Veneno / Área", custo:"2 Pontos de Estresse", desc:"Cria fumaça tóxica cega. Inimigos dentro sofrem Dano Menor e Envenenamento. Aliados recebem Ganho na Defesa." },
+        { dominio:"Domínio da Meia-Noite", nivel:5, titulo:"Exército dos Mortos", tipo:"Invocação Área", custo:"4 Pontos de Estresse", desc:"Cria área que causa Dano Maior a inimigos todo turno + Terreno Difícil. Dura 3 rodadas." },
+        { dominio:"Domínio da Meia-Noite", nivel:5, titulo:"Arrancar a Alma", tipo:"Morte", custo:"4 Pontos de Estresse", desc:"Ataque com Ganho. Causa Dano Severo que ignora tudo. Se o alvo cair a 0 PV, a alma é devorada, você zera seu Estresse e impede ressurreição." },
+        // OSSO
+        { dominio:"Domínio do Osso", nivel:1, titulo:"Marca da Presa", tipo:"Rastreador", custo:"1 Ponto de Esperança", desc:"Sabe a localização do alvo até o fim da cena. Ganho para rastreá-lo e o seu primeiro ataque nele causa +1d4." },
+        { dominio:"Domínio do Osso", nivel:1, titulo:"Armadilha de Espinhos", tipo:"Armadilha", custo:"1 Ponto de Esperança", desc:"Usa ação para preencher área próxima. O primeiro a pisar leva Dano Menor e Lentidão até o turno seguinte." },
+        { dominio:"Domínio do Osso", nivel:2, titulo:"Grito da Selva", tipo:"Invocação", custo:"1 Ponto de Estresse", desc:"Invoca fera ajudante (1x por rodada te dá Ganho em ataque ou absorve um Dano Maior no seu lugar)." },
+        { dominio:"Domínio do Osso", nivel:2, titulo:"Lâmina Envenenada", tipo:"Veneno", custo:"1 Ponto de Esperança", desc:"Arma causa Veneno. Crítico garante 1 Grau de Envenenamento (-1 PV por turno) ao alvo." },
+        { dominio:"Domínio do Osso", nivel:3, titulo:"Chuva de Disparos", tipo:"Múltiplos Ataques", custo:"2 Pontos de Estresse", desc:"Ataque de Hab. com Ganho contra a Evasão de até 3 alvos. Causa Dano Maior aos atingidos." },
+        { dominio:"Domínio do Osso", nivel:3, titulo:"Sabedoria dos Ermos", tipo:"Sobrevivência", custo:"2 Pontos de Esperança", desc:"Fora combate: Acha suprimentos curando 1 Dano Menor do grupo. Em combate: O grupo ignora penalidades de Terreno Difícil por 1 rodada." },
+        { dominio:"Domínio do Osso", nivel:4, titulo:"Emboscada Perfeita", tipo:"Dano Massivo", custo:"2 Pontos de Estresse", desc:"Ao atacar invisível, escondido ou num alvo imobilizado por armadilhas, o ataque ignora toda a Defesa/Armadura e causa Dano Severo direto." },
+        { dominio:"Domínio do Osso", nivel:4, titulo:"Instinto de Sobrevivência", tipo:"Esquiva", custo:"2 Estresse (Reação)", desc:"Ao sofrer um dano que seria letal/Severo, reduz para Dano Menor e ganha movimento grátis deixando um substituto (tronco) no lugar." },
+        { dominio:"Domínio do Osso", nivel:5, titulo:"Disparo do Ápice", tipo:"Dano Supremo", custo:"3 Pontos de Estresse", desc:"Ataque à longa distância com dois Ganhos (rola 4d12). Se acertar, causa Dano Severo e Sangramento Grave." },
+        { dominio:"Domínio do Osso", nivel:5, titulo:"Avatar da Caçada", tipo:"Aprimoramento", custo:"4 Pontos de Estresse", desc:"Até o fim da cena: Armas à distância dão +1d6 dano. Inimigos não conseguem se esconder/invisibilidade e seus ataques ignoram toda cobertura." },
+        // SÁBIO
+        { dominio:"Domínio do Sábio", nivel:1, titulo:"Realinhar Chakras", tipo:"Cura", custo:"1 Ponto de Esperança", desc:"Limpa 2 Pontos de Estresse de um aliado e cura de uma condição física negativa (cegueira, veneno, etc)." },
+        { dominio:"Domínio do Sábio", nivel:1, titulo:"Aceleração", tipo:"Mobilidade", custo:"1 Ponto de Esperança", desc:"Ganha movimento extra gratuito. Inimigos têm Perda em ataques de oportunidade contra você nesta rodada." },
+        { dominio:"Domínio do Sábio", nivel:2, titulo:"Palma de Ferro", tipo:"Impacto", custo:"1 Ponto de Estresse", desc:"Ataque físico que ignora a Armadura causando Dano Menor e jogando o alvo para Longe." },
+        { dominio:"Domínio do Sábio", nivel:2, titulo:"Comunhão Terrena", tipo:"Alteração", custo:"1 Ponto de Esperança", desc:"Área Perto de você vira Terreno Difícil inimigo, mas dá cobertura (1 Slot de Armadura) para aliados." },
+        { dominio:"Domínio do Sábio", nivel:3, titulo:"Inviolável", tipo:"Defesa Perfeita", custo:"2 Estresse (Reação)", desc:"Se não se moveu no turno, reaja ao ataque ignorando 100% do dano de forma perfeita." },
+        { dominio:"Domínio do Sábio", nivel:3, titulo:"Queimar o Cosmo", tipo:"Aprimoramento", custo:"2 Pontos de Estresse", desc:"Até o final da cena, Ganho em rolagens Hab/Res, e o 1º ataque corpo a corpo no turno ganha +1d4 dano." },
+        { dominio:"Domínio do Sábio", nivel:4, titulo:"Dim Mak (Toque Mortal)", tipo:"Paralisia", custo:"3 Pontos de Estresse", desc:"Ataque de Habilidade. Se superar a defesa, causa Dano Maior e Paralisa/Silencia o alvo completamente." },
+        { dominio:"Domínio do Sábio", nivel:4, titulo:"Tranquilidade Absoluta", tipo:"Suporte", custo:"2 Pontos de Esperança", desc:"Usa ação para limpar 3 de Estresse de todo o grupo que te vir. Todos ficam imunes a Assombrado/Confuso por 2 rodadas." },
+        { dominio:"Domínio do Sábio", nivel:5, titulo:"Percepção Cósmica", tipo:"Sentidos", custo:"3 Pontos de Estresse", desc:"Não pode ser surpreendido. Ignora furtividade inimiga. Seus ataques ganham dois Ganhos (rola 4d12) pro resto do combate." },
+        { dominio:"Domínio do Sábio", nivel:5, titulo:"Ascensão", tipo:"Transformação", custo:"5 Pontos de Estresse", desc:"Até o fim da cena: Evasão sobe em +3, todas as rolagens são Com Esperança, todas suas Cartas têm custo Zero. Ao fim do combate, você cai a 0 PV inconsciente." }
+    ];
 
-    // Escuta as alterações no banco de dados
+    // ==========================================
+    // LÓGICA PRINCIPAL
+    // ==========================================
     onValue(ref(db, dbPath), (snapshot) => {
         const dados = snapshot.val();
-        
-        // SISTEMA DE AUTO-POVOAMENTO: Se não existir a pasta 'passivas' ou ela estiver vazia, cria todas as 30!
+        let needsUpdate = false;
+        let updates = {};
+
+        // Auto-povoar Passivas
         if (!dados || !dados.passivas) {
-            console.log("Banco de Passivas vazio. Iniciando Auto-Povoamento...");
-            let updates = {};
             passivasPadrao.forEach((item, index) => {
-                // Cria um ID único baseado no nome e índice para evitar bugs
-                let newId = `passiva_base_${index}`;
-                updates[`${dbPath}/passivas/${newId}`] = {
-                    titulo: item.titulo,
-                    desc: item.desc
-                };
+                updates[`${dbPath}/passivas/passiva_base_${index}`] = item;
             });
-            update(ref(db), updates);
-            return; // Interrompe aqui, pois o update vai acionar o onValue novamente
+            needsUpdate = true;
+        }
+        
+        // Auto-povoar Cartas
+        if (!dados || !dados.cartas) {
+            cartasPadrao.forEach((item, index) => {
+                updates[`${dbPath}/cartas/carta_base_${index}`] = item;
+            });
+            needsUpdate = true;
         }
 
-        globalData = dados;
-        renderList('passivas', globalData.passivas);
+        if (needsUpdate) {
+            update(ref(db), updates);
+            return; 
+        }
+
+        globalData = dados || { passivas: {}, cartas: {} };
+        renderPassivas(globalData.passivas);
+        applyFilter(); // Renderiza cartas já filtrando
     });
 
-    function renderList(category, dataObj) {
-        const container = document.getElementById(`list_${category}`);
+    // --- RENDER PASSIVAS ---
+    function renderPassivas(dataObj) {
+        const container = document.getElementById(`list_passivas`);
         container.innerHTML = "";
-        
-        if (!dataObj || Object.keys(dataObj).length === 0) {
-            container.innerHTML = "<div style='text-align:center; padding: 20px; color:#666;'>Nenhum item cadastrado.</div>";
-            return;
-        }
+        if (!dataObj) return;
 
-        // Transforma o objeto em Array e ordena em ordem alfabética pelo Título
         let itensArray = Object.keys(dataObj).map(key => ({ id: key, ...dataObj[key] }));
         itensArray.sort((a, b) => a.titulo.localeCompare(b.titulo));
 
@@ -194,8 +392,8 @@
                 <div class="item-header" onclick="toggleDesc('${item.id}')">
                     <div class="item-title">${item.titulo}</div>
                     <div class="item-controls">
-                        <button class="btn-edit" onclick="event.stopPropagation(); editItem('${category}', '${item.id}')">✏️ Editar</button>
-                        <button class="btn-del" onclick="event.stopPropagation(); deleteItem('${category}', '${item.id}')">🗑️</button>
+                        <button class="btn-edit" onclick="event.stopPropagation(); openPassivaForm('${item.id}')">✏️ Editar</button>
+                        <button class="btn-del" onclick="event.stopPropagation(); deleteItem('passivas', '${item.id}')">🗑️</button>
                     </div>
                 </div>
                 <div class="item-desc" id="desc_${item.id}">${item.desc}</div>
@@ -204,53 +402,128 @@
         });
     }
 
-    // Funções de Interface
-    window.toggleDesc = (id) => {
-        document.getElementById(`desc_${id}`).classList.toggle('open');
-    };
-
-    window.openForm = (category, id = null) => {
-        document.getElementById('item_category').value = category;
-        document.getElementById('item_id').value = id || "";
+    // --- RENDER CARTAS (Com Filtro) ---
+    window.applyFilter = () => {
+        const filterEl = document.getElementById('filter_dominio');
+        currentFilter = filterEl ? filterEl.value : "Todos";
         
-        if (id && globalData[category] && globalData[category][id]) {
-            document.getElementById('form_title').innerText = "EDITAR VANTAGEM";
-            document.getElementById('item_titulo').value = globalData[category][id].titulo || "";
-            document.getElementById('item_desc').value = globalData[category][id].desc || "";
-        } else {
-            document.getElementById('form_title').innerText = "CRIAR NOVA VANTAGEM";
-            document.getElementById('item_titulo').value = "";
-            document.getElementById('item_desc').value = "";
-        }
+        const container = document.getElementById('list_cartas');
+        container.innerHTML = "";
         
-        document.getElementById('modal-form').classList.add('open');
-    };
-
-    window.closeForm = () => {
-        document.getElementById('modal-form').classList.remove('open');
-    };
-
-    window.saveItem = () => {
-        const category = document.getElementById('item_category').value;
-        const id = document.getElementById('item_id').value;
-        const titulo = document.getElementById('item_titulo').value.trim();
-        const desc = document.getElementById('item_desc').value.trim();
-
-        if (!titulo) { alert("O nome da vantagem não pode ficar em branco."); return; }
-
-        const itemData = { titulo, desc };
-
-        if (id) {
-            // Atualiza existente
-            update(ref(db, `${dbPath}/${category}/${id}`), itemData).then(closeForm);
-        } else {
-            // Cria novo
-            push(ref(db, `${dbPath}/${category}`), itemData).then(closeForm);
+        const dataObj = globalData.cartas;
+        if (!dataObj) {
+            container.innerHTML = "<div style='grid-column: 1 / -1; text-align:center;'>Nenhuma carta cadastrada.</div>";
+            return;
         }
+
+        let itensArray = Object.keys(dataObj).map(key => ({ id: key, ...dataObj[key] }));
+        
+        // Aplica o filtro
+        if (currentFilter !== "Todos") {
+            itensArray = itensArray.filter(i => i.dominio === currentFilter);
+        }
+
+        // Ordena por Domínio (alfabético) e depois por Nível
+        itensArray.sort((a, b) => {
+            if (a.dominio !== b.dominio) return a.dominio.localeCompare(b.dominio);
+            return parseInt(a.nivel) - parseInt(b.nivel);
+        });
+
+        itensArray.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'skill-card';
+            div.innerHTML = `
+                <div class="card-badges">
+                    <span class="badge-domain">${item.dominio || 'Geral'}</span>
+                    <span class="badge-level">Nível ${item.nivel || 1}</span>
+                </div>
+                <div class="card-title">${item.titulo}</div>
+                <div class="card-meta">
+                    <strong>Tipo:</strong> ${item.tipo || 'Desconhecido'}<br>
+                    <strong>Custo:</strong> <span style="color:#ffaaaa;">${item.custo || 'Nenhum'}</span>
+                </div>
+                <div class="card-desc">${item.desc}</div>
+                <div class="card-actions">
+                    <button class="btn-edit" onclick="openCartaForm('${item.id}')">✏️ Editar</button>
+                    <button class="btn-del" onclick="deleteItem('cartas', '${item.id}')">🗑️ Apagar</button>
+                </div>
+            `;
+            container.appendChild(div);
+        });
+    }
+
+    // --- FUNÇÕES DE INTERFACE ---
+    window.toggleDesc = (id) => document.getElementById(`desc_${id}`).classList.toggle('open');
+
+    // Modais Passivas
+    window.openPassivaForm = (id = null) => {
+        document.getElementById('passiva_id').value = id || "";
+        if (id && globalData.passivas[id]) {
+            document.getElementById('form_passiva_title').innerText = "EDITAR VANTAGEM";
+            document.getElementById('passiva_titulo').value = globalData.passivas[id].titulo || "";
+            document.getElementById('passiva_desc').value = globalData.passivas[id].desc || "";
+        } else {
+            document.getElementById('form_passiva_title').innerText = "CRIAR NOVA VANTAGEM";
+            document.getElementById('passiva_titulo').value = "";
+            document.getElementById('passiva_desc').value = "";
+        }
+        document.getElementById('modal-passiva').classList.add('open');
     };
 
+    window.savePassiva = () => {
+        const id = document.getElementById('passiva_id').value;
+        const titulo = document.getElementById('passiva_titulo').value.trim();
+        const desc = document.getElementById('passiva_desc').value.trim();
+        if (!titulo) return alert("Preencha o nome!");
+        
+        const data = { titulo, desc };
+        if (id) update(ref(db, `${dbPath}/passivas/${id}`), data).then(() => document.getElementById('modal-passiva').classList.remove('open'));
+        else push(ref(db, `${dbPath}/passivas`), data).then(() => document.getElementById('modal-passiva').classList.remove('open'));
+    };
+
+    // Modais Cartas
+    window.openCartaForm = (id = null) => {
+        document.getElementById('carta_id').value = id || "";
+        if (id && globalData.cartas[id]) {
+            const c = globalData.cartas[id];
+            document.getElementById('form_carta_title').innerText = "EDITAR CARTA";
+            document.getElementById('carta_titulo').value = c.titulo || "";
+            document.getElementById('carta_dominio').value = c.dominio || "Domínio Arcano";
+            document.getElementById('carta_nivel').value = c.nivel || "1";
+            document.getElementById('carta_tipo').value = c.tipo || "";
+            document.getElementById('carta_custo').value = c.custo || "";
+            document.getElementById('carta_desc').value = c.desc || "";
+        } else {
+            document.getElementById('form_carta_title').innerText = "CRIAR NOVA CARTA";
+            document.getElementById('carta_titulo').value = "";
+            document.getElementById('carta_tipo').value = "";
+            document.getElementById('carta_custo').value = "";
+            document.getElementById('carta_desc').value = "";
+        }
+        document.getElementById('modal-carta').classList.add('open');
+    };
+
+    window.saveCarta = () => {
+        const id = document.getElementById('carta_id').value;
+        const titulo = document.getElementById('carta_titulo').value.trim();
+        if (!titulo) return alert("Preencha o nome da carta!");
+
+        const data = {
+            titulo,
+            dominio: document.getElementById('carta_dominio').value,
+            nivel: parseInt(document.getElementById('carta_nivel').value),
+            tipo: document.getElementById('carta_tipo').value,
+            custo: document.getElementById('carta_custo').value,
+            desc: document.getElementById('carta_desc').value
+        };
+
+        if (id) update(ref(db, `${dbPath}/cartas/${id}`), data).then(() => document.getElementById('modal-carta').classList.remove('open'));
+        else push(ref(db, `${dbPath}/cartas`), data).then(() => document.getElementById('modal-carta').classList.remove('open'));
+    };
+
+    // Deletar Geral
     window.deleteItem = (category, id) => {
-        if (confirm("Tem certeza que deseja apagar esta Vantagem do Banco de Dados? Ela sumirá das opções dos jogadores.")) {
+        if (confirm("Apagar este item do Banco de Dados?")) {
             remove(ref(db, `${dbPath}/${category}/${id}`));
         }
     };
