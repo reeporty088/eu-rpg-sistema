@@ -369,7 +369,7 @@
             <button style="background:transparent; border:none; color:white; font-size:24px; cursor:pointer;" onclick="closeModal('modal-db-list')">✖</button>
         </div>
         
-        <input type="text" id="db-search" placeholder="🔍 Buscar por nome, descrição ou domínio..." onkeyup="renderDBList(this.value)" style="margin-bottom: 15px; font-size: 14px; padding: 12px; border-radius: 8px;">
+        <input type="text" id="db-search" placeholder="🔍 Buscar por nome, descrição ou categoria..." onkeyup="renderDBList(this.value)" style="margin-bottom: 15px; font-size: 14px; padding: 12px; border-radius: 8px;">
         
         <div id="db-list-content" class="db-grid"></div>
         
@@ -398,12 +398,11 @@
     const dbPath = `fichas_v2/${fichaID}`; 
 
     let globalCharData = {};
-    let globalCompendium = { passivas: {}, cartas: {} };
+    let globalCompendium = { passivas: {}, cartas: {}, classes: {}, racas: {} };
     let currentCategory = ""; 
     
     // Variáveis para a Busca e Renderização do Modal DB
     let currentDBItems = [];
-    let isCurrentDBCartas = false;
     
     // --- PUXAR BANCO DE DADOS GLOBAL ---
     onValue(ref(db, 'banco_dados_v2'), (snapshot) => {
@@ -651,7 +650,7 @@
         currentCategory = category;
         const dbBtn = document.getElementById('btn-db-add');
         
-        if (category === 'passivas' || category === 'loadout' || category === 'cofre') {
+        if (['passivas', 'loadout', 'cofre', 'classe_hab', 'raca_hab'].includes(category)) {
             dbBtn.style.display = 'block';
         } else {
             dbBtn.style.display = 'none';
@@ -673,49 +672,43 @@
     window.openDBModal = () => {
         closeModal('modal-choice');
         
-        // Limpa a busca ao abrir
         document.getElementById('db-search').value = "";
         
         let dataObj = {};
-        isCurrentDBCartas = false;
 
-        if (currentCategory === 'passivas') {
-            dataObj = globalCompendium.passivas || {};
-        } else if (currentCategory === 'loadout' || currentCategory === 'cofre') {
-            dataObj = globalCompendium.cartas || {};
-            isCurrentDBCartas = true;
-        }
+        if (currentCategory === 'passivas') dataObj = globalCompendium.passivas || {};
+        else if (currentCategory === 'loadout' || currentCategory === 'cofre') dataObj = globalCompendium.cartas || {};
+        else if (currentCategory === 'classe_hab') dataObj = globalCompendium.classes || {};
+        else if (currentCategory === 'raca_hab') dataObj = globalCompendium.racas || {};
 
-        // Converte objeto em array
         currentDBItems = Object.keys(dataObj).map(key => ({ id: key, ...dataObj[key] }));
 
-        // Ordenação Padrão
-        if (isCurrentDBCartas) {
+        if (currentCategory === 'loadout' || currentCategory === 'cofre') {
             currentDBItems.sort((a,b) => {
                 if (a.dominio !== b.dominio) return (a.dominio || "").localeCompare(b.dominio || "");
                 return parseInt(a.nivel || 0) - parseInt(b.nivel || 0);
             });
         } else {
-            currentDBItems.sort((a,b) => a.titulo.localeCompare(b.titulo));
+            currentDBItems.sort((a,b) => (a.titulo || "").localeCompare(b.titulo || ""));
         }
 
-        renderDBList(""); // Renderiza a lista completa inicial
+        renderDBList("");
         document.getElementById('modal-db-list').classList.add('open');
     };
 
-    // Função que filtra e desenha os cards no modal
     window.renderDBList = (searchTerm) => {
         const container = document.getElementById('db-list-content');
         container.innerHTML = "";
         
         const termo = searchTerm.toLowerCase().trim();
         
-        // Filtra os itens com base no texto digitado (busca em título, descrição e domínio)
         const filtered = currentDBItems.filter(item => {
             const titulo = (item.titulo || "").toLowerCase();
             const desc = (item.desc || "").toLowerCase();
             const dominio = (item.dominio || "").toLowerCase();
-            return titulo.includes(termo) || desc.includes(termo) || dominio.includes(termo);
+            const dominios = (item.dominios || "").toLowerCase();
+            const linhagem = (item.linhagem || "").toLowerCase();
+            return titulo.includes(termo) || desc.includes(termo) || dominio.includes(termo) || dominios.includes(termo) || linhagem.includes(termo);
         });
 
         if (filtered.length === 0) {
@@ -723,12 +716,10 @@
             return;
         }
 
-        // Desenha os Cards Filtrados
         filtered.forEach(item => {
-            if (isCurrentDBCartas) {
-                // Desenha Card de Carta de Domínio
+            if (currentCategory === 'loadout' || currentCategory === 'cofre') {
                 container.innerHTML += `
-                    <div class="skill-card" onclick="addFromDB('${item.id}', true)">
+                    <div class="skill-card" onclick="addFromDB('${item.id}')">
                         <div class="card-badges">
                             <span class="badge-domain">${item.dominio || 'Geral'}</span>
                             <span class="badge-level">Nível ${item.nivel || 1}</span>
@@ -742,10 +733,30 @@
                         <div style="margin-top:auto; font-size:10px; color:var(--theme-light); text-align:right; font-weight:bold; padding-top: 10px; border-top: 1px solid #333;">CLIQUE PARA EQUIPAR</div>
                     </div>
                 `;
-            } else {
-                // Desenha Card Simples de Vantagem Passiva
+            } else if (currentCategory === 'classe_hab') {
                 container.innerHTML += `
-                    <div class="passiva-card" onclick="addFromDB('${item.id}', false)">
+                    <div class="skill-card" onclick="addFromDB('${item.id}')">
+                        <div class="card-title">${item.titulo}</div>
+                        <div class="card-meta"><strong>Domínios:</strong> ${item.dominios || '-'}</div>
+                        <div class="card-desc">${item.desc || ''}</div>
+                        <div style="background:rgba(0,0,0,0.4); padding:6px; border-radius:6px; border-left:2px solid #336699;">
+                            <strong style="color:#88ccff; font-size:11px;">${item.hab_nome || 'Base'}</strong>
+                        </div>
+                        <div style="margin-top:auto; font-size:10px; color:var(--theme-light); text-align:right; font-weight:bold; padding-top: 10px;">CLIQUE PARA ADICIONAR CLASSE</div>
+                    </div>
+                `;
+            } else if (currentCategory === 'raca_hab') {
+                container.innerHTML += `
+                    <div class="skill-card" onclick="addFromDB('${item.id}')">
+                        <div class="card-badges"><span class="badge-domain">${item.linhagem || 'Animalesco'}</span></div>
+                        <div class="card-title">${item.titulo}</div>
+                        <div class="card-desc">${item.desc || ''}</div>
+                        <div style="margin-top:auto; font-size:10px; color:var(--theme-light); text-align:right; font-weight:bold; padding-top: 10px;">CLIQUE PARA ADICIONAR RAÇA</div>
+                    </div>
+                `;
+            } else {
+                container.innerHTML += `
+                    <div class="passiva-card" onclick="addFromDB('${item.id}')">
                         <div class="passiva-title">${item.titulo}</div>
                         <div class="passiva-desc">${item.desc}</div>
                         <div style="margin-top:auto; font-size:10px; color:var(--theme-light); text-align:right; font-weight:bold; padding-top: 10px;">CLIQUE PARA ADICIONAR</div>
@@ -755,25 +766,34 @@
         });
     };
 
-    window.addFromDB = (itemId, isCartas) => {
-        let item = isCartas ? globalCompendium.cartas[itemId] : globalCompendium.passivas[itemId];
+    window.addFromDB = (itemId) => {
+        let item;
+        if (currentCategory === 'loadout' || currentCategory === 'cofre') item = globalCompendium.cartas[itemId];
+        else if (currentCategory === 'passivas') item = globalCompendium.passivas[itemId];
+        else if (currentCategory === 'classe_hab') item = globalCompendium.classes[itemId];
+        else if (currentCategory === 'raca_hab') item = globalCompendium.racas[itemId];
+
         if (!item) return;
 
-        let desc = item.desc;
-        let teste = "";
-
-        if (isCartas) {
-            desc = `[${item.dominio} | Nível ${item.nivel} | ${item.tipo}]\n\n${item.desc}`;
-            teste = item.custo || "";
+        if (currentCategory === 'classe_hab') {
+            update(ref(db, dbPath), { classe: item.titulo });
+            if (item.hab_nome) push(ref(db, `${dbPath}/habilidades/classe_hab`), { titulo: item.hab_nome, desc: item.hab_desc });
+        } else if (currentCategory === 'raca_hab') {
+            update(ref(db, dbPath), { ancestralidade: item.titulo });
+            if (item.hab1_nome) push(ref(db, `${dbPath}/habilidades/raca_hab`), { titulo: item.hab1_nome, desc: item.hab1_desc });
+            if (item.hab2_nome) push(ref(db, `${dbPath}/habilidades/raca_hab`), { titulo: item.hab2_nome, desc: item.hab2_desc });
+            if (item.hab3_nome) push(ref(db, `${dbPath}/habilidades/raca_hab`), { titulo: item.hab3_nome, desc: item.hab3_desc });
+        } else {
+            let desc = item.desc;
+            let data = { titulo: item.titulo, desc: desc };
+            
+            if (currentCategory === 'loadout' || currentCategory === 'cofre') {
+                data.desc = `[${item.dominio} | Nível ${item.nivel} | ${item.tipo}]\n\n${item.desc}`;
+                data.teste = item.custo || "";
+            }
+            push(ref(db, `${dbPath}/habilidades/${currentCategory}`), data);
         }
 
-        let data = { titulo: item.titulo, desc: desc };
-        
-        if (currentCategory === 'armas' || currentCategory === 'loadout' || currentCategory === 'cofre') {
-            data.teste = teste;
-        }
-
-        push(ref(db, `${dbPath}/habilidades/${currentCategory}`), data);
         closeModal('modal-db-list');
     };
 
