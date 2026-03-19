@@ -16,10 +16,16 @@
         }
 
         body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; padding: 20px; margin: 0; }
-        h1 { text-align: center; color: var(--theme-light); text-transform: uppercase; letter-spacing: 2px; text-shadow: 0 0 10px rgba(255,170,170,0.3); border-bottom: 2px solid var(--theme-main); padding-bottom: 10px; margin-bottom: 30px; }
+        h1 { text-align: center; color: var(--theme-light); text-transform: uppercase; letter-spacing: 2px; text-shadow: 0 0 10px rgba(255,170,170,0.3); border-bottom: 2px solid var(--theme-main); padding-bottom: 10px; margin-bottom: 20px; }
         
-        .container { max-width: 1200px; margin: 0 auto; display: flex; flex-direction: column; gap: 30px; }
+        .container { max-width: 1200px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
         
+        /* --- NAVEGAÇÃO DE ABAS --- */
+        .tab-nav { display: flex; justify-content: center; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; }
+        .tab-btn { background: rgba(0,0,0,0.5); border: 2px solid var(--theme-border); color: #aaa; padding: 12px 25px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; text-transform: uppercase; font-size: 14px; letter-spacing: 1px; }
+        .tab-btn:hover { background: rgba(255,255,255,0.1); color: white; }
+        .tab-btn.active { background: var(--theme-main); color: white; border-color: var(--theme-light); box-shadow: 0 0 15px rgba(255, 170, 170, 0.4); }
+
         .card { background: var(--theme-card); border-radius: 12px; padding: 20px; border: 1px solid var(--theme-border); box-shadow: 0 4px 15px rgba(0,0,0,0.6); }
         .header-label { background: var(--theme-main); text-align: center; border-radius: 8px; padding: 10px 15px; margin-bottom: 15px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; border: 1px solid var(--theme-light); display: flex; justify-content: space-between; align-items: center; }
         
@@ -75,9 +81,14 @@
 
 <h1>Compêndio do Mestre</h1>
 
+<div class="tab-nav">
+    <button class="tab-btn active" onclick="switchTab('cartas', this)">🎴 Cartas de Domínio</button>
+    <button class="tab-btn" onclick="switchTab('passivas', this)">🛡️ Vantagens Passivas</button>
+</div>
+
 <div class="container">
     
-    <div class="card">
+    <div class="card" id="sec_cartas" style="display: block;">
         <div class="header-label">
             <span>Cartas de Domínio</span>
             <button class="btn-add" onclick="openCartaForm()">+ Criar Carta</button>
@@ -104,7 +115,7 @@
         </div>
     </div>
 
-    <div class="card">
+    <div class="card" id="sec_passivas" style="display: none;">
         <div class="header-label" style="background: #222; border-color: #555;">
             <span style="color: #ccc;">Vantagens Passivas</span>
             <button class="btn-add" style="background: #444; border-color: #777;" onclick="openPassivaForm()">+ Criar Passiva</button>
@@ -203,6 +214,20 @@
 
     let globalData = { passivas: {}, cartas: {} };
     let currentFilter = "Todos";
+
+    // --- FUNÇÃO PARA TROCAR ABAS ---
+    window.switchTab = (tabId, btnElement) => {
+        // Esconde tudo
+        document.getElementById('sec_cartas').style.display = 'none';
+        document.getElementById('sec_passivas').style.display = 'none';
+        
+        // Tira o "active" de todos os botões
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        
+        // Mostra a aba escolhida e deixa o botão aceso
+        document.getElementById(`sec_${tabId}`).style.display = 'block';
+        btnElement.classList.add('active');
+    };
 
     // ==========================================
     // DADOS PARA AUTO-POVOAMENTO
@@ -373,7 +398,7 @@
 
         globalData = dados || { passivas: {}, cartas: {} };
         renderPassivas(globalData.passivas);
-        applyFilter(); // Renderiza cartas já filtrando
+        applyFilter(); 
     });
 
     // --- RENDER PASSIVAS ---
