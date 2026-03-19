@@ -19,7 +19,7 @@
         .container { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; max-width: 1400px; width: 100%; }
         .col { display: flex; flex-direction: column; gap: 15px; }
         
-        /* --- EFEITOS NEON DAS LINHAGENS (Ativados pelo Jogador) --- */
+        /* --- EFEITOS NEON DAS LINHAGENS --- */
         body.forma-demon { --theme-main: #110000; --theme-light: #ff0000; --theme-card: #050000; --theme-border: #660000; }
         body.forma-demon .attr-box input, body.forma-demon #char_name { color: #ff0000 !important; text-shadow: 0 0 10px #ff0000; }
         body.forma-demon .attr-box { box-shadow: 0 0 15px rgba(255, 0, 0, 0.2); border-color: #ff0000; }
@@ -48,6 +48,10 @@
         
         label { font-size: 10px; color: var(--theme-light); font-weight: bold; margin-left: 10px; text-transform: uppercase; display: block; }
         
+        /* NOVO: Header compacto para seções com botão + */
+        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; margin-top: 10px; }
+        .section-header label { margin: 0; }
+
         .avatar-container { display: flex; flex-direction: column; align-items: center; margin-bottom: 10px; position: relative; }
         .avatar-circle { width: 140px; height: 140px; border-radius: 50%; border: 4px solid var(--theme-main); background: #222; overflow: hidden; display: flex; align-items: center; justify-content: center; cursor: pointer; background-size: cover; background-position: center; position: relative; transition: 0.3s; }
         .avatar-circle input[type="file"] { opacity: 0; position: absolute; width: 100%; height: 100%; cursor: pointer; }
@@ -91,8 +95,6 @@
         
         .armor-slot { width: 22px; height: 22px; border: 2px solid #aaa; border-radius: 4px; background: #222; cursor: pointer; transition: 0.2s; }
         .armor-slot.used { background: #ff4444; border-color: #ff0000; box-shadow: inset 0 0 5px #000; }
-        
-        /* Estilo do Slot Temporário */
         .armor-slot.temp { border-color: #ffd700; background: rgba(255, 215, 0, 0.1); }
         .armor-slot.temp:hover { box-shadow: 0 0 8px #ffd700; }
 
@@ -117,7 +119,8 @@
         .hab-body.open { display: block; }
         .hab-body textarea { min-height: 80px; resize: vertical; line-height: 1.4; font-size: 13px; }
         
-        .btn-add { background: #22aa22; color: white; border: none; border-radius: 50%; width: 24px; height: 24px; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; }
+        .btn-add { background: #22aa22; color: white; border: none; border-radius: 5px; padding: 2px 10px; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; }
+        .btn-add:hover { background: #2ebd2e; }
         .btn-del { color: #ff4444; background: transparent; border: none; cursor: pointer; font-weight: bold; font-size: 16px; }
 
         .xp-container { display: flex; align-items: center; justify-content: space-between; background: rgba(0,0,0,0.3); border-radius: 15px; padding: 10px; border: 1px solid var(--theme-border); margin-bottom: 10px; }
@@ -129,11 +132,16 @@
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 2000; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
         .modal-overlay.open { display: flex; }
         .modal-choice { background: var(--theme-card); padding: 20px; border-radius: 15px; border: 2px solid var(--theme-main); width: 300px; text-align: center; }
-        .btn-choice { width: 100%; padding: 15px; margin: 8px 0; background: rgba(0,0,0,0.3); border: 1px solid var(--theme-light); color: white; cursor: pointer; border-radius: 8px; font-weight: bold; text-transform: uppercase; }
+        .btn-choice { width: 100%; padding: 15px; margin: 8px 0; background: rgba(0,0,0,0.3); border: 1px solid var(--theme-light); color: white; cursor: pointer; border-radius: 8px; font-weight: bold; text-transform: uppercase; transition: 0.3s; }
+        .btn-choice:hover { background: rgba(255,255,255,0.1); }
 
         .mobile-nav { display: none; position: fixed; bottom: 0; left: 0; width: 100%; background: #0a0a0a; padding: 10px 20px; box-sizing: border-box; justify-content: space-between; align-items: center; border-top: 2px solid var(--theme-border); z-index: 1000; box-shadow: 0 -2px 10px rgba(0,0,0,0.8); }
         .mobile-nav button { background: var(--theme-main); color: white; border: 1px solid var(--theme-light); border-radius: 8px; padding: 10px 20px; font-weight: bold; font-size: 14px; cursor: pointer; text-transform: uppercase; }
         .mobile-nav span { color: var(--theme-light); font-weight: bold; font-size: 14px; }
+
+        /* Compendium List Items */
+        .db-item { background:rgba(0,0,0,0.5); border:1px solid #444; padding:12px; border-radius:8px; margin-bottom:8px; cursor:pointer; text-align: left; transition: 0.2s; }
+        .db-item:hover { border-color: var(--theme-light); background: rgba(255,255,255,0.05); }
 
         @media (max-width: 768px) { 
             .container { display: block; } 
@@ -254,44 +262,70 @@
         <div class="card">
             <div class="header-label">O Arsenal</div>
             
-            <label>Vantagens Passivas <button class="btn-add" onclick="openAddMenu('passivas')">+</button></label>
-            <div id="list_passivas" style="margin-top:5px; margin-bottom: 15px;"></div>
+            <div class="section-header">
+                <label>Vantagens Passivas</label>
+                <button class="btn-add" onclick="openAddMenu('passivas')">+ Add</button>
+            </div>
+            <div id="list_passivas" style="margin-bottom: 15px;"></div>
             
             <div class="header-label" style="background:#550000; border-color:#ff5555;">Loadout (Equipadas - Max 5)</div>
             <div id="list_loadout" style="margin-top:5px; margin-bottom: 15px;"></div>
-            <button class="btn-add" onclick="openAddMenu('loadout')" style="width:100%; border-radius:8px; margin-bottom:15px; background:#880000;">+ Equipar Carta de Domínio</button>
+            <button class="btn-add" onclick="openAddMenu('loadout')" style="width:100%; border-radius:8px; margin-bottom:15px; background:#880000; padding: 10px;">+ Equipar Carta de Domínio</button>
 
             <div class="header-label" style="background:#222; border-color:#555; color:#aaa;">O Cofre (Cartas Guardadas)</div>
             <div id="list_cofre" style="margin-top:5px;"></div>
-            <button class="btn-add" onclick="openAddMenu('cofre')" style="width:100%; border-radius:8px; margin-top:10px; background:#444;">+ Guardar Carta no Cofre</button>
+            <button class="btn-add" onclick="openAddMenu('cofre')" style="width:100%; border-radius:8px; margin-top:10px; margin-bottom: 20px; background:#444; padding: 10px;">+ Guardar Carta no Cofre</button>
+
+            <hr style="border:0; border-top:1px solid #5a1a1f; margin: 20px 0;">
+
+            <div class="section-header">
+                <label style="color: #aaa;">Habilidades de Classe</label>
+                <button class="btn-add" style="background: #444;" onclick="openAddMenu('classe_hab')">+ Add</button>
+            </div>
+            <div id="list_classe_hab" style="margin-bottom: 15px;"></div>
+
+            <div class="section-header">
+                <label style="color: #aaa;">Habilidades de Raça / Ancestralidade</label>
+                <button class="btn-add" style="background: #444;" onclick="openAddMenu('raca_hab')">+ Add</button>
+            </div>
+            <div id="list_raca_hab" style="margin-bottom: 15px;"></div>
+
         </div>
     </div>
 
     <div class="col" id="col-2">
         <div class="card">
             <div class="header-label">Armas e Equipamentos</div>
-            <label>Armas (Ataque) <button class="btn-add" onclick="openAddMenu('armas')">+</button></label>
-            <div id="list_armas" style="margin-top:5px; margin-bottom:15px;"></div>
+            
+            <div class="section-header">
+                <label>Armas (Ataque)</label>
+                <button class="btn-add" onclick="openAddMenu('armas')">+ Add</button>
+            </div>
+            <div id="list_armas" style="margin-bottom:15px;"></div>
 
-            <label>Inventário Geral <button class="btn-add" onclick="openAddMenu('inventario')">+</button></label>
-            <div id="list_inventario" style="margin-top:5px;"></div>
+            <div class="section-header">
+                <label>Inventário Geral</label>
+                <button class="btn-add" onclick="openAddMenu('inventario')">+ Add</button>
+            </div>
+            <div id="list_inventario" style="margin-bottom:15px;"></div>
             
-            <hr style="border:0; border-top:1px solid #5a1a1f; margin: 20px 0;">
-            
-            <div class="header-label">Progressão</div>
-            <div class="xp-container">
-                <div class="xp-display">
-                    <span class="xp-label">PONTOS DE DESPERTAR / XP</span>
-                    <span id="display_xp_total" class="xp-number">0</span>
-                </div>
-                <div>
-                    <button class="btn-xp" onclick="changeValXP(-1)" style="background:#444;">- Remover</button>
-                    <button class="btn-xp" onclick="changeValXP(1)">+ Adicionar</button>
+            <div id="xp_section" style="display:none;">
+                <hr style="border:0; border-top:1px solid #5a1a1f; margin: 20px 0;">
+                <div class="header-label">Progressão</div>
+                <div class="xp-container">
+                    <div class="xp-display">
+                        <span class="xp-label" style="font-size:10px; color:#aaa; display:block;">PONTOS DE DESPERTAR / XP</span>
+                        <span id="display_xp_total" class="xp-number">0</span>
+                    </div>
+                    <div>
+                        <button class="btn-xp" onclick="changeValXP(-1)" style="background:#444; margin-bottom:4px;">- Remover</button>
+                        <button class="btn-xp" onclick="changeValXP(1)">+ Adicionar</button>
+                    </div>
                 </div>
             </div>
             
             <div class="header-label" style="margin-top:20px;">Anotações Rápidas</div>
-            <textarea id="anotacoes" style="min-height: 150px; border-radius: 10px;" placeholder="Use este espaço para ferimentos persistentes, missões ou lore..."></textarea>
+            <textarea id="anotacoes" style="min-height: 250px; border-radius: 10px; resize: vertical;" placeholder="Use este espaço para ferimentos persistentes, missões ou lore..."></textarea>
         </div>
     </div>
 </div>
@@ -305,8 +339,17 @@
 <div class="modal-overlay" id="modal-choice" onclick="closeModal('modal-choice')">
     <div class="modal-choice" onclick="event.stopPropagation()">
         <h3 style="margin-top:0; color:var(--theme-light);">ADICIONAR ITEM</h3>
+        <button class="btn-choice" id="btn-db-add" onclick="openDBModal()" style="background:#800000; border-color:#ffaaaa; color:white;">📚 Escolher do Compêndio</button>
         <button class="btn-choice" onclick="createManual()">✏️ Criar Manualmente</button>
         <button class="btn-choice" style="background:#444;" onclick="closeModal('modal-choice')">Cancelar</button>
+    </div>
+</div>
+
+<div class="modal-overlay" id="modal-db-list" onclick="closeModal('modal-db-list')">
+    <div class="modal-choice" onclick="event.stopPropagation()" style="width: 90%; max-width: 500px; max-height: 80vh; overflow-y: auto;">
+        <h3 style="margin-top:0; color:var(--theme-light); border-bottom:1px solid #555; padding-bottom:10px;">COMPÊNDIO</h3>
+        <div id="db-list-content" style="margin-top: 15px;"></div>
+        <button class="btn-choice" style="background:#444; margin-top: 15px;" onclick="closeModal('modal-db-list')">Fechar</button>
     </div>
 </div>
 
@@ -332,9 +375,17 @@
     const dbPath = `fichas_v2/${fichaID}`; 
 
     let globalCharData = {};
+    let globalCompendium = { passivas: {}, cartas: {} };
     let currentCategory = ""; 
     
-    // Controle da visualização mobile
+    // --- PUXAR BANCO DE DADOS GLOBAL ---
+    onValue(ref(db, 'banco_dados_v2'), (snapshot) => {
+        if (snapshot.exists()) {
+            globalCompendium = snapshot.val();
+        }
+    });
+
+    // --- CONTROLE MOBILE ---
     let currentCol = 0;
     const totalCols = 3;
     window.changeCol = (dir) => {
@@ -347,7 +398,7 @@
         window.scrollTo(0, 0); 
     };
 
-    // Temas de Cor
+    // --- TEMAS ---
     const themes = { 
         sangue: { main: '#800000', card: '#2a0b10', border: '#5a1a1f', input: '#1a0508', light: '#ffaaaa' }, 
         oceano: { main: '#0d47a1', card: '#0a192f', border: '#1565c0', input: '#0d2345', light: '#82b1ff' }, 
@@ -414,9 +465,7 @@
             let novoStress = stressAtual + custoEstresse;
 
             if (novoStress > stressMax) {
-                if(!confirm(`Ativar "${nomeHabilidade}" custa ${custoEstresse} Pontos de Estresse, mas você não tem limite suficiente para aguentar isso com segurança.\n\nDeseja forçar a habilidade mesmo assim (e maximizar seu Estresse)?`)) {
-                    return; 
-                }
+                if(!confirm(`Ativar "${nomeHabilidade}" custa ${custoEstresse} Pontos de Estresse. Deseja forçar a habilidade mesmo assim?`)) return; 
                 novoStress = stressMax; 
             }
 
@@ -429,11 +478,14 @@
 
     function updateVisualModes() {
         const tg = globalCharData.toggles || {};
+        const ascUnlocked = tg.asc_unlocked === true;
         
+        // Exibe ou oculta seções de Ascensão (Barra e XP)
         const ascContainer = document.getElementById('asc_container');
-        if(ascContainer) {
-            ascContainer.style.display = tg.asc_unlocked ? 'block' : 'none';
-        }
+        if(ascContainer) ascContainer.style.display = ascUnlocked ? 'block' : 'none';
+        
+        const xpSection = document.getElementById('xp_section');
+        if(xpSection) xpSection.style.display = ascUnlocked ? 'block' : 'none';
 
         document.body.classList.remove('forma-demon', 'forma-beast', 'forma-sacra');
         if(tg.forma_ativa) {
@@ -443,18 +495,17 @@
         const btnContainer = document.getElementById('linhagem_btn_container');
         if(btnContainer) {
             btnContainer.innerHTML = ""; 
-            
             if(tg.linhagem_1) {
                 const isActive = tg.forma_ativa === 'demon';
-                btnContainer.innerHTML += `<button class="btn-forma ${isActive ? 'active' : ''}" style="--theme-light: #ff5555; color: ${isActive ? '#000' : '#ff5555'};" onclick="toggleForma('demon')" title="Custo: 3 Estresse">😈 Chamado do Inferno</button>`;
+                btnContainer.innerHTML += `<button class="btn-forma ${isActive ? 'active' : ''}" style="--theme-light: #ff5555; color: ${isActive ? '#000' : '#ff5555'};" onclick="toggleForma('demon')">😈 Chamado do Inferno</button>`;
             }
             if(tg.linhagem_2) {
                 const isActive = tg.forma_ativa === 'beast';
-                btnContainer.innerHTML += `<button class="btn-forma ${isActive ? 'active' : ''}" style="--theme-light: #55ff55; color: ${isActive ? '#000' : '#55ff55'};" onclick="toggleForma('beast')" title="Custo: 2 Estresse">🐺 Despertar Primordial</button>`;
+                btnContainer.innerHTML += `<button class="btn-forma ${isActive ? 'active' : ''}" style="--theme-light: #55ff55; color: ${isActive ? '#000' : '#55ff55'};" onclick="toggleForma('beast')">🐺 Despertar Primordial</button>`;
             }
             if(tg.linhagem_3) {
                 const isActive = tg.forma_ativa === 'sacra';
-                btnContainer.innerHTML += `<button class="btn-forma ${isActive ? 'active' : ''}" style="--theme-light: #00e5ff; color: ${isActive ? '#000' : '#00e5ff'};" onclick="toggleForma('sacra')" title="Custo: 2 Estresse">👼 Vislumbre da Evolução</button>`;
+                btnContainer.innerHTML += `<button class="btn-forma ${isActive ? 'active' : ''}" style="--theme-light: #00e5ff; color: ${isActive ? '#000' : '#00e5ff'};" onclick="toggleForma('sacra')">👼 Vislumbre da Evolução</button>`;
             }
         }
     }
@@ -474,7 +525,6 @@
         update(ref(db, dbPath), { xp_total: newXp });
     };
 
-    // --- NOVA LÓGICA DE ARMADURA ---
     window.addArmorSlot = (mod) => {
         let max = globalCharData.armor_max || 0;
         let newMax = max + mod; if(newMax < 0) newMax = 0;
@@ -507,13 +557,11 @@
         let used = globalCharData.armor_used || {};
         let temps = globalCharData.armor_temp || 0;
 
-        // Renderiza Slots Permanentes
         for(let i=0; i < max; i++) {
             let isUsed = used[`slot_${i}`] === true;
             container.innerHTML += `<div class="armor-slot ${isUsed ? 'used' : ''}" onclick="toggleArmorSlot(${i})" title="Slot Permanente"></div>`;
         }
         
-        // Renderiza Slots Temporários (sempre no final)
         for(let j=0; j < temps; j++) {
             container.innerHTML += `<div class="armor-slot temp" onclick="consumeArmorTemp(${j})" title="Slot Temporário (Some ao gastar)"></div>`;
         }
@@ -559,7 +607,7 @@
         updateBarVisual('hope', dados.hope_at, dados.hope_max);
         updateBarVisual('asc', dados.asc_at, 10);
 
-        ['passivas', 'loadout', 'cofre', 'armas', 'inventario'].forEach(cat => renderHabs(cat, dados.habilidades?.[cat]));
+        ['passivas', 'loadout', 'cofre', 'classe_hab', 'raca_hab', 'armas', 'inventario'].forEach(cat => renderHabs(cat, dados.habilidades?.[cat]));
         
         renderArmorSlots();
         calculateDerivedStats();
@@ -572,8 +620,18 @@
         const el = document.getElementById('bar_' + type); if (el) el.style.width = percent + '%';
     }
 
+    // --- MODAIS E CONTROLES DE ADIÇÃO ---
     window.openAddMenu = (category) => {
         currentCategory = category;
+        const dbBtn = document.getElementById('btn-db-add');
+        
+        // Só mostra a opção do Compêndio para categorias que têm banco de dados
+        if (category === 'passivas' || category === 'loadout' || category === 'cofre') {
+            dbBtn.style.display = 'block';
+        } else {
+            dbBtn.style.display = 'none';
+        }
+        
         document.getElementById('modal-choice').classList.add('open');
     };
 
@@ -586,6 +644,69 @@
         push(ref(db, `${dbPath}/habilidades/${currentCategory}`), data);
     };
 
+    // --- LÓGICA DO COMPÊNDIO NA FICHA ---
+    window.openDBModal = () => {
+        closeModal('modal-choice');
+        const container = document.getElementById('db-list-content');
+        container.innerHTML = "";
+        
+        let dataObj = {};
+        let isCartas = false;
+
+        if (currentCategory === 'passivas') {
+            dataObj = globalCompendium.passivas || {};
+        } else if (currentCategory === 'loadout' || currentCategory === 'cofre') {
+            dataObj = globalCompendium.cartas || {};
+            isCartas = true;
+        }
+
+        let itens = Object.keys(dataObj).map(key => ({ id: key, ...dataObj[key] }));
+
+        if (itens.length === 0) {
+            container.innerHTML = "<p style='color:#aaa; text-align:center;'>Nenhum item encontrado no banco de dados.</p>";
+        } else {
+            if (isCartas) {
+                itens.sort((a,b) => (a.dominio || "").localeCompare(b.dominio || ""));
+            } else {
+                itens.sort((a,b) => a.titulo.localeCompare(b.titulo));
+            }
+
+            itens.forEach(item => {
+                let extraInfo = isCartas ? `<div style="font-size:10px; color:var(--theme-light); margin-top:3px;">${item.dominio} - Nível ${item.nivel}</div>` : "";
+                container.innerHTML += `
+                    <div class="db-item" onclick="addFromDB('${item.id}', ${isCartas})">
+                        <strong style="color:white; font-size:14px;">${item.titulo}</strong>
+                        ${extraInfo}
+                    </div>
+                `;
+            });
+        }
+        document.getElementById('modal-db-list').classList.add('open');
+    };
+
+    window.addFromDB = (itemId, isCartas) => {
+        let item = isCartas ? globalCompendium.cartas[itemId] : globalCompendium.passivas[itemId];
+        if (!item) return;
+
+        let desc = item.desc;
+        let teste = "";
+
+        if (isCartas) {
+            desc = `[${item.dominio} | Nível ${item.nivel} | ${item.tipo}]\n\n${item.desc}`;
+            teste = item.custo || "";
+        }
+
+        let data = { titulo: item.titulo, desc: desc };
+        // Adiciona o campo "teste/custo" se for uma categoria que exige isso
+        if (currentCategory === 'armas' || currentCategory === 'loadout' || currentCategory === 'cofre') {
+            data.teste = teste;
+        }
+
+        push(ref(db, `${dbPath}/habilidades/${currentCategory}`), data);
+        closeModal('modal-db-list');
+    };
+
+    // --- MANIPULAÇÃO DE ITENS DA FICHA ---
     window.removeItem = (category, id) => { if(confirm("Apagar item?")) remove(ref(db, `${dbPath}/habilidades/${category}/${id}`)); };
     window.toggleHab = (id) => { document.getElementById('body_' + id).classList.toggle('open'); };
     window.saveHab = (cat, id, field, val) => { update(ref(db, `${dbPath}/habilidades/${cat}/${id}`), { [field]: val }); };
@@ -598,7 +719,7 @@
         Object.keys(data).forEach(id => { 
             const item = data[id]; 
             const placeholderCusto = (category === 'loadout' || category === 'cofre') ? 'Custo/Dano' : (category === 'armas' ? 'Dano (ex: 1d10)' : 'Valor');
-            const showDiceInput = (category !== 'passivas' && category !== 'inventario');
+            const showDiceInput = (category !== 'passivas' && category !== 'inventario' && category !== 'classe_hab' && category !== 'raca_hab');
 
             const div = document.createElement('div'); 
             div.className = 'hab-item'; 
