@@ -134,8 +134,10 @@
         /* Form Config Player */
         #config-player-container { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2100; align-items: center; justify-content: center; }
         #config-player-container.open { display: flex; }
-        .config-box { background: #222; border: 2px solid var(--accent); padding: 20px; border-radius: 10px; min-width: 300px; text-align: center; }
+        .config-box { background: #222; border: 2px solid var(--accent); padding: 20px; border-radius: 10px; min-width: 320px; text-align: left; }
         .config-option { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; border-bottom: 1px solid #444; padding-bottom: 5px; }
+        .config-box h3 { text-align: center; margin-top: 0; }
+        .config-box p { text-align: center; }
     </style>
 </head>
 <body>
@@ -232,18 +234,31 @@
 
     <div id="config-player-container">
         <div class="config-box">
-            <h3 style="margin-top:0;">Forçar Modos de Combate</h3>
-            <p style="font-size:12px; color:#aaa; margin-bottom:15px;">Opcional: Ative esses modos para alterar o visual da ficha do jogador remotamente.</p>
+            <h3 style="margin-top:0;">Controle do Mestre</h3>
+            <p style="font-size:12px; color:#aaa; margin-bottom:15px;">Ative eventos remotamente na ficha deste jogador.</p>
             <input type="hidden" id="cfg_player_id">
+            
+            <div class="config-option" style="background: rgba(0, 229, 255, 0.1); padding: 10px; border-radius: 8px;">
+                <span style="color:#00e5ff; font-weight:bold;">🌌 Desbloquear Barra de Ascensão</span>
+                <input type="checkbox" id="check_asc_unlocked">
+            </div>
+
+            <p style="font-size:12px; font-weight:bold; color:#ffaaaa; margin-top:15px; text-align:left;">HABILIDADES DE LINHAGEM / RAÇA:</p>
+            
             <div class="config-option">
-                <span>🌌 Ascensão Arcana</span>
-                <input type="checkbox" id="check_asc">
+                <span>😈 Forma Demoníaca</span>
+                <input type="checkbox" id="check_linhagem_1">
             </div>
             <div class="config-option">
-                <span>🔥 Poder Ancestral</span>
-                <input type="checkbox" id="check_anc">
+                <span>🐺 Forma Bestial</span>
+                <input type="checkbox" id="check_linhagem_2">
             </div>
-            <button class="btn-action btn-save" onclick="savePlayerConfig()">Confirmar</button>
+            <div class="config-option">
+                <span>👼 Forma Divina</span>
+                <input type="checkbox" id="check_linhagem_3">
+            </div>
+
+            <button class="btn-action btn-save" onclick="savePlayerConfig()">Salvar e Enviar</button>
             <button class="btn-action btn-cancel" onclick="document.getElementById('config-player-container').classList.remove('open')">Fechar</button>
         </div>
     </div>
@@ -347,19 +362,34 @@
     onValue(ref(db, pathPlayers), (snap) => { globalPlayers = snap.val() || {}; renderAll(); });
     onValue(ref(db, pathNpcs), (snap) => { globalNpcs = snap.val() || {}; renderAll(); });
 
+    // ABRIR CONFIGURAÇÃO REMOTA DO MESTRE
     window.openPlayerConfig = (id) => {
         const f = globalPlayers[id]; if(!f) return;
         document.getElementById('cfg_player_id').value = id;
-        document.getElementById('check_asc').checked = (f.toggles && f.toggles.ascensao === true);
-        document.getElementById('check_anc').checked = (f.toggles && f.toggles.ancestral === true);
+        
+        // Verifica Toggles
+        document.getElementById('check_asc_unlocked').checked = (f.toggles && f.toggles.asc_unlocked === true);
+        document.getElementById('check_linhagem_1').checked = (f.toggles && f.toggles.linhagem_1 === true);
+        document.getElementById('check_linhagem_2').checked = (f.toggles && f.toggles.linhagem_2 === true);
+        document.getElementById('check_linhagem_3').checked = (f.toggles && f.toggles.linhagem_3 === true);
+        
         document.getElementById('config-player-container').classList.add('open');
     };
 
+    // SALVAR CONFIGURAÇÃO REMOTA DO MESTRE
     window.savePlayerConfig = () => {
         const id = document.getElementById('cfg_player_id').value;
-        const asc = document.getElementById('check_asc').checked;
-        const anc = document.getElementById('check_anc').checked;
-        update(ref(db, `${pathPlayers}/${id}`), { 'toggles/ascensao': asc, 'toggles/ancestral': anc });
+        const asc_un = document.getElementById('check_asc_unlocked').checked;
+        const lin_1 = document.getElementById('check_linhagem_1').checked;
+        const lin_2 = document.getElementById('check_linhagem_2').checked;
+        const lin_3 = document.getElementById('check_linhagem_3').checked;
+        
+        update(ref(db, `${pathPlayers}/${id}`), { 
+            'toggles/asc_unlocked': asc_un, 
+            'toggles/linhagem_1': lin_1,
+            'toggles/linhagem_2': lin_2,
+            'toggles/linhagem_3': lin_3
+        });
         document.getElementById('config-player-container').classList.remove('open');
     };
 
@@ -369,7 +399,7 @@
         const updates = {}; keys.forEach(id => { updates[`${pathPlayers}/${id}/overlay_mode`] = targetMode; }); update(ref(db), updates);
     };
 
-    // PLAYER CARD V2 (HP, Stress, Hope)
+    // PLAYER CARD V2 (HP, Stress, Hope + Avisos de Toggles)
     function createPlayerCard(id, f) {
         const el = document.createElement('div'); el.className = 'player-card'; el.draggable = true; el.ondragstart = (e) => drag(e, id, 'players');
         
@@ -378,14 +408,25 @@
         const hoAt = parseInt(f.hope_at)||0; const hoMax = parseInt(f.hope_max)||5;
         const hpP = Math.min((hpAt/hpMax)*100,100); const stP = Math.min((stAt/stMax)*100,100); const hoP = Math.min((hoAt/hoMax)*100,100);
         
+        // Verifica se o mestre liberou a barra de Ascensão Arcana
         let ascHtml = "";
-        const nivel = parseInt(f.nivel)||1;
-        if(nivel >= 5) {
+        if(f.toggles && f.toggles.asc_unlocked) {
             const ascAt = parseInt(f.asc_at)||0; const ascMax = 10;
-            ascHtml = `<div style="font-size:11px; text-align:center; color:#00e5ff; margin-top:5px; font-weight:bold;">Ascensão: ${ascAt}/${ascMax} PA</div>`;
+            ascHtml = `<div style="font-size:11px; text-align:center; color:#00e5ff; margin-top:5px; font-weight:bold;">🌌 ASCENSÃO ${ascAt}/${ascMax} PA</div>`;
         }
 
-        const linkFicha = `${baseURL}ed_sistemav2_ficha.html?p=${id}`; const linkOverlay = `${baseURL}overlay.html?p=${id}`;
+        // Verifica quais Linhagens estão ativas e mostra para o mestre
+        let activeLin = [];
+        if(f.toggles && f.toggles.linhagem_1) activeLin.push("😈 Demoníaca");
+        if(f.toggles && f.toggles.linhagem_2) activeLin.push("🐺 Bestial");
+        if(f.toggles && f.toggles.linhagem_3) activeLin.push("👼 Divina");
+        
+        let linHtml = "";
+        if(activeLin.length > 0) {
+            linHtml = `<div style="font-size:10px; text-align:center; color:#ff5555; margin-top:3px; font-weight:bold;">FORMA ATIVA: ${activeLin.join(", ")}</div>`;
+        }
+
+        const linkFicha = `${baseURL}ed_sistemav2_ficha.html?p=${id}`;
         
         el.innerHTML = `
             <div class="player-header">
@@ -394,7 +435,7 @@
                     <h2>${f.char_name || id}</h2>
                     <div class="controls-row">
                         <button class="btn-small" onclick="window.open('${linkFicha}', '_blank')" title="Abrir Ficha">📄 Ficha</button>
-                        <button class="btn-small btn-cfg" onclick="openPlayerConfig('${id}')">⚙️ Toggles</button>
+                        <button class="btn-small btn-cfg" onclick="openPlayerConfig('${id}')">⚙️ Poderes</button>
                     </div>
                 </div>
             </div>
@@ -403,6 +444,7 @@
             <div class="status-bar" style="margin-top:4px;"><div class="bar-text">ESTRESSE ${stAt}/${stMax}</div><div class="bar-fill stress" style="width:${stP}%"></div></div>
             <div class="status-bar" style="margin-top:4px;"><div class="bar-text">ESPERANÇA ${hoAt}/${hoMax}</div><div class="bar-fill hope" style="width:${hoP}%"></div></div>
             ${ascHtml}
+            ${linHtml}
 
             <div class="xp-control"><div class="xp-display-mini">Despertar (XP): ${f.xp_total||0}</div></div>
             <div class="xp-control">
