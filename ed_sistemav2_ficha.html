@@ -30,10 +30,10 @@
         body.forma-beast .attr-box { box-shadow: 0 0 15px rgba(0, 255, 0, 0.2); border-color: #00ff00; }
         body.forma-beast .avatar-circle { box-shadow: 0 0 30px rgba(0, 255, 0, 0.6); border-color: #00ff00; }
 
-        body.forma-divine { --theme-main: #00111a; --theme-light: #00e5ff; --theme-card: #00050a; --theme-border: #005566; }
-        body.forma-divine .attr-box input, body.forma-divine #char_name { color: #00e5ff !important; text-shadow: 0 0 10px #00e5ff; }
-        body.forma-divine .attr-box { box-shadow: 0 0 15px rgba(0, 229, 255, 0.2); border-color: #00e5ff; }
-        body.forma-divine .avatar-circle { box-shadow: 0 0 30px rgba(0, 229, 255, 0.6); border-color: #00e5ff; }
+        body.forma-sacra { --theme-main: #00111a; --theme-light: #00e5ff; --theme-card: #00050a; --theme-border: #005566; }
+        body.forma-sacra .attr-box input, body.forma-sacra #char_name { color: #00e5ff !important; text-shadow: 0 0 10px #00e5ff; }
+        body.forma-sacra .attr-box { box-shadow: 0 0 15px rgba(0, 229, 255, 0.2); border-color: #00e5ff; }
+        body.forma-sacra .avatar-circle { box-shadow: 0 0 30px rgba(0, 229, 255, 0.6); border-color: #00e5ff; }
 
         /* Botões de Transformação */
         .btn-forma { background: rgba(0,0,0,0.5); border: 1px solid var(--theme-light); color: var(--theme-light); padding: 6px 15px; border-radius: 20px; font-weight: bold; cursor: pointer; transition: 0.3s; text-transform: uppercase; font-size: 11px; box-shadow: 0 0 10px rgba(0,0,0,0.5); }
@@ -326,50 +326,82 @@
         }
     }
 
-    // BOTÃO DO JOGADOR PARA ATIVAR A FORMA
+    // BOTÃO DO JOGADOR PARA ATIVAR A FORMA E COBRAR CUSTOS
     window.toggleForma = (formaType) => {
         const current = globalCharData.toggles?.forma_ativa;
-        // Se clicar na que já está ativa, ele desliga. Se não, ele liga a nova.
-        const newForm = (current === formaType) ? null : formaType;
-        update(ref(db, `${dbPath}/toggles`), { forma_ativa: newForm });
+        
+        if (current === formaType) {
+            // DESLIGANDO A FORMA ATUAL
+            let updates = { 'toggles/forma_ativa': null };
+            
+            // Punição da Sacra ao desativar
+            if (current === 'sacra') {
+                let hpAtual = parseInt(globalCharData.hp_at) || 0;
+                updates['hp_at'] = Math.max(0, hpAtual - 1); // Tira 1 PV
+                alert("Vislumbre da Evolução encerrado!\n\nO seu corpo rejeita a mutação drástica e você sofre 1 Dano Menor (-1 PV).");
+            }
+            
+            update(ref(db, `${dbPath}`), updates);
+        } else {
+            // LIGANDO A NOVA FORMA
+            let custoEstresse = 0;
+            let nomeHabilidade = "";
+            if (formaType === 'demon') { custoEstresse = 3; nomeHabilidade = "O Chamado do Inferno"; }
+            if (formaType === 'beast') { custoEstresse = 2; nomeHabilidade = "Despertar Primordial"; }
+            if (formaType === 'sacra') { custoEstresse = 2; nomeHabilidade = "Vislumbre da Evolução"; }
+
+            let stressAtual = parseInt(globalCharData.stress_at) || 0;
+            let stressMax = parseInt(globalCharData.stress_max) || 5;
+            let novoStress = stressAtual + custoEstresse;
+
+            // Checa se o jogador vai estourar o limite de estresse
+            if (novoStress > stressMax) {
+                if(!confirm(`Ativar "${nomeHabilidade}" custa ${custoEstresse} Pontos de Estresse, mas você não tem limite suficiente para aguentar isso com segurança.\n\nDeseja forçar a habilidade mesmo assim (e maximizar seu Estresse)?`)) {
+                    return; // Cancela a ativação se ele tiver medo
+                }
+                novoStress = stressMax; // Se aceitar, o estresse bate no teto
+            }
+
+            // Atualiza o banco ligando a forma e cobrando o estresse
+            update(ref(db, `${dbPath}`), { 
+                'toggles/forma_ativa': formaType,
+                'stress_at': novoStress
+            });
+        }
     };
 
     function updateVisualModes() {
         const tg = globalCharData.toggles || {};
         
-        // 1. Mostrar barra de ascensão (só a barra, sem neon no corpo inteiro)
         const ascContainer = document.getElementById('asc_container');
         if(ascContainer) {
             ascContainer.style.display = tg.asc_unlocked ? 'block' : 'none';
         }
 
-        // 2. Controlar o EFEITO NEON da ficha com base na forma ativa
-        document.body.classList.remove('forma-demon', 'forma-beast', 'forma-divine');
+        document.body.classList.remove('forma-demon', 'forma-beast', 'forma-sacra');
         if(tg.forma_ativa) {
             document.body.classList.add(`forma-${tg.forma_ativa}`);
         }
 
-        // 3. Renderizar botões de Linhagem se o Mestre liberou no Painel
         const btnContainer = document.getElementById('linhagem_btn_container');
         if(btnContainer) {
-            btnContainer.innerHTML = ""; // limpa
+            btnContainer.innerHTML = ""; 
             
             if(tg.linhagem_1) {
                 const isActive = tg.forma_ativa === 'demon';
-                btnContainer.innerHTML += `<button class="btn-forma ${isActive ? 'active' : ''}" style="--theme-light: #ff5555; color: ${isActive ? '#000' : '#ff5555'};" onclick="toggleForma('demon')">😈 Forma Demoníaca</button>`;
+                btnContainer.innerHTML += `<button class="btn-forma ${isActive ? 'active' : ''}" style="--theme-light: #ff5555; color: ${isActive ? '#000' : '#ff5555'};" onclick="toggleForma('demon')" title="Custo: 3 Estresse">😈 Chamado do Inferno</button>`;
             }
             if(tg.linhagem_2) {
                 const isActive = tg.forma_ativa === 'beast';
-                btnContainer.innerHTML += `<button class="btn-forma ${isActive ? 'active' : ''}" style="--theme-light: #55ff55; color: ${isActive ? '#000' : '#55ff55'};" onclick="toggleForma('beast')">🐺 Forma Bestial</button>`;
+                btnContainer.innerHTML += `<button class="btn-forma ${isActive ? 'active' : ''}" style="--theme-light: #55ff55; color: ${isActive ? '#000' : '#55ff55'};" onclick="toggleForma('beast')" title="Custo: 2 Estresse">🐺 Despertar Primordial</button>`;
             }
             if(tg.linhagem_3) {
-                const isActive = tg.forma_ativa === 'divine';
-                btnContainer.innerHTML += `<button class="btn-forma ${isActive ? 'active' : ''}" style="--theme-light: #00e5ff; color: ${isActive ? '#000' : '#00e5ff'};" onclick="toggleForma('divine')">👼 Forma Divina / Lunar</button>`;
+                const isActive = tg.forma_ativa === 'sacra';
+                btnContainer.innerHTML += `<button class="btn-forma ${isActive ? 'active' : ''}" style="--theme-light: #00e5ff; color: ${isActive ? '#000' : '#00e5ff'};" onclick="toggleForma('sacra')" title="Custo: 2 Estresse">👼 Vislumbre da Evolução</button>`;
             }
         }
     }
 
-    // Modificando Barras
     window.changeVal = (type, mod) => {
         let current = parseInt(globalCharData[`${type}_at`]) || 0;
         let max = parseInt(globalCharData[`${type}_max`]) || (type === 'asc' ? 10 : 5);
@@ -385,7 +417,6 @@
         update(ref(db, dbPath), { xp_total: newXp });
     };
 
-    // --- SLOTS DE ARMADURA ---
     window.addArmorSlot = (mod) => {
         let max = globalCharData.armor_max || 0;
         let newMax = max + mod; if(newMax < 0) newMax = 0;
@@ -409,7 +440,6 @@
         }
     }
 
-    // Listeners de Input
     document.addEventListener('input', (e) => {
         const target = e.target;
         if (camposParaSalvar.includes(target.id)) {
@@ -417,7 +447,6 @@
         }
     });
 
-    // Recebendo Dados
     onValue(ref(db, dbPath), (snapshot) => {
         const dados = snapshot.val(); 
         if (!dados) {
@@ -426,7 +455,6 @@
         }
         globalCharData = dados;
 
-        // Tema
         if (dados.color_theme) { 
             const t = themes[dados.color_theme]; 
             if (t) { 
@@ -465,7 +493,6 @@
         const el = document.getElementById('bar_' + type); if (el) el.style.width = percent + '%';
     }
 
-    // --- MODAIS E LISTAS ---
     window.openAddMenu = (category) => {
         currentCategory = category;
         document.getElementById('modal-choice').classList.add('open');
@@ -510,7 +537,6 @@
         }); 
     }
 
-    // Upload de Imagem
     document.getElementById('img_upload').addEventListener('change', (e) => { const file = e.target.files[0]; const reader = new FileReader(); reader.onload = (readerEvent) => { const image = new Image(); image.onload = () => { const canvas = document.createElement('canvas'); const maxSize = 300; let width = image.width; let height = image.height; if (width > height) { if (width > maxSize) { height *= maxSize / width; width = maxSize; } } else { if (height > maxSize) { width *= maxSize / height; height = maxSize; } } canvas.width = width; canvas.height = height; const ctx = canvas.getContext('2d'); ctx.drawImage(image, 0, 0, width, height); const dataUrl = canvas.toDataURL('image/jpeg', 0.7); document.getElementById('avatar_display').style.backgroundImage = `url(${dataUrl})`; update(ref(db, dbPath), { char_img: dataUrl }); }; image.src = readerEvent.target.result; }; reader.readAsDataURL(file); });
 </script>
 </body>
