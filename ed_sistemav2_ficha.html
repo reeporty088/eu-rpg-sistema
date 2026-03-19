@@ -120,8 +120,6 @@
             <div class="avatar-container">
                 <div class="avatar-circle" id="avatar_display"><input type="file" id="img_upload" accept="image/*"></div>
                 <button class="top-btn" id="theme-btn" onclick="toggleColorPicker()">🎨</button>
-                <button class="top-btn" id="asc-btn" onclick="toggleAbility('ascensao')" title="Ascensão Arcana">🌌</button>
-                <button class="top-btn" id="ancestral-btn" onclick="toggleAbility('ancestral')" title="Poder Ancestral">🔥</button>
                 <div id="colorPicker" class="color-picker"></div>
                 <input type="text" id="char_name" style="background:transparent; border:none; text-align:center; font-size:20px; font-weight:bold; margin-top:10px; color:white;" placeholder="NOME DO PERSONAGEM">
             </div>
@@ -333,8 +331,20 @@
 
     function updateVisualModes() {
         const tg = globalCharData.toggles || {};
-        document.body.classList.toggle('ascensao-mode', !!tg.ascensao);
-        document.body.classList.toggle('ancestral-mode', !!tg.ancestral);
+        
+        // Verifica se o Mestre liberou alguma Linhagem no painel dele
+        const temLinhagemAtiva = (tg.linhagem_1 || tg.linhagem_2 || tg.linhagem_3);
+        
+        // Se a Ascensão Arcana for liberada, mostra as bordas ciano
+        document.body.classList.toggle('ascensao-mode', !!tg.asc_unlocked);
+        // Se alguma Linhagem for ativada, mostra as bordas vermelhas
+        document.body.classList.toggle('ancestral-mode', !!temLinhagemAtiva);
+
+        // Controla se a barra da Ascensão aparece ou não (agora ignorando o nível)
+        const ascContainer = document.getElementById('asc_container');
+        if(ascContainer) {
+            ascContainer.style.display = tg.asc_unlocked ? 'block' : 'none';
+        }
     }
 
     // Modificando Barras
