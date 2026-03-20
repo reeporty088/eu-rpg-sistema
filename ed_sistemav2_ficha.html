@@ -108,7 +108,7 @@
         .thresh-box div:first-child { font-size: 9px; font-weight: bold; letter-spacing: 1px; }
         .thresh-val { font-size: 18px; font-weight: bold; }
 
-        /* HABILIDADES & CARTAS (Padrão) */
+        /* HABILIDADES & CARTAS */
         .hab-item { background: rgba(0,0,0,0.3); border: 1px solid var(--theme-border); border-radius: 10px; margin-bottom: 8px; overflow: hidden; }
         .hab-header { display: flex; align-items: center; padding: 8px; gap: 5px; }
         .hab-title { flex-grow: 1; font-weight: bold; border-radius: 10px !important; margin: 0 !important; font-size: 13px; }
@@ -143,13 +143,14 @@
         .btn-choice { width: 100%; padding: 15px; margin: 8px 0; background: rgba(0,0,0,0.3); border: 1px solid var(--theme-light); color: white; cursor: pointer; border-radius: 8px; font-weight: bold; text-transform: uppercase; transition: 0.3s; }
         .btn-choice:hover { background: rgba(255,255,255,0.1); }
 
-        /* --- ESTILOS DO NOVO MODAL DE COMPÊNDIO --- */
+        /* --- ESTILOS DO NOVO MODAL DE COMPÊNDIO E DISCENTE --- */
         .db-modal-container { width: 95%; max-width: 900px; max-height: 85vh; display: flex; flex-direction: column; overflow: hidden; background: var(--theme-card); padding: 20px; border-radius: 15px; border: 2px solid var(--theme-main); }
         .db-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; overflow-y: auto; padding-right: 5px; flex-grow: 1; text-align: left; }
         
-        /* Estilo das Cartas no Modal */
         .skill-card { background: linear-gradient(145deg, #1a0508 0%, #0d0204 100%); border: 1px solid var(--theme-border); border-radius: 10px; padding: 12px; display: flex; flex-direction: column; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 8px rgba(0,0,0,0.5); }
         .skill-card:hover { border-color: var(--theme-light); transform: translateY(-2px); box-shadow: 0 6px 12px rgba(255,170,170,0.2); }
+        .skill-card.selected-raca { border-color: #ffaaaa; box-shadow: 0 0 15px rgba(255, 170, 170, 0.4); border-width: 2px; }
+        
         .card-badges { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 9px; font-weight: bold; text-transform: uppercase; }
         .badge-domain { background: var(--theme-main); color: white; padding: 2px 6px; border-radius: 4px; border: 1px solid var(--theme-light); }
         .badge-level { background: #d4a017; color: black; padding: 2px 6px; border-radius: 4px; }
@@ -158,11 +159,18 @@
         .card-meta strong { color: #ddd; }
         .card-desc { font-size: 12px; color: #ccc; line-height: 1.4; white-space: pre-wrap; margin-bottom: 5px; }
 
-        /* Estilo das Passivas no Modal */
         .passiva-card { background: rgba(0,0,0,0.6); border: 1px solid #444; border-radius: 8px; padding: 12px; cursor: pointer; transition: 0.2s; display: flex; flex-direction: column; }
         .passiva-card:hover { border-color: var(--theme-light); background: rgba(255,255,255,0.05); }
         .passiva-title { font-size: 14px; font-weight: bold; color: white; margin-bottom: 5px; border-bottom: 1px solid #333; padding-bottom: 5px;}
         .passiva-desc { font-size: 11px; color: #bbb; white-space: pre-wrap; line-height: 1.4; }
+
+        /* Estilos do Painel Discente Habilidades */
+        .discente-section { background: rgba(0,0,0,0.4); border: 1px solid #444; padding: 15px; border-radius: 10px; margin-bottom: 15px; }
+        .discente-hab-box { background: rgba(0,0,0,0.6); border: 1px solid #555; padding: 10px; border-radius: 8px; margin-top: 8px; cursor: pointer; transition: 0.2s; }
+        .discente-hab-box:hover { border-color: #88ccff; }
+        .discente-hab-box.selected { border-color: #55ff55; background: rgba(0, 255, 0, 0.1); box-shadow: 0 0 10px rgba(0,255,0,0.2); }
+        .discente-hab-title { font-size: 13px; font-weight: bold; color: var(--theme-light); margin-bottom: 4px; }
+        .discente-hab-desc { font-size: 11px; color: #bbb; }
 
         .mobile-nav { display: none; position: fixed; bottom: 0; left: 0; width: 100%; background: #0a0a0a; padding: 10px 20px; box-sizing: border-box; justify-content: space-between; align-items: center; border-top: 2px solid var(--theme-border); z-index: 1000; box-shadow: 0 -2px 10px rgba(0,0,0,0.8); }
         .mobile-nav button { background: var(--theme-main); color: white; border: 1px solid var(--theme-light); border-radius: 8px; padding: 10px 20px; font-weight: bold; font-size: 14px; cursor: pointer; text-transform: uppercase; }
@@ -386,9 +394,22 @@
             <button style="background:transparent; border:none; color:white; font-size:24px; cursor:pointer;" onclick="closeModal('modal-db-list')">✖</button>
         </div>
         
+        <div id="discente-controls" style="display:none; margin-bottom: 15px; padding: 10px; background: rgba(0,0,0,0.5); border: 1px solid var(--theme-light); border-radius: 8px;">
+            <label style="display: flex; align-items: center; gap: 10px; font-size: 14px; cursor: pointer; color: white;">
+                <input type="checkbox" id="chk-discente" onchange="toggleDiscenteMode(this.checked)" style="width: auto;">
+                MODO DISCENTE (Sangue Misto - Selecione 2 a 3 Raças)
+            </label>
+            <div id="discente-actions" style="display:none; margin-top: 10px; text-align: right;">
+                <span id="discente-counter" style="margin-right: 15px; color: #ffaaaa; font-weight: bold;">0 selecionadas</span>
+                <button class="btn-add" onclick="goToDiscenteStep2()" id="btn-discente-next" disabled style="display:inline-block;">Avançar para Habilidades ▶</button>
+            </div>
+        </div>
+
         <input type="text" id="db-search" placeholder="🔍 Buscar por nome, descrição ou categoria..." onkeyup="renderDBList(this.value)" style="margin-bottom: 15px; font-size: 14px; padding: 12px; border-radius: 8px;">
         
         <div id="db-list-content" class="db-grid"></div>
+
+        <div id="discente-step2-container" style="display:none; flex-direction:column; gap:15px; overflow-y:auto; flex-grow:1; padding-right:5px;"></div>
         
     </div>
 </div>
@@ -417,9 +438,13 @@
     let globalCharData = {};
     let globalCompendium = { passivas: {}, cartas: {}, classes: {}, racas: {}, equipamentos: {} };
     let currentCategory = ""; 
-    
-    // Variáveis para a Busca e Renderização do Modal DB
     let currentDBItems = [];
+    
+    // Variáveis Discente
+    window.isDiscenteMode = false;
+    window.discenteRaces = []; // IDs selecionados
+    window.discenteHabs = []; // Objs habilidades selecionadas
+    window.discenteLinhas = []; // Linhagens marcadas
     
     // --- PUXAR BANCO DE DADOS GLOBAL ---
     onValue(ref(db, 'banco_dados_v2'), (snapshot) => {
@@ -632,7 +657,6 @@
             } 
         }
 
-        // Atualiza campos de texto (incluindo Classe e Raça)
         camposParaSalvar.concat(['classe', 'ancestralidade']).forEach(id => {
             if (dados[id] !== undefined) {
                 if (id === 'xp_total') document.getElementById('display_xp_total').innerText = dados[id];
@@ -663,22 +687,18 @@
         const el = document.getElementById('bar_' + type); if (el) el.style.width = percent + '%';
     }
 
-    // --- MODAIS E CONTROLES DE ADIÇÃO ---
+    // --- MODAIS ---
     window.openAddMenu = (category) => {
         currentCategory = category;
         const dbBtn = document.getElementById('btn-db-add');
-        
-        // Incluído "armas" para permitir puxar do banco
         if (['passivas', 'loadout', 'cofre', 'armas'].includes(category)) {
             dbBtn.style.display = 'block';
         } else {
             dbBtn.style.display = 'none';
         }
-        
         document.getElementById('modal-choice').classList.add('open');
     };
 
-    // Abre direto o banco de dados para Classes e Raças (vindo da Coluna 1)
     window.openDirectDB = (category) => {
         currentCategory = category;
         openDBModal();
@@ -689,23 +709,209 @@
     window.createManual = () => {
         closeModal('modal-choice');
         let data = { titulo: "", desc: "" };
-        
         if (currentCategory === 'armas') {
             data = { titulo: "Novo Equipamento", atributo: "", dano_slots: "", tipo_dano: "", alcance: "", desc: "" };
         } else if (currentCategory === 'loadout' || currentCategory === 'cofre') { 
             data.teste = ""; 
         } 
-        
         push(ref(db, `${dbPath}/habilidades/${currentCategory}`), data);
     };
 
-    // --- LÓGICA DO COMPÊNDIO COM CARDS E BUSCA ---
+    // --- LÓGICA MODO DISCENTE ---
+    window.toggleDiscenteMode = (isOn) => {
+        window.isDiscenteMode = isOn;
+        window.discenteRaces = [];
+        window.discenteHabs = [];
+        document.getElementById('discente-actions').style.display = isOn ? 'block' : 'none';
+        document.getElementById('btn-discente-next').disabled = true;
+        document.getElementById('discente-counter').innerText = "0 selecionadas";
+        renderDBList(document.getElementById('db-search').value);
+    };
+
+    window.clickRacaCard = (itemId) => {
+        if (!window.isDiscenteMode) {
+            addFromDB(itemId); // Se desligado, equipa direto
+        } else {
+            // Modo de Seleção Discente
+            const idx = window.discenteRaces.indexOf(itemId);
+            if (idx > -1) {
+                window.discenteRaces.splice(idx, 1);
+            } else {
+                if (window.discenteRaces.length < 3) window.discenteRaces.push(itemId);
+                else alert("Você pode selecionar no máximo 3 raças para formar um Discente.");
+            }
+            document.getElementById('discente-counter').innerText = `${window.discenteRaces.length} selecionada(s)`;
+            document.getElementById('btn-discente-next').disabled = (window.discenteRaces.length < 2);
+            renderDBList(document.getElementById('db-search').value); // Re-render para mostrar as bordas ativas
+        }
+    };
+
+    window.goToDiscenteStep2 = () => {
+        document.getElementById('db-search').style.display = 'none';
+        document.getElementById('db-list-content').style.display = 'none';
+        document.getElementById('discente-controls').style.display = 'none';
+        
+        const container = document.getElementById('discente-step2-container');
+        container.style.display = 'flex';
+        container.innerHTML = `<h3 style="color:white; margin:0 0 10px 0;">SELEÇÃO DISCENTE</h3>`;
+        
+        let subText = window.discenteRaces.length === 2 
+            ? "Você é Sangue-Duplo! Escolha um total de <b>3 habilidades</b> divididas livremente entre as duas raças."
+            : "Você é uma Quimera! Escolha <b>exatamente 1 habilidade</b> de cada raça abaixo (Total: 3).";
+        
+        container.innerHTML += `<p style="color:#aaa; font-size:12px; margin-top:0;">${subText}</p>`;
+        
+        window.discenteHabs = [];
+        window.discenteLinhas = [];
+
+        // Agrupar linhagens disponíveis para a escolha final
+        let availableLinhagens = [];
+
+        window.discenteRaces.forEach(id => {
+            let raca = globalCompendium.racas[id];
+            if(!raca) return;
+
+            // Puxa a linhagem da raça para oferecer
+            let racaLinha = raca.linhagem || 'Animalesco';
+            if (!availableLinhagens.includes(racaLinha)) availableLinhagens.push(racaLinha);
+
+            let sec = document.createElement('div');
+            sec.className = 'discente-section';
+            sec.innerHTML = `<div style="color:var(--theme-light); font-weight:bold; font-size:14px; text-transform:uppercase;">Herança: ${raca.titulo}</div>`;
+            
+            // Hab 1
+            if(raca.hab1_nome) sec.innerHTML += `<div class="discente-hab-box" id="box_${id}_1" onclick="toggleDiscenteHab('${id}', 1, '${raca.hab1_nome.replace(/'/g,"\\'")}', '${raca.hab1_desc.replace(/'/g,"\\'")}')"><div class="discente-hab-title">${raca.hab1_nome}</div><div class="discente-hab-desc">${raca.hab1_desc}</div></div>`;
+            // Hab 2
+            if(raca.hab2_nome) sec.innerHTML += `<div class="discente-hab-box" id="box_${id}_2" onclick="toggleDiscenteHab('${id}', 2, '${raca.hab2_nome.replace(/'/g,"\\'")}', '${raca.hab2_desc.replace(/'/g,"\\'")}')"><div class="discente-hab-title">${raca.hab2_nome}</div><div class="discente-hab-desc">${raca.hab2_desc}</div></div>`;
+            // Hab 3
+            if(raca.hab3_nome) sec.innerHTML += `<div class="discente-hab-box" id="box_${id}_3" onclick="toggleDiscenteHab('${id}', 3, '${raca.hab3_nome.replace(/'/g,"\\'")}', '${raca.hab3_desc.replace(/'/g,"\\'")}')"><div class="discente-hab-title">${raca.hab3_nome}</div><div class="discente-hab-desc">${raca.hab3_desc}</div></div>`;
+            
+            container.appendChild(sec);
+        });
+
+        // Bloco de Linhagens Universais
+        let maxLinhagens = window.discenteRaces.length === 2 ? availableLinhagens.length : 1; // Se 3 raças, só 1.
+        let linhagensHTML = `<div class="discente-section" style="border-color:#00e5ff;">
+            <div style="color:#00e5ff; font-weight:bold; font-size:14px; text-transform:uppercase;">Linhagem Universal</div>
+            <p style="font-size:11px; color:#ccc;">Seu sangue misto altera sua herança mística. Escolha <b>até ${maxLinhagens}</b> linhagem(ns) para liberar na ficha:</p>`;
+        
+        availableLinhagens.forEach(linha => {
+            linhagensHTML += `
+                <label style="display:flex; align-items:center; gap:8px; margin-top:8px; color:white; font-size:13px; cursor:pointer;">
+                    <input type="checkbox" value="${linha}" onchange="toggleDiscenteLinha(this, ${maxLinhagens})">
+                    Linhagem: ${linha}
+                </label>`;
+        });
+        linhagensHTML += `</div>`;
+        container.innerHTML += linhagensHTML;
+
+        container.innerHTML += `<button id="btn-finish-discente" class="btn-add" style="width:100%; padding:15px; border-radius:10px; font-size:14px; background:#444;" disabled onclick="finishDiscente()">FINALIZAR CRIAÇÃO</button>`;
+    };
+
+    window.toggleDiscenteHab = (racaId, num, nome, desc) => {
+        const boxId = `box_${racaId}_${num}`;
+        const box = document.getElementById(boxId);
+        const existingIdx = window.discenteHabs.findIndex(h => h.boxId === boxId);
+        
+        if (existingIdx > -1) {
+            window.discenteHabs.splice(existingIdx, 1);
+            box.classList.remove('selected');
+        } else {
+            if (window.discenteHabs.length >= 3) {
+                alert("Você já escolheu 3 habilidades!"); return;
+            }
+            window.discenteHabs.push({ boxId, racaId, titulo: nome, desc: desc });
+            box.classList.add('selected');
+        }
+        checkDiscenteValidation();
+    };
+
+    window.toggleDiscenteLinha = (checkbox, max) => {
+        if (checkbox.checked) {
+            if (window.discenteLinhas.length >= max) {
+                checkbox.checked = false;
+                alert(`Você só pode ter no máximo ${max} Linhagem(ns) Universal(is)!`);
+                return;
+            }
+            window.discenteLinhas.push(checkbox.value);
+        } else {
+            window.discenteLinhas = window.discenteLinhas.filter(l => l !== checkbox.value);
+        }
+    };
+
+    function checkDiscenteValidation() {
+        let isValid = false;
+        if (window.discenteHabs.length === 3) {
+            if (window.discenteRaces.length === 2) {
+                isValid = true; // 2 raças, 3 habs livres
+            } else if (window.discenteRaces.length === 3) {
+                // Checar se tem exatamente 1 de cada raça
+                let countObj = {};
+                window.discenteHabs.forEach(h => { countObj[h.racaId] = (countObj[h.racaId] || 0) + 1; });
+                if (Object.keys(countObj).length === 3) isValid = true;
+            }
+        }
+        const btn = document.getElementById('btn-finish-discente');
+        if(isValid) {
+            btn.disabled = false;
+            btn.style.background = '#22aa22';
+        } else {
+            btn.disabled = true;
+            btn.style.background = '#444';
+        }
+    }
+
+    window.finishDiscente = () => {
+        let racaTitles = window.discenteRaces.map(id => globalCompendium.racas[id]?.titulo || id);
+        let ancestralidadeName = `Discente (${racaTitles.join(" & ")})`;
+
+        update(ref(db, dbPath), { ancestralidade: ancestralidadeName });
+        
+        let pacoteRaca = {};
+        pacoteRaca['desc_geral'] = { 
+            titulo: `Sobre: Mestiço (Discente)`, 
+            desc: `Biologia fundida pelas seguintes raças: ${racaTitles.join(", ")}.\nLinhagens Universais ativas: ${window.discenteLinhas.join(" / ") || 'Nenhuma'}` 
+        };
+        
+        window.discenteHabs.forEach((hab, i) => {
+            pacoteRaca[`hab_${i+1}`] = { titulo: hab.titulo, desc: hab.desc };
+        });
+        
+        set(ref(db, `${dbPath}/habilidades/raca_hab`), pacoteRaca);
+
+        // Atualizar Toggles Universais baseado na escolha final do array discenteLinhas
+        let newToggles = {
+            'toggles/linhagem_1': window.discenteLinhas.some(l => l.toLowerCase().includes('demon')) || null,
+            'toggles/linhagem_2': window.discenteLinhas.some(l => l.toLowerCase().includes('animal')) || null,
+            'toggles/linhagem_3': window.discenteLinhas.some(l => l.toLowerCase().includes('sacr')) || null
+        };
+        update(ref(db, dbPath), newToggles);
+
+        closeModal('modal-db-list');
+    };
+
+    // --- COMPÊNDIO PADRÃO ---
     window.openDBModal = () => {
         closeModal('modal-choice');
         document.getElementById('db-search').value = "";
         
-        let dataObj = {};
+        // Reset Visuals para garantir que não trave na tela discente anterior
+        document.getElementById('discente-step2-container').style.display = 'none';
+        document.getElementById('db-search').style.display = 'block';
+        document.getElementById('db-list-content').style.display = 'grid';
+        
+        // Toggle Discente (só na Raça)
+        const ctrls = document.getElementById('discente-controls');
+        if (currentCategory === 'raca_hab') {
+            ctrls.style.display = 'block';
+            document.getElementById('chk-discente').checked = false;
+            toggleDiscenteMode(false);
+        } else {
+            ctrls.style.display = 'none';
+            window.isDiscenteMode = false;
+        }
 
+        let dataObj = {};
         if (currentCategory === 'passivas') dataObj = globalCompendium.passivas || {};
         else if (currentCategory === 'loadout' || currentCategory === 'cofre') dataObj = globalCompendium.cartas || {};
         else if (currentCategory === 'classe_hab') dataObj = globalCompendium.classes || {};
@@ -778,12 +984,16 @@
                     </div>
                 `;
             } else if (currentCategory === 'raca_hab') {
+                const isSelected = window.isDiscenteMode && window.discenteRaces.includes(item.id) ? 'selected-raca' : '';
+                const clickAction = window.isDiscenteMode ? `clickRacaCard('${item.id}')` : `addFromDB('${item.id}')`;
+                const promptText = window.isDiscenteMode ? "CLIQUE PARA MARCAR" : "CLIQUE PARA ESCOLHER RAÇA";
+                
                 container.innerHTML += `
-                    <div class="skill-card" onclick="addFromDB('${item.id}')">
+                    <div class="skill-card ${isSelected}" onclick="${clickAction}">
                         <div class="card-badges"><span class="badge-domain">${item.linhagem || 'Animalesco'}</span></div>
                         <div class="card-title">${item.titulo}</div>
                         <div class="card-desc">${item.desc || ''}</div>
-                        <div style="margin-top:auto; font-size:10px; color:var(--theme-light); text-align:right; font-weight:bold; padding-top: 10px;">CLIQUE PARA ESCOLHER RAÇA</div>
+                        <div style="margin-top:auto; font-size:10px; color:var(--theme-light); text-align:right; font-weight:bold; padding-top: 10px;">${promptText}</div>
                     </div>
                 `;
             } else if (currentCategory === 'armas') {
@@ -849,6 +1059,15 @@
             if (item.hab3_nome) pacoteRaca['hab_3'] = { titulo: item.hab3_nome, desc: item.hab3_desc || "" };
             
             set(ref(db, `${dbPath}/habilidades/raca_hab`), pacoteRaca);
+
+            // Unlock Toggles Padrões baseado na Linhagem Singular
+            let linha = (item.linhagem || "").toLowerCase();
+            let newToggles = {
+                'toggles/linhagem_1': linha.includes('demon') || null,
+                'toggles/linhagem_2': linha.includes('animal') || null,
+                'toggles/linhagem_3': linha.includes('sacr') || null
+            };
+            update(ref(db, dbPath), newToggles);
             
         } else if (currentCategory === 'armas') {
             let data = {
@@ -895,7 +1114,7 @@
             const item = data[id]; 
             const div = document.createElement('div'); 
             
-            // LÓGICA ESPECIAL PARA EQUIPAMENTOS (O CARD BONITINHO QUE JÁ É O EDITOR)
+            // EQUIPAMENTOS (O CARD BONITINHO QUE JÁ É O EDITOR)
             if (category === 'armas') {
                 div.className = 'equip-ficha-card';
                 div.innerHTML = `
@@ -925,7 +1144,7 @@
                     <textarea class="equip-ficha-desc" onchange="saveHab('${category}', '${id}', 'desc', this.value)" placeholder="Efeitos adicionais ou propriedades...">${item.desc || ''}</textarea>
                 `;
             } else {
-                // RENDER PADRÃO DOS OUTROS ITENS
+                // RENDER PADRÃO
                 div.className = 'hab-item'; 
                 
                 const isFixed = (category === 'classe_hab' || category === 'raca_hab');
